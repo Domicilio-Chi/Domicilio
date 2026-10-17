@@ -583,12 +583,44 @@ function enviarComandaWhatsApp() {
   mensaje += `\n💰 *TOTAL A PAGAR: $${granTotal.toFixed(2)} USD*\n\n`;
   mensaje += `¿Me confirman tiempo estimado de despacho para mi zona? ¡Gracias! 🔥`;
 
+  // Registrar comanda en segundo plano en Google Sheets ERP
+  try {
+    const detallePlatos = comanda.map(c => `${c.cantidad}x ${c.nombre} ($${c.totalItem.toFixed(2)})`).join(', ');
+    const extrasPlatos = comanda.flatMap(c => c.extras.map(e => `${c.cantidad}x ${e.nombre}`)).join(', ') || 'Sin adicionales';
+    const notasPlatos = comanda.map(c => c.notas).filter(Boolean).join(' | ') || 'Ninguna';
+    
+    API.registrarComanda({
+      idComanda: 'CMD-' + Date.now().toString().slice(-4),
+      clienteNombre: nombre,
+      clienteTelefono: '',
+      direccionEntrega: direccion,
+      detallePlatos: detallePlatos,
+      extrasSeleccionados: extrasPlatos,
+      notasCocina: notasPlatos,
+      totalUSD: granTotal,
+      estado: 'Recibida en Cocina'
+    }).then(res => {
+      console.log('Comanda registrada en ERP Google Sheets:', res);
+    }).catch(err => {
+      console.warn('Registro offline en Google Sheets:', err);
+    });
+  } catch(e) {
+    console.warn('Error enviando comanda al ERP:', e);
+  }
+
   // Número por defecto de cocina (configurable en admin)
   const telefonoCocina = '584120000000';
   const urlWhatsApp = `https://wa.me/${telefonoCocina}?text=${encodeURIComponent(mensaje)}`;
 
   window.open(urlWhatsApp, '_blank');
-  mostrarToast('¡Comanda enviada a WhatsApp! 📲');
+  mostrarToast('¡Comanda enviada a WhatsApp y registrada en cocina! 📲');
+  
+  // Limpiar comanda tras envio
+  comanda = [];
+  localStorage.removeItem('adomicilio_comanda');
+  actualizarBadgeComanda();
+  renderizarListaComanda();
+  cerrarModalComanda();
 }
 
 // ==========================================

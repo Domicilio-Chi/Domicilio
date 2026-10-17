@@ -103,6 +103,12 @@
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Cocina Abierta</span>
           </div>
+
+          <!-- Píldora Interactiva Envío Gratis (Configurable por Admin) -->
+          <button id="btnInfoDeliveryHeader" onclick="abrirModalInfoDelivery()" class="flex items-center space-x-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-300/60 dark:border-amber-700/60 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-full text-xs font-bold shadow-xs transition cursor-pointer group" title="Ver condiciones de Delivery Gratis">
+            <i class="fa-solid fa-motorcycle text-rose-500 group-hover:scale-110 transition-transform"></i>
+            <span id="textoDeliveryPill">Envío Gratis (2+ unid)</span>
+          </button>
         </div>
 
         <!-- BLOQUE 2: BOTONERA DE ACCIÓN RÁPIDA (DERECHA EN MÓVIL) -->
@@ -236,11 +242,8 @@
       <p class="text-xs text-stone-500 dark:text-stone-400 max-w-sm mx-auto">
         Comida tradicional venezolana y comida rápida preparada al momento con ingredientes frescos.
       </p>
-      <div class="text-[11px] text-stone-400 dark:text-stone-500 pt-2 border-t border-stone-100 dark:border-stone-800/60 flex items-center justify-center gap-4">
+      <div class="text-[11px] text-stone-400 dark:text-stone-500 pt-2 border-t border-stone-100 dark:border-stone-800/60 flex items-center justify-center">
         <span>© 2026 A Domicilio. Todos los derechos reservados.</span>
-        <a href="admin.html" class="hover:text-rose-500 dark:hover:text-rose-400 transition" title="Acceso de Administrador">
-          <i class="fa-solid fa-lock text-[10px]"></i> Admin
-        </a>
       </div>
     </div>
   </footer>
@@ -305,6 +308,15 @@
             class="w-full px-3 py-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-rose-500/40">
         </div>
 
+        <!-- BANNER DE PROMO DELIVERY GRATIS (DINÁMICO SEGÚN CANTIDAD) -->
+        <div id="bannerDeliveryPlato" class="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-300/60 dark:border-amber-700/60 flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-300">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-motorcycle text-rose-500 text-sm"></i>
+            <span id="textoPromoDeliveryPlato">🛵 ¡Delivery GRATIS a partir de 2 unidades! (Agrega 1 más)</span>
+          </div>
+          <span id="badgeDeliveryStatusPlato" class="text-[10px] bg-amber-200/70 dark:bg-amber-900/60 px-2 py-0.5 rounded-full font-bold">Promo</span>
+        </div>
+
         <!-- CANTIDAD Y BOTÓN AGREGAR -->
         <div class="pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3">
           <!-- Selector Cantidad -->
@@ -357,18 +369,60 @@
       </div>
 
       <!-- Formulario de Entrega y Envío por WhatsApp -->
-      <div class="p-5 border-t border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-950/40 space-y-3 flex-shrink-0">
+      <div class="p-4 sm:p-5 border-t border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-950/40 space-y-2.5 flex-shrink-0">
+        
+        <!-- Indicador de Delivery Gratis en Comanda -->
+        <div id="indicadorDeliveryComanda" class="p-2.5 rounded-2xl border text-xs font-bold flex items-center justify-between transition-colors">
+          <!-- Inyectado dinámicamente desde app.js -->
+        </div>
+
         <div class="space-y-2">
-          <input 
-            type="text" 
-            id="comandaClienteNombre" 
-            placeholder="Tu Nombre completo *" 
-            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none">
+          <!-- Nombre y Teléfono -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input 
+              type="text" 
+              id="comandaClienteNombre" 
+              placeholder="Tu Nombre completo *" 
+              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none text-stone-900 dark:text-white">
+            <input 
+              type="tel" 
+              id="comandaClienteTelefono" 
+              placeholder="Teléfono / WhatsApp *" 
+              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none text-stone-900 dark:text-white">
+          </div>
+
+          <!-- Dirección Exacta -->
           <input 
             type="text" 
             id="comandaClienteDireccion" 
             placeholder="Dirección exacta de entrega (Sector, Calle, Casa/Apto) *" 
-            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none">
+            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none text-stone-900 dark:text-white">
+
+          <!-- Punto de Referencia y Método de Pago -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input 
+              type="text" 
+              id="comandaPuntoReferencia" 
+              placeholder="Punto de referencia (color de portón, etc.)" 
+              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none text-stone-900 dark:text-white">
+            
+            <select 
+              id="comandaMetodoPago" 
+              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none text-stone-900 dark:text-white font-medium">
+              <option value="Efectivo Divisas ($ USD)">💵 Efectivo Divisas ($ USD)</option>
+              <option value="Pago Móvil (Bs)">📱 Pago Móvil (Bs)</option>
+              <option value="Efectivo Bolívares (Bs)">💵 Efectivo Bolívares (Bs)</option>
+              <option value="Zelle / Binance Pay">⚡ Zelle / Binance Pay</option>
+              <option value="Punto de Venta al Recibir">💳 Punto de Venta al Recibir</option>
+            </select>
+          </div>
+
+          <!-- Con cuánto paga (Para cambio/vuelto) -->
+          <input 
+            type="text" 
+            id="comandaPagaCon" 
+            placeholder="¿Pagas con billete exacto o necesitas cambio? (Ej: Pago con $20)" 
+            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none text-stone-900 dark:text-white">
         </div>
 
         <!-- Totales -->
@@ -436,6 +490,67 @@
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE INFORMACIÓN DE DELIVERY GRATIS -->
+  <!-- ========================================== -->
+  <div id="modalInfoDelivery" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+        <div class="flex items-center space-x-2.5 text-rose-600 dark:text-rose-400">
+          <div class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/80 flex items-center justify-center">
+            <i class="fa-solid fa-motorcycle text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white leading-tight">Delivery Gratis</h3>
+            <span class="text-[11px] text-stone-500 dark:text-stone-400">Condiciones y Cobertura</span>
+          </div>
+        </div>
+        <button onclick="cerrarModalInfoDelivery()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs leading-relaxed text-stone-600 dark:text-stone-300">
+        <div class="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start space-x-2.5">
+          <i class="fa-solid fa-circle-check text-amber-600 dark:text-amber-400 text-base mt-0.5"></i>
+          <div>
+            <h4 class="font-bold text-stone-900 dark:text-white" id="infoDeliveryTituloCondicion">¡Envío Gratis a partir de 2 platos!</h4>
+            <p class="text-[11px] text-stone-600 dark:text-stone-400 mt-1" id="infoDeliveryDetalleCondicion">
+              Pide 2 o más empanadas, tequeños, pastelitos, cachapas, sopas, hamburguesas o cualquier especialidad de nuestra carta y el envío corre por cuenta de la casa.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-clock text-xs"></i>
+            </div>
+            <span><strong>Tiempo promedio:</strong> 25 a 45 minutos (comida caliente recién preparada).</span>
+          </div>
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-map-location-dot text-xs"></i>
+            </div>
+            <span><strong>Zona de entrega:</strong> Casco central y zonas de reparto acordadas por WhatsApp.</span>
+          </div>
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-box-open text-xs"></i>
+            </div>
+            <span><strong>Empaque térmico:</strong> Envases herméticos para mantener el calor y salsas protegidas.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="cerrarModalInfoDelivery()" class="w-full py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition">
+          ¡Entendido, armar mi pedido!
+        </button>
+      </div>
     </div>
   </div>
 

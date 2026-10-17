@@ -174,7 +174,93 @@ document.addEventListener('DOMContentLoaded', () => {
   renderizarPlatos();
   actualizarBadgeComanda();
   actualizarIconoTema();
+  actualizarBannersDelivery();
+  configurarCierreModales();
 });
+
+// ==========================================
+// CONFIGURACIÓN DE DELIVERY GRATIS
+// ==========================================
+function obtenerConfigDelivery() {
+  const defaultConfig = {
+    activo: true,
+    minUnidades: 2,
+    textoPromo: 'Envío Gratis (2+ unid)',
+    condiciones: 'Pide 2 o más empanadas, tequeños, pastelitos, cachapas, sopas, hamburguesas o cualquier especialidad de nuestra carta y el envío corre por cuenta de la casa.'
+  };
+  try {
+    const raw = localStorage.getItem('adomicilio_config_delivery');
+    return raw ? { ...defaultConfig, ...JSON.parse(raw) } : defaultConfig;
+  } catch(e) {
+    return defaultConfig;
+  }
+}
+
+function actualizarBannersDelivery() {
+  const config = obtenerConfigDelivery();
+  const pill = document.getElementById('textoDeliveryPill');
+  const btnPill = document.getElementById('btnInfoDeliveryHeader');
+  
+  if (pill && btnPill) {
+    if (!config.activo) {
+      btnPill.classList.add('hidden');
+    } else {
+      btnPill.classList.remove('hidden');
+      pill.textContent = config.textoPromo || `Envío Gratis (${config.minUnidades}+ unid)`;
+    }
+  }
+
+  const tituloCond = document.getElementById('infoDeliveryTituloCondicion');
+  const detalleCond = document.getElementById('infoDeliveryDetalleCondicion');
+  if (tituloCond) {
+    tituloCond.textContent = `¡Envío Gratis a partir de ${config.minUnidades} plato${config.minUnidades > 1 ? 's' : ''}!`;
+  }
+  if (detalleCond && config.condiciones) {
+    detalleCond.textContent = config.condiciones;
+  }
+}
+
+function abrirModalInfoDelivery() {
+  actualizarBannersDelivery();
+  document.getElementById('modalInfoDelivery').classList.remove('hidden');
+}
+
+function cerrarModalInfoDelivery() {
+  const m = document.getElementById('modalInfoDelivery');
+  if (m) m.classList.add('hidden');
+}
+
+// Configurar cierre de modales por clic en el fondo (backdrop) o tecla Escape
+function configurarCierreModales() {
+  const modales = [
+    { id: 'modalPlato', close: cerrarModalPlato },
+    { id: 'modalComanda', close: cerrarModalComanda },
+    { id: 'modalChat', close: cerrarModalChat },
+    { id: 'modalInfoDelivery', close: cerrarModalInfoDelivery }
+  ];
+
+  modales.forEach(m => {
+    const el = document.getElementById(m.id);
+    if (el) {
+      el.addEventListener('click', (e) => {
+        // Si el clic ocurrió directamente sobre el fondo oscuro (backdrop)
+        if (e.target === el) {
+          m.close();
+        }
+      });
+    }
+  });
+
+  // Tecla Escape para salir de cualquier modal abierto
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      cerrarModalPlato();
+      cerrarModalComanda();
+      cerrarModalChat();
+      cerrarModalInfoDelivery();
+    }
+  });
+}
 
 // ==========================================
 // TEMA CLARO ☀️ / OSCURO 🌙
@@ -401,6 +487,7 @@ function abrirModalPlato(id) {
   }
 
   calcularTotalModal();
+  actualizarBannerDeliveryPlato(cantidadModal);
   document.getElementById('modalPlato').classList.remove('hidden');
 }
 
@@ -413,6 +500,39 @@ function modificarCantidadModal(delta) {
   cantidadModal = Math.max(1, cantidadModal + delta);
   document.getElementById('modalCantidad').textContent = cantidadModal;
   calcularTotalModal();
+  actualizarBannerDeliveryPlato(cantidadModal);
+}
+
+function actualizarBannerDeliveryPlato(cantidad) {
+  const config = obtenerConfigDelivery();
+  const banner = document.getElementById('bannerDeliveryPlato');
+  const texto = document.getElementById('textoPromoDeliveryPlato');
+  const badge = document.getElementById('badgeDeliveryStatusPlato');
+  if (!banner || !texto) return;
+
+  if (!config.activo) {
+    banner.classList.add('hidden');
+    return;
+  }
+  banner.classList.remove('hidden');
+
+  const min = config.minUnidades || 2;
+  if (cantidad >= min) {
+    texto.innerHTML = `🎉 ¡Genial! Esta orden califica para <strong>Delivery GRATIS</strong>`;
+    banner.className = 'p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/60 dark:border-emerald-700/60 flex items-center justify-between text-xs font-semibold text-emerald-800 dark:text-emerald-300 transition-colors';
+    if (badge) {
+      badge.textContent = '¡Gratis!';
+      badge.className = 'text-[10px] bg-emerald-200/80 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded-full font-bold';
+    }
+  } else {
+    const faltan = min - cantidad;
+    texto.innerHTML = `🛵 ¡Delivery GRATIS a partir de ${min} unidades! (Agrega ${faltan} más)`;
+    banner.className = 'p-2.5 rounded-2xl bg-amber-500/10 border border-amber-300/60 dark:border-amber-700/60 flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-300 transition-colors';
+    if (badge) {
+      badge.textContent = 'Promo';
+      badge.className = 'text-[10px] bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full font-bold';
+    }
+  }
 }
 
 function calcularTotalModal() {
@@ -488,6 +608,9 @@ function renderizarListaComanda() {
   const contenedor = document.getElementById('listaComandaItems');
   const labelTotal = document.getElementById('comandaTotalPagar');
 
+  const totalItems = comanda.reduce((sum, item) => sum + item.cantidad, 0);
+  actualizarIndicadorDeliveryComanda(totalItems);
+
   if (comanda.length === 0) {
     contenedor.innerHTML = `
       <div class="text-center py-8 text-stone-400">
@@ -534,6 +657,40 @@ function renderizarListaComanda() {
   labelTotal.textContent = `$${granTotal.toFixed(2)}`;
 }
 
+function actualizarIndicadorDeliveryComanda(totalItems) {
+  const indicador = document.getElementById('indicadorDeliveryComanda');
+  if (!indicador) return;
+
+  const config = obtenerConfigDelivery();
+  if (!config.activo) {
+    indicador.classList.add('hidden');
+    return;
+  }
+  indicador.classList.remove('hidden');
+
+  const min = config.minUnidades || 2;
+  if (totalItems >= min) {
+    indicador.className = 'p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/80 text-xs font-bold flex items-center justify-between text-emerald-700 dark:text-emerald-400 transition-colors';
+    indicador.innerHTML = `
+      <div class="flex items-center space-x-1.5">
+        <i class="fa-solid fa-gift text-sm text-emerald-600 dark:text-emerald-400"></i>
+        <span>🎉 ¡Tu pedido califica para <strong>Delivery GRATIS</strong>!</span>
+      </div>
+      <span class="text-[10px] bg-emerald-200/80 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">Activo</span>
+    `;
+  } else {
+    const faltan = min - totalItems;
+    indicador.className = 'p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 text-xs font-bold flex items-center justify-between text-amber-800 dark:text-amber-300 transition-colors';
+    indicador.innerHTML = `
+      <div class="flex items-center space-x-1.5">
+        <i class="fa-solid fa-motorcycle text-sm text-rose-500"></i>
+        <span>🛵 Agrega <strong>${faltan} plato${faltan > 1 ? 's' : ''} más</strong> y obtén Delivery GRATIS</span>
+      </div>
+      <span class="text-[10px] bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">Falta ${faltan}</span>
+    `;
+  }
+}
+
 function eliminarItemComanda(idx) {
   comanda.splice(idx, 1);
   localStorage.setItem('adomicilio_comanda', JSON.stringify(comanda));
@@ -547,24 +704,46 @@ function enviarComandaWhatsApp() {
     return;
   }
 
-  const nombre = document.getElementById('comandaClienteNombre').value.trim();
-  const direccion = document.getElementById('comandaClienteDireccion').value.trim();
+  const nombre = document.getElementById('comandaClienteNombre')?.value.trim();
+  const telefono = document.getElementById('comandaClienteTelefono')?.value.trim();
+  const direccion = document.getElementById('comandaClienteDireccion')?.value.trim();
+  const puntoReferencia = document.getElementById('comandaPuntoReferencia')?.value.trim();
+  const metodoPago = document.getElementById('comandaMetodoPago')?.value || 'Efectivo Divisas ($ USD)';
+  const pagaCon = document.getElementById('comandaPagaCon')?.value.trim();
 
   if (!nombre) {
     mostrarToast('Por favor escribe tu nombre');
-    document.getElementById('comandaClienteNombre').focus();
+    document.getElementById('comandaClienteNombre')?.focus();
+    return;
+  }
+  if (!telefono) {
+    mostrarToast('Por favor escribe tu teléfono / WhatsApp');
+    document.getElementById('comandaClienteTelefono')?.focus();
     return;
   }
   if (!direccion) {
     mostrarToast('Por favor escribe la dirección de entrega');
-    document.getElementById('comandaClienteDireccion').focus();
+    document.getElementById('comandaClienteDireccion')?.focus();
     return;
   }
+
+  const totalItems = comanda.reduce((sum, item) => sum + item.cantidad, 0);
+  const configDelivery = obtenerConfigDelivery();
+  const aplicaDeliveryGratis = configDelivery.activo && (totalItems >= (configDelivery.minUnidades || 2));
 
   let granTotal = 0;
   let mensaje = `👋 *¡HOLA A DOMICILIO! DESEO CONFIRMAR ESTA COMANDA:*\n\n`;
   mensaje += `👤 *Cliente:* ${nombre}\n`;
-  mensaje += `📍 *Dirección de Entrega:* ${direccion}\n\n`;
+  mensaje += `📱 *Teléfono:* ${telefono}\n`;
+  mensaje += `📍 *Dirección de Entrega:* ${direccion}\n`;
+  if (puntoReferencia) {
+    mensaje += `🏠 *Punto de Referencia:* ${puntoReferencia}\n`;
+  }
+  mensaje += `💳 *Método de Pago:* ${metodoPago}\n`;
+  if (pagaCon) {
+    mensaje += `💵 *Paga con / Cambio:* ${pagaCon}\n`;
+  }
+  mensaje += `🛵 *Condición de Entrega:* ${aplicaDeliveryGratis ? '🎉 ¡DELIVERY GRATIS APLICADO! (Promoción 2+ platos)' : 'Despacho a domicilio standard'}\n\n`;
   mensaje += `🍽️ *DETALLE DE LA ORDEN:*\n`;
 
   comanda.forEach((item, i) => {
@@ -588,15 +767,16 @@ function enviarComandaWhatsApp() {
     const detallePlatos = comanda.map(c => `${c.cantidad}x ${c.nombre} ($${c.totalItem.toFixed(2)})`).join(', ');
     const extrasPlatos = comanda.flatMap(c => c.extras.map(e => `${c.cantidad}x ${e.nombre}`)).join(', ') || 'Sin adicionales';
     const notasPlatos = comanda.map(c => c.notas).filter(Boolean).join(' | ') || 'Ninguna';
-    
+    const notasCompletas = `Ref: ${puntoReferencia || 'S/R'} | Pago: ${metodoPago} ${pagaCon ? '(' + pagaCon + ')' : ''} | Delivery: ${aplicaDeliveryGratis ? 'GRATIS' : 'STANDARD'} | ${notasPlatos}`;
+
     API.registrarComanda({
       idComanda: 'CMD-' + Date.now().toString().slice(-4),
       clienteNombre: nombre,
-      clienteTelefono: '',
+      clienteTelefono: telefono,
       direccionEntrega: direccion,
       detallePlatos: detallePlatos,
       extrasSeleccionados: extrasPlatos,
-      notasCocina: notasPlatos,
+      notasCocina: notasCompletas,
       totalUSD: granTotal,
       estado: 'Recibida en Cocina'
     }).then(res => {
@@ -608,8 +788,9 @@ function enviarComandaWhatsApp() {
     console.warn('Error enviando comanda al ERP:', e);
   }
 
-  // Número por defecto de cocina (configurable en admin)
-  const telefonoCocina = '584120000000';
+  // Teléfono de cocina configurado en admin o por defecto
+  const configWhatsApp = JSON.parse(localStorage.getItem('adomicilio_config_whatsapp') || '{}');
+  const telefonoCocina = configWhatsApp.telCocina || '584120000000';
   const urlWhatsApp = `https://wa.me/${telefonoCocina}?text=${encodeURIComponent(mensaje)}`;
 
   window.open(urlWhatsApp, '_blank');

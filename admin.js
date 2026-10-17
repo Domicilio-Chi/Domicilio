@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderizarTablaAdmin();
   actualizarMetricas();
   actualizarIconoTemaAdmin();
+  configurarCierreModalesAdmin();
 });
 
 function guardarEnStorage() {
@@ -228,7 +229,7 @@ function toggleDisponibilidad(id) {
 }
 
 // ==========================================
-// MODAL AGREGAR / EDITAR PLATO
+// MODAL AGREGAR / EDITAR PLATO Y EXTRAS
 // ==========================================
 function abrirModalNuevoPlato() {
   document.getElementById('modalEditarTitulo').textContent = 'Agregar Nuevo Plato';
@@ -238,6 +239,15 @@ function abrirModalNuevoPlato() {
   document.getElementById('editPrecio').value = '';
   document.getElementById('editDescripcion').value = '';
   document.getElementById('editFoto').value = '';
+  
+  // Limpiar y poner 2 extras por defecto
+  const contenedor = document.getElementById('contenedorListaExtrasAdmin');
+  if (contenedor) {
+    contenedor.innerHTML = '';
+    agregarFilaExtraFormulario('Guasacaca verde de la casa', '0.50');
+    agregarFilaExtraFormulario('Salsa tártara / ajo criollo', '0.50');
+  }
+
   document.getElementById('modalEditarPlato').classList.remove('hidden');
 }
 
@@ -245,18 +255,79 @@ function editarPlato(id) {
   const p = platosAdmin.find(x => x.id === id);
   if (!p) return;
 
-  document.getElementById('modalEditarTitulo').textContent = 'Editar Plato';
+  document.getElementById('modalEditarTitulo').textContent = 'Editar Plato y Salsas';
   document.getElementById('editPlatoId').value = p.id;
   document.getElementById('editNombre').value = p.nombre;
   document.getElementById('editCategoria').value = p.categoria;
   document.getElementById('editPrecio').value = p.precio;
   document.getElementById('editDescripcion').value = p.descripcion;
   document.getElementById('editFoto').value = p.foto;
+
+  // Cargar lista de extras del plato
+  const contenedor = document.getElementById('contenedorListaExtrasAdmin');
+  if (contenedor) {
+    contenedor.innerHTML = '';
+    if (p.extras && Array.isArray(p.extras) && p.extras.length > 0) {
+      p.extras.forEach(ext => {
+        agregarFilaExtraFormulario(ext.nombre, ext.precio);
+      });
+    } else {
+      agregarFilaExtraFormulario('Guasacaca verde de la casa', '0.50');
+    }
+  }
+
   document.getElementById('modalEditarPlato').classList.remove('hidden');
 }
 
 function cerrarModalEditarPlato() {
   document.getElementById('modalEditarPlato').classList.add('hidden');
+}
+
+// Gestión modular de filas de extras
+function agregarFilaExtraFormulario(nombre = '', precio = '0.50') {
+  const contenedor = document.getElementById('contenedorListaExtrasAdmin');
+  if (!contenedor) return;
+
+  const div = document.createElement('div');
+  div.className = 'fila-extra flex items-center space-x-2 bg-stone-50 dark:bg-stone-800/80 p-2 rounded-xl border border-stone-200 dark:border-stone-700/60';
+  div.innerHTML = `
+    <input 
+      type="text" 
+      placeholder="Nombre de salsa o extra (ej: Guasacaca)" 
+      value="${nombre}" 
+      class="extra-nombre flex-1 px-2.5 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-rose-500 text-stone-900 dark:text-white">
+    <div class="flex items-center space-x-1 w-24">
+      <span class="text-xs text-stone-400 font-bold">$</span>
+      <input 
+        type="number" 
+        step="0.25" 
+        min="0" 
+        placeholder="0.50" 
+        value="${precio}" 
+        class="extra-precio w-full px-2 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-rose-500 text-stone-900 dark:text-white text-right">
+    </div>
+    <button type="button" onclick="this.closest('.fila-extra').remove()" class="w-7 h-7 rounded-lg text-stone-400 hover:text-red-500 transition flex items-center justify-center text-xs" title="Eliminar este extra">
+      <i class="fa-solid fa-trash-can"></i>
+    </button>
+  `;
+  contenedor.appendChild(div);
+}
+
+function obtenerExtrasDesdeFormulario() {
+  const filas = document.querySelectorAll('#contenedorListaExtrasAdmin .fila-extra');
+  const extras = [];
+  filas.forEach((fila, i) => {
+    const nombre = fila.querySelector('.extra-nombre')?.value.trim();
+    const precio = parseFloat(fila.querySelector('.extra-precio')?.value || 0);
+    if (nombre) {
+      extras.push({
+        id: 'ext_' + Date.now().toString().slice(-4) + '_' + i,
+        nombre: nombre,
+        precio: isNaN(precio) ? 0 : precio
+      });
+    }
+  });
+  return extras;
 }
 
 function guardarPlatoAdmin() {
@@ -266,6 +337,7 @@ function guardarPlatoAdmin() {
   const precio = parseFloat(document.getElementById('editPrecio').value);
   const descripcion = document.getElementById('editDescripcion').value.trim();
   let foto = document.getElementById('editFoto').value.trim();
+  const extras = obtenerExtrasDesdeFormulario();
 
   if (!nombre || isNaN(precio) || !descripcion) {
     alert('Por favor completa todos los campos requeridos (*)');
@@ -285,7 +357,13 @@ function guardarPlatoAdmin() {
       p.precio = precio;
       p.descripcion = descripcion;
       p.foto = foto;
+      p.extras = extras;
       mostrarToastAdmin(`¡${nombre} actualizado con éxito!`);
+      
+      // Sincronizar con Google Sheets ERP
+      try {
+        API.guardarPlato({ id: p.id, nombre, categoria, precio, descripcion, foto, disponible: p.disponible, extras });
+      } catch(e) {}
     }
   } else {
     // Creación
@@ -296,10 +374,16 @@ function guardarPlatoAdmin() {
       precio,
       descripcion,
       foto,
-      disponible: true
+      disponible: true,
+      extras
     };
     platosAdmin.unshift(nuevo);
     mostrarToastAdmin(`¡${nombre} agregado al menú!`);
+    
+    // Sincronizar con Google Sheets ERP
+    try {
+      API.guardarPlato(nuevo);
+    } catch(e) {}
   }
 
   guardarEnStorage();
@@ -315,7 +399,83 @@ function eliminarPlato(id) {
     guardarEnStorage();
     renderizarTablaAdmin();
     mostrarToastAdmin(`Plato eliminado.`);
+    try {
+      API.eliminarPlato(id);
+    } catch(e) {}
   }
+}
+
+// ==========================================
+// CONFIGURACIÓN DE DELIVERY GRATIS
+// ==========================================
+function abrirModalConfigDelivery() {
+  const defaultConfig = {
+    activo: true,
+    minUnidades: 2,
+    textoPromo: 'Envío Gratis a partir de 2 unid.',
+    condiciones: 'Pide 2 o más empanadas, tequeños, pastelitos, cachapas, sopas, hamburguesas o cualquier especialidad de nuestra carta y el envío corre por cuenta de la casa.'
+  };
+  let config = defaultConfig;
+  try {
+    const raw = localStorage.getItem('adomicilio_config_delivery');
+    if (raw) config = { ...defaultConfig, ...JSON.parse(raw) };
+  } catch(e) {}
+
+  document.getElementById('cfgDeliveryActivo').checked = !!config.activo;
+  document.getElementById('cfgDeliveryMinUnidades').value = config.minUnidades || 2;
+  document.getElementById('cfgDeliveryTextoPromo').value = config.textoPromo || 'Envío Gratis a partir de 2 unid.';
+  document.getElementById('cfgDeliveryCondiciones').value = config.condiciones || '';
+  document.getElementById('modalConfigDelivery').classList.remove('hidden');
+}
+
+function cerrarModalConfigDelivery() {
+  const m = document.getElementById('modalConfigDelivery');
+  if (m) m.classList.add('hidden');
+}
+
+function guardarConfigDelivery() {
+  const activo = document.getElementById('cfgDeliveryActivo').checked;
+  const minUnidades = parseInt(document.getElementById('cfgDeliveryMinUnidades').value) || 2;
+  const textoPromo = document.getElementById('cfgDeliveryTextoPromo').value.trim() || `Envío Gratis a partir de ${minUnidades} unid.`;
+  const condiciones = document.getElementById('cfgDeliveryCondiciones').value.trim();
+
+  const config = { activo, minUnidades, textoPromo, condiciones };
+  localStorage.setItem('adomicilio_config_delivery', JSON.stringify(config));
+  
+  cerrarModalConfigDelivery();
+  mostrarToastAdmin('Configuración de Delivery Gratis guardada exitosamente');
+}
+
+// ==========================================
+// CIERRE DE MODALES EN ADMIN (CLIC FUERA O ESC)
+// ==========================================
+function configurarCierreModalesAdmin() {
+  const modales = [
+    { id: 'modalEditarPlato', close: cerrarModalEditarPlato },
+    { id: 'modalConfigWhatsApp', close: cerrarModalConfigWhatsApp },
+    { id: 'modalConfigDelivery', close: cerrarModalConfigDelivery },
+    { id: 'modalConfigAPI', close: cerrarModalConfigAPI }
+  ];
+
+  modales.forEach(m => {
+    const el = document.getElementById(m.id);
+    if (el) {
+      el.addEventListener('click', (e) => {
+        if (e.target === el) {
+          m.close();
+        }
+      });
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      cerrarModalEditarPlato();
+      cerrarModalConfigWhatsApp();
+      cerrarModalConfigDelivery();
+      cerrarModalConfigAPI();
+    }
+  });
 }
 
 // ==========================================

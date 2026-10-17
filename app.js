@@ -11,19 +11,26 @@ function getRutaFoto(ruta) {
 }
 
 // Menú Base de Comida Tradicional y Rápida
+// Menú Base de Comida Tradicional y Rápida con Fotos Reales y Variedad
 const MENU_INICIAL = [
   {
     id: 'D01',
-    nombre: 'Trío de Empanadas Crujientes',
+    nombre: 'Empanadas de Harina de Maíz (3 unid)',
     categoria: 'Desayunos',
     icono: '🥟',
-    descripcion: '3 empanadas doraditas de harina de maíz rellenas con cazón fresco, carne mechada jugosa y queso blanco.',
+    descripcion: 'Tres empanadas doradas y crujientes de harina de maíz precocida con masa crocante. Escoge tu relleno favorito: carne mechada, molida, pollo, mojito de cazón o queso.',
     precio: 4.50,
-    foto: '../assets/imagenes/empanadas_doradas.jpg',
+    foto: 'assets/imagenes/empanadas_maiz_reales.png',
     extras: [
-      { id: 'ext_guasacaca', nombre: 'Ración extra de Guasacaca verde', precio: 0.50 },
-      { id: 'ext_salsa_ajo', nombre: 'Salsa tártara / ajo de la casa', precio: 0.50 },
-      { id: 'ext_queso_blanco', nombre: 'Queso blanco llanero rallado adicional', precio: 1.00 }
+      { id: 'ext_rell_mechada', nombre: 'Relleno: Carne Mechada jugosa criolla', precio: 0.00 },
+      { id: 'ext_rell_molida', nombre: 'Relleno: Carne Molida sazonada', precio: 0.00 },
+      { id: 'ext_rell_pollo', nombre: 'Relleno: Pollo desmechado criollo', precio: 0.00 },
+      { id: 'ext_rell_mojito', nombre: 'Relleno: Mojito / Cazón oriental', precio: 0.00 },
+      { id: 'ext_rell_queso', nombre: 'Relleno: Queso blanco llanero', precio: 0.00 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 },
+      { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5 Litros', precio: 3.00 },
+      { id: 'ext_guasacaca', nombre: 'Ración extra de Guasacaca verde fresca', precio: 0.50 },
+      { id: 'ext_salsa_ajo', nombre: 'Salsa tártara / ajo criollo de la casa', precio: 0.50 }
     ]
   },
   {
@@ -31,37 +38,47 @@ const MENU_INICIAL = [
     nombre: 'Ración de Tequeños con Guasacaca (6 unid)',
     categoria: 'Desayunos',
     icono: '🧀',
-    descripcion: 'Seis tequeños venezolanos tradicionales crujientes y rellenos de abundante queso blanco derretido, acompañados de guasacaca.',
+    descripcion: 'Seis tequeños tradicionales venezolanos dorados y crujientes rellenos de abundante queso blanco derretido, servidos con guasacaca verde.',
     precio: 5.00,
-    foto: '../assets/imagenes/tequenos_guasacaca.jpg',
+    foto: 'assets/imagenes/tequenos_reales.png',
     extras: [
-      { id: 'ext_teq_doble_salsa', nombre: 'Doble porción de salsa Guasacaca', precio: 0.50 },
-      { id: 'ext_teq_papelon', nombre: 'Salsa reducción de papelón y ají', precio: 0.75 }
+      { id: 'ext_teq_guasacaca', nombre: 'Doble ración de salsa Guasacaca verde', precio: 0.50 },
+      { id: 'ext_teq_tartara', nombre: 'Salsa tártara / ajo de la casa', precio: 0.50 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 },
+      { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5 Litros', precio: 3.00 }
     ]
   },
   {
     id: 'D03',
-    nombre: 'Pastelitos Andinos Dorados (3 unid)',
+    nombre: 'Empanadas de Harina de Trigo / Pastelitos (3 unid)',
     categoria: 'Desayunos',
     icono: '🥟',
-    descripcion: 'Tres pastelitos hojaldrados y crujientes con masa fina tradicional, rellenos de carne molida sazonada con papa criolla.',
+    descripcion: 'Tres pastelitos hojaldrados y crujientes de fina masa de trigo con bordes ondulados tradicionales. Rellenos al gusto.',
     precio: 4.50,
-    foto: '../assets/imagenes/pastelitos_guasacaca.jpg',
+    foto: 'assets/imagenes/empanadas_trigo_reales.png',
     extras: [
-      { id: 'ext_past_guasacaca', nombre: 'Ración de Guasacaca verde fresca', precio: 0.50 },
-      { id: 'ext_past_picante', nombre: 'Picante criollo de la casa', precio: 0.50 }
+      { id: 'ext_trigo_mechada', nombre: 'Relleno: Carne Mechada jugosa', precio: 0.00 },
+      { id: 'ext_trigo_molida', nombre: 'Relleno: Carne Molida con papitas criollas', precio: 0.00 },
+      { id: 'ext_trigo_pollo', nombre: 'Relleno: Pollo campesino criollo', precio: 0.00 },
+      { id: 'ext_trigo_queso', nombre: 'Relleno: Queso blanco fundido', precio: 0.00 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 },
+      { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5 Litros', precio: 3.00 },
+      { id: 'ext_past_guasacaca', nombre: 'Ración extra de Guasacaca verde fresca', precio: 0.50 }
     ]
   },
   {
-    id: 'D04',
-    nombre: 'Combo Desayuno con Refresco Frío',
-    categoria: 'Bebidas',
-    icono: '🥤',
-    descripcion: 'Bebida fría en lata a elegir (Coca-Cola Original, Chinotto refrescante o 7Up con limón).',
-    precio: 1.50,
-    foto: '../assets/imagenes/refrescos_desayuno.jpg',
+    id: 'D05',
+    nombre: 'Ración de Arepitas Tostadas Rellenas',
+    categoria: 'Desayunos',
+    icono: '🫓',
+    descripcion: 'Arepitas asadas en budare doraditas y rellenas al gusto con carne mechada, pollo campesino o queso de mano hilado.',
+    precio: 5.00,
+    foto: 'assets/imagenes/sopa_costilla_arepitas.jpg',
     extras: [
-      { id: 'ext_ref_limon', nombre: 'Vaso con hielo y rodaja de limón', precio: 0.00 }
+      { id: 'ext_arepa_mechada', nombre: 'Relleno: Carne Mechada jugosa', precio: 0.00 },
+      { id: 'ext_arepa_pollo', nombre: 'Relleno: Pollo campesino desmechado', precio: 0.00 },
+      { id: 'ext_arepa_queso', nombre: 'Relleno: Queso de Mano hilado', precio: 0.00 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 }
     ]
   },
   {
@@ -71,12 +88,13 @@ const MENU_INICIAL = [
     icono: '🍲',
     descripcion: 'Poderoso sancocho de costilla de res tierna con jojoto, yuca y cilantro, acompañado con porción de arroz blanco y 2 arepitas calientes.',
     precio: 7.50,
-    foto: '../assets/imagenes/sopa_costilla_arepitas.jpg',
+    foto: 'assets/imagenes/sopa_costilla_arepitas.jpg',
     extras: [
       { id: 'ext_sopa_arepas', nombre: '2 Arepitas asadas adicionales', precio: 1.00 },
       { id: 'ext_sopa_arroz', nombre: 'Porción extra de arroz blanco', precio: 1.50 },
       { id: 'ext_sopa_costilla', nombre: 'Ración extra de costilla de res', precio: 3.00 },
-      { id: 'ext_sopa_aguacate', nombre: 'Ruedas de aguacate fresco', precio: 1.50 }
+      { id: 'ext_sopa_aguacate', nombre: 'Ruedas de aguacate fresco', precio: 1.50 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 }
     ]
   },
   {
@@ -86,10 +104,11 @@ const MENU_INICIAL = [
     icono: '🍲',
     descripcion: 'Humeante y reconfortante sopa de pollo criollo con verduras campesinas, servida con arroz blanco y arepitas doradas.',
     precio: 6.50,
-    foto: '../assets/imagenes/sopa_costilla_arepitas.jpg',
+    foto: 'assets/imagenes/sopa_costilla_arepitas.jpg',
     extras: [
       { id: 'ext_spollo_arepas', nombre: '2 Arepitas asadas adicionales', precio: 1.00 },
-      { id: 'ext_spollo_aguacate', nombre: 'Ruedas de aguacate fresco', precio: 1.50 }
+      { id: 'ext_spollo_aguacate', nombre: 'Ruedas de aguacate fresco', precio: 1.50 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 }
     ]
   },
   {
@@ -99,11 +118,12 @@ const MENU_INICIAL = [
     icono: '🌽',
     descripcion: 'Cachapa de maíz tierno recién molido y dorada en budare, rellena de auténtico queso de mano hilado y trozos de cochino frito crujiente.',
     precio: 8.50,
-    foto: '../assets/imagenes/cachapa_queso_mano.jpg',
+    foto: 'assets/imagenes/cachapa_queso_mano.jpg',
     extras: [
       { id: 'ext_cach_queso', nombre: 'Doble Queso de Mano hilado', precio: 2.50 },
       { id: 'ext_cach_cochino', nombre: 'Ración extra de Cochino Frito crocante', precio: 3.50 },
-      { id: 'ext_cach_nata', nombre: 'Porción de Nata llanera fresca', precio: 1.00 }
+      { id: 'ext_cach_nata', nombre: 'Porción de Nata llanera fresca', precio: 1.00 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 }
     ]
   },
   {
@@ -117,20 +137,23 @@ const MENU_INICIAL = [
     extras: [
       { id: 'ext_burg_carne', nombre: 'Doble carne a la brasa', precio: 2.50 },
       { id: 'ext_burg_tocineta', nombre: 'Tocineta crocante extra', precio: 1.50 },
-      { id: 'ext_burg_papas', nombre: 'Papas fritas adicionales', precio: 2.00 }
+      { id: 'ext_burg_papas', nombre: 'Papas fritas adicionales', precio: 2.00 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 }
     ]
   },
   {
     id: 'R02',
-    nombre: 'Pizza Familiar Mixta A Domicilio',
+    nombre: 'Pizza Familiar Artesanal con Queso Fundido',
     categoria: 'Comida Rápida',
     icono: '🍕',
-    descripcion: 'Masa artesanal a la piedra, salsa de tomate natural, abundante queso mozzarella fundido, jamón, pepperoni, champiñones y orégano.',
+    descripcion: 'Pizza familiar horneada a la piedra con salsa de tomate natural, abundante queso mozzarella fundido y orégano.',
     precio: 10.00,
-    foto: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80',
+    foto: 'assets/imagenes/pizza_artesanal_real.png',
     extras: [
-      { id: 'ext_piz_queso', nombre: 'Borde relleno de queso', precio: 2.50 },
-      { id: 'ext_piz_pep', nombre: 'Extra de pepperoni crujiente', precio: 2.00 }
+      { id: 'ext_piz_jamon', nombre: 'Jamón cocido y tocineta crocante', precio: 2.00 },
+      { id: 'ext_piz_maiz', nombre: 'Maíz tierno y champiñones', precio: 1.50 },
+      { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5L (Coca-Cola/Pepsi/Chinotto)', precio: 3.00 },
+      { id: 'ext_beb_2l', nombre: '🍾 Refresco Botella 2 Litros Familiar', precio: 4.00 }
     ]
   },
   {
@@ -143,7 +166,8 @@ const MENU_INICIAL = [
     foto: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?w=800&auto=format&fit=crop&q=80',
     extras: [
       { id: 'ext_dog_tocineta', nombre: 'Tocineta crujiente encima', precio: 1.00 },
-      { id: 'ext_dog_queso', nombre: 'Queso amarillo fundido extra', precio: 1.00 }
+      { id: 'ext_dog_queso', nombre: 'Queso amarillo fundido extra', precio: 1.00 },
+      { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 }
     ]
   },
   {
@@ -156,13 +180,85 @@ const MENU_INICIAL = [
     foto: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800&auto=format&fit=crop&q=80',
     extras: [
       { id: 'ext_pol_hallaquitas', nombre: '3 Hallaquitas de maíz extra', precio: 1.50 },
-      { id: 'ext_pol_guasacaca', nombre: 'Guasacaca de la casa', precio: 0.50 }
+      { id: 'ext_pol_guasacaca', nombre: 'Guasacaca de la casa', precio: 0.50 },
+      { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5 Litros', precio: 3.00 }
+    ]
+  },
+  {
+    id: 'B01',
+    nombre: 'Refresco en Botella (1.5L / 2L / 1L)',
+    categoria: 'Bebidas',
+    icono: '🍾',
+    descripcion: 'Refresco frío en botella. Elige tu marca favorita (Coca-Cola, Pepsi, Chinotto, Frescolita, Hit Naranja o Hit Uva) y tu tamaño.',
+    precio: 3.00,
+    foto: 'assets/imagenes/refrescos_1_5l_variados.png',
+    extras: [
+      { id: 'ext_tam_1l', nombre: 'Tamaño: Botella 1 Litro', precio: -0.50 },
+      { id: 'ext_tam_1_5l', nombre: 'Tamaño: Botella 1.5 Litros (Estándar)', precio: 0.00 },
+      { id: 'ext_tam_2l', nombre: 'Tamaño: Botella 2 Litros Grande', precio: 1.00 },
+      { id: 'ext_sab_coca', nombre: 'Sabor: Coca-Cola Sabor Original', precio: 0.00 },
+      { id: 'ext_sab_pepsi', nombre: 'Sabor: Pepsi Cola Fría', precio: 0.00 },
+      { id: 'ext_sab_chinotto', nombre: 'Sabor: Chinotto Limón refrescante', precio: 0.00 },
+      { id: 'ext_sab_frescolita', nombre: 'Sabor: Frescolita roja tradicional', precio: 0.00 },
+      { id: 'ext_sab_hit_nar', nombre: 'Sabor: Hit Naranja', precio: 0.00 },
+      { id: 'ext_sab_hit_uva', nombre: 'Sabor: Hit Uva', precio: 0.00 }
+    ]
+  },
+  {
+    id: 'B02',
+    nombre: 'Refresco en Lata Fría (355ml)',
+    categoria: 'Bebidas',
+    icono: '🥤',
+    descripcion: 'Lata individual bien fría. Elige tu sabor: Coca-Cola Original, Pepsi, 7Up / Chinotto o Frescolita.',
+    precio: 1.50,
+    foto: 'assets/imagenes/coca_cola_lata.png',
+    extras: [
+      { id: 'ext_lata_coca', nombre: 'Sabor: Coca-Cola Original', precio: 0.00 },
+      { id: 'ext_lata_pepsi', nombre: 'Sabor: Pepsi Fría', precio: 0.00 },
+      { id: 'ext_lata_chinotto', nombre: 'Sabor: 7Up / Chinotto Limón', precio: 0.00 },
+      { id: 'ext_lata_frescolita', nombre: 'Sabor: Frescolita', precio: 0.00 },
+      { id: 'ext_lata_vaso', nombre: 'Incluir vaso con hielo y limón', precio: 0.00 }
+    ]
+  },
+  {
+    id: 'B03',
+    nombre: 'Jugo Natural Casero Frío (Vaso Grande 500ml)',
+    categoria: 'Bebidas',
+    icono: '🧃',
+    descripcion: 'Jugo 100% de frutas naturales preparado al momento con poco azúcar o sin azúcar.',
+    precio: 2.00,
+    foto: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800',
+    extras: [
+      { id: 'ext_jugo_pina', nombre: 'Fruta: Piña natural fresca', precio: 0.00 },
+      { id: 'ext_jugo_parchita', nombre: 'Fruta: Parchita / Maracuyá', precio: 0.00 },
+      { id: 'ext_jugo_melon', nombre: 'Fruta: Melón dulce', precio: 0.00 },
+      { id: 'ext_jugo_fresa', nombre: 'Fruta: Fresa fresca', precio: 0.50 }
     ]
   }
 ];
 
+function cargarPlatosActivos() {
+  const versionActual = 'v3.2_fotos_reales_bebidas';
+  const versionGuardada = localStorage.getItem('adomicilio_menu_version');
+  
+  if (versionGuardada !== versionActual) {
+    localStorage.setItem('adomicilio_platos_custom', JSON.stringify(MENU_INICIAL));
+    localStorage.setItem('adomicilio_menu_version', versionActual);
+    return [...MENU_INICIAL];
+  }
+
+  const custom = localStorage.getItem('adomicilio_platos_custom');
+  if (custom) {
+    try {
+      const parsed = JSON.parse(custom);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch(e) {}
+  }
+  return [...MENU_INICIAL];
+}
+
 // Estado de la Aplicación
-let platos = [...MENU_INICIAL];
+let platos = cargarPlatosActivos();
 let categoriaSeleccionada = 'Todos';
 let platoSeleccionadoModal = null;
 let cantidadModal = 1;
@@ -362,8 +458,8 @@ function renderizarCategorias() {
         data-cat="${c.id}"
         class="btn-categoria-pill flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 shadow-xs flex-shrink-0 cursor-pointer ${
           activa 
-            ? 'cat-activa-permanente bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-105' 
-            : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700/60 hover:bg-rose-50 dark:hover:bg-stone-700'
+            ? 'cat-activa-permanente bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-105' 
+            : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700/60 hover:bg-emerald-50 dark:hover:bg-stone-700'
         }">
         <i class="${c.icono} text-xs"></i>
         <span>
@@ -457,7 +553,7 @@ function renderizarPlatos() {
       class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group cursor-pointer select-none">
       
       <!-- Contenedor Foto -->
-      <div class="relative h-48 bg-stone-950 overflow-hidden">
+      <div class="relative h-48 sm:h-52 bg-stone-950 overflow-hidden">
         <img 
           src="${getRutaFoto(p.foto)}" 
           alt="${p.nombre}" 
@@ -465,39 +561,32 @@ function renderizarPlatos() {
           onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80'"
           class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
         
-        <!-- Píldoras sobre la Foto: Nombre del Plato a la Izquierda y Precio a la Derecha -->
-        <div class="absolute top-3 inset-x-3 flex items-center justify-between gap-2 pointer-events-none">
-          <span class="bg-black/75 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20 shadow-md truncate max-w-[68%]" title="${p.nombre}">
-            ${p.nombre}
+        <!-- Píldora de Categoría en esquina superior izquierda -->
+        <div class="absolute top-3 left-3 pointer-events-none">
+          <span class="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/10 shadow-sm flex items-center gap-1">
+            <span>${p.icono || '🍽️'}</span>
+            <span>${p.categoria}</span>
           </span>
-          <span class="bg-rose-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md flex-shrink-0 tracking-tight">
+        </div>
+
+        <!-- Píldora de Precio en borde inferior derecho de la imagen (Verde clarito/amigable, destacada) -->
+        <div class="absolute bottom-3 right-3 pointer-events-none">
+          <span class="bg-emerald-500 text-white font-black text-sm sm:text-base px-3.5 py-1 rounded-2xl shadow-lg border border-emerald-300/40 tracking-tight flex items-center gap-0.5">
             $${p.precio.toFixed(2)}
           </span>
         </div>
       </div>
 
-      <!-- Información del Plato (Todo el bloque es interactivo) -->
+      <!-- Información del Plato (Sin cortes de texto, todo el bloque abre el menú del plato) -->
       <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          <h4 class="font-heading font-black text-base text-stone-900 dark:text-white leading-snug group-hover:text-rose-600 transition">
+          <h4 class="font-heading font-black text-base sm:text-lg text-stone-900 dark:text-white leading-snug break-words group-hover:text-emerald-600 transition">
             ${p.nombre}
           </h4>
-          <p class="text-xs text-stone-500 dark:text-stone-400 mt-1.5 line-clamp-2 leading-relaxed">
+          <p class="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-2 leading-relaxed">
             ${p.descripcion}
           </p>
         </div>
-
-        <!-- Barra Inferior Limpia e Informativa -->
-        <div class="pt-3 flex items-center justify-between text-xs text-stone-400 dark:text-stone-500 border-t border-stone-100 dark:border-stone-800/80 mt-3">
-          <span class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            <span>Toca para ver extras y pedir</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </span>
-          <span class="text-[11px] font-medium flex items-center gap-1">
-            <i class="fa-solid fa-fire text-amber-500 text-[10px]"></i> Recién hecho
-          </span>
-        </div>
-
       </div>
 
     </div>
@@ -516,7 +605,7 @@ function toggleBuscador() {
   const estaOculto = panel.classList.contains('hidden');
   if (estaOculto) {
     panel.classList.remove('hidden');
-    if (btn) btn.classList.add('bg-rose-100', 'text-rose-600', 'dark:bg-rose-950/80', 'dark:text-rose-400');
+    if (btn) btn.classList.add('bg-emerald-100', 'text-emerald-600', 'dark:bg-emerald-950/80', 'dark:text-emerald-400');
     setTimeout(() => {
       if (input) input.focus();
       renderizarSugerenciasBusqueda('');
@@ -533,7 +622,7 @@ function cerrarBuscador() {
   if (!panel) return;
 
   panel.classList.add('hidden');
-  if (btn) btn.classList.remove('bg-rose-100', 'text-rose-600', 'dark:bg-rose-950/80', 'dark:text-rose-400');
+  if (btn) btn.classList.remove('bg-emerald-100', 'text-emerald-600', 'dark:bg-emerald-950/80', 'dark:text-emerald-400');
   if (input && input.value) {
     input.value = '';
     renderizarPlatos();
@@ -594,7 +683,7 @@ function renderizarSugerenciasBusqueda(termino) {
             <button 
               type="button"
               onclick="aplicarSugerenciaBusqueda('${s.query}')" 
-              class="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/50 dark:hover:text-rose-400 transition cursor-pointer border border-stone-200/80 dark:border-stone-700/60">
+              class="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-400 transition cursor-pointer border border-stone-200/80 dark:border-stone-700/60">
               ${s.label}
             </button>
           `).join('')}
@@ -632,7 +721,7 @@ function renderizarSugerenciasBusqueda(termino) {
               <span class="text-base">${p.icono || '🍽️'}</span>
               <span class="text-xs font-bold text-stone-800 dark:text-stone-200 truncate">${p.nombre}</span>
             </div>
-            <span class="text-xs font-black text-rose-600 dark:text-rose-400 flex-shrink-0">$${p.precio.toFixed(2)}</span>
+            <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 flex-shrink-0">$${p.precio.toFixed(2)}</span>
           </div>
         `).join('')}
       </div>
@@ -669,7 +758,7 @@ function abrirModalPlato(id) {
   const contenedorExtras = document.getElementById('contenedorExtras');
   if (platoSeleccionadoModal.extras && platoSeleccionadoModal.extras.length > 0) {
     contenedorExtras.innerHTML = platoSeleccionadoModal.extras.map(e => `
-      <label class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700/60 cursor-pointer hover:border-rose-400 transition text-xs">
+      <label class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700/60 cursor-pointer hover:border-emerald-400 transition text-xs">
         <div class="flex items-center space-x-2.5">
           <input 
             type="checkbox" 
@@ -677,10 +766,10 @@ function abrirModalPlato(id) {
             data-precio="${e.precio}" 
             data-nombre="${e.nombre}" 
             onchange="calcularTotalModal()"
-            class="checkbox-extra w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-stone-300">
+            class="checkbox-extra w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-stone-300">
           <span class="font-medium text-stone-800 dark:text-stone-200">${e.nombre}</span>
         </div>
-        <span class="font-bold text-rose-600 dark:text-rose-400">+${e.precio > 0 ? '$' + e.precio.toFixed(2) : 'Gratis'}</span>
+        <span class="font-bold text-emerald-600 dark:text-emerald-400">+${e.precio > 0 ? '$' + e.precio.toFixed(2) : 'Gratis'}</span>
       </label>
     `).join('');
   } else {
@@ -781,11 +870,11 @@ function agregarPlatoAComanda() {
   localStorage.setItem('adomicilio_comanda', JSON.stringify(comanda));
   actualizarBadgeComanda();
   cerrarModalPlato();
-  mostrarToast(`¡${platoSeleccionadoModal.nombre} agregado a la comanda! 🍲`);
+  mostrarToast(`¡${platoSeleccionadoModal.nombre} agregado al pedido! 🍲`);
 }
 
 // ==========================================
-// MODAL DE COMANDA / PEDIDOS
+// MODAL DE PEDIDO
 // ==========================================
 function abrirModalComanda() {
   renderizarListaComanda();
@@ -818,7 +907,7 @@ function renderizarListaComanda() {
     contenedor.innerHTML = `
       <div class="text-center py-8 text-stone-400">
         <i class="fa-solid fa-receipt text-3xl mb-2 opacity-50"></i>
-        <p class="text-xs font-medium">Tu comanda está vacía.</p>
+        <p class="text-xs font-medium">Tu pedido está vacío.</p>
         <p class="text-[11px] text-stone-500 mt-0.5">Agrega empanadas, sopas o cachapas para despachar.</p>
       </div>
     `;
@@ -833,7 +922,7 @@ function renderizarListaComanda() {
       <div class="bg-stone-50 dark:bg-stone-800/80 p-3 rounded-2xl border border-stone-200 dark:border-stone-700/60 flex items-start justify-between gap-2 text-xs">
         <div class="flex-1 space-y-1">
           <div class="flex items-center space-x-1.5 font-black text-stone-900 dark:text-white">
-            <span class="w-5 h-5 rounded-md bg-rose-600 text-white flex items-center justify-center text-[10px]">${item.cantidad}x</span>
+            <span class="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px]">${item.cantidad}x</span>
             <span>${item.nombre}</span>
           </div>
           ${item.extras.length > 0 ? `
@@ -848,7 +937,7 @@ function renderizarListaComanda() {
           ` : ''}
         </div>
         <div class="text-right flex flex-col items-end space-y-1">
-          <span class="font-black text-rose-600 dark:text-rose-400">$${item.totalItem.toFixed(2)}</span>
+          <span class="font-black text-emerald-600 dark:text-emerald-400">$${item.totalItem.toFixed(2)}</span>
           <button onclick="eliminarItemComanda(${idx})" class="text-stone-400 hover:text-red-500 transition text-[11px]" title="Quitar">
             <i class="fa-solid fa-trash-can"></i>
           </button>
@@ -886,7 +975,7 @@ function actualizarIndicadorDeliveryComanda(totalItems) {
     indicador.className = 'p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 text-xs font-bold flex items-center justify-between text-amber-800 dark:text-amber-300 transition-colors';
     indicador.innerHTML = `
       <div class="flex items-center space-x-1.5">
-        <i class="fa-solid fa-motorcycle text-sm text-rose-500"></i>
+        <i class="fa-solid fa-motorcycle text-sm text-emerald-600"></i>
         <span>🛵 Agrega <strong>${faltan} plato${faltan > 1 ? 's' : ''} más</strong> y obtén Delivery GRATIS</span>
       </div>
       <span class="text-[10px] bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">Falta ${faltan}</span>
@@ -903,7 +992,7 @@ function eliminarItemComanda(idx) {
 
 function enviarComandaWhatsApp() {
   if (comanda.length === 0) {
-    mostrarToast('Tu comanda está vacía');
+    mostrarToast('Tu pedido está vacío');
     return;
   }
 
@@ -935,7 +1024,7 @@ function enviarComandaWhatsApp() {
   const aplicaDeliveryGratis = configDelivery.activo && (totalItems >= (configDelivery.minUnidades || 2));
 
   let granTotal = 0;
-  let mensaje = `👋 *¡HOLA A DOMICILIO! DESEO CONFIRMAR ESTA COMANDA:*\n\n`;
+  let mensaje = `👋 *¡HOLA A DOMICILIO! DESEO CONFIRMAR ESTE PEDIDO:*\n\n`;
   mensaje += `👤 *Cliente:* ${nombre}\n`;
   mensaje += `📱 *Teléfono:* ${telefono}\n`;
   mensaje += `📍 *Dirección de Entrega:* ${direccion}\n`;
@@ -947,7 +1036,7 @@ function enviarComandaWhatsApp() {
     mensaje += `💵 *Paga con / Cambio:* ${pagaCon}\n`;
   }
   mensaje += `🛵 *Condición de Entrega:* ${aplicaDeliveryGratis ? '🎉 ¡DELIVERY GRATIS APLICADO! (Promoción 2+ platos)' : 'Despacho a domicilio standard'}\n\n`;
-  mensaje += `🍽️ *DETALLE DE LA ORDEN:*\n`;
+  mensaje += `🍽️ *DETALLE DEL PEDIDO:*\n`;
 
   comanda.forEach((item, i) => {
     granTotal += item.totalItem;
@@ -965,7 +1054,7 @@ function enviarComandaWhatsApp() {
   mensaje += `\n💰 *TOTAL A PAGAR: $${granTotal.toFixed(2)} USD*\n\n`;
   mensaje += `¿Me confirman tiempo estimado de despacho para mi zona? ¡Gracias! 🔥`;
 
-  // Registrar comanda en segundo plano en Google Sheets ERP
+  // Registrar pedido en segundo plano en Google Sheets ERP
   try {
     const detallePlatos = comanda.map(c => `${c.cantidad}x ${c.nombre} ($${c.totalItem.toFixed(2)})`).join(', ');
     const extrasPlatos = comanda.flatMap(c => c.extras.map(e => `${c.cantidad}x ${e.nombre}`)).join(', ') || 'Sin adicionales';
@@ -983,12 +1072,12 @@ function enviarComandaWhatsApp() {
       totalUSD: granTotal,
       estado: 'Recibida en Cocina'
     }).then(res => {
-      console.log('Comanda registrada en ERP Google Sheets:', res);
+      console.log('Pedido registrado en ERP Google Sheets:', res);
     }).catch(err => {
       console.warn('Registro offline en Google Sheets:', err);
     });
   } catch(e) {
-    console.warn('Error enviando comanda al ERP:', e);
+    console.warn('Error enviando pedido al ERP:', e);
   }
 
   // Teléfono de cocina configurado en admin o por defecto
@@ -997,7 +1086,7 @@ function enviarComandaWhatsApp() {
   const urlWhatsApp = `https://wa.me/${telefonoCocina}?text=${encodeURIComponent(mensaje)}`;
 
   window.open(urlWhatsApp, '_blank');
-  mostrarToast('¡Comanda enviada a WhatsApp y registrada en cocina! 📲');
+  mostrarToast('¡Pedido enviado a WhatsApp y registrado en cocina! 📲');
   
   // Limpiar comanda tras envio
   comanda = [];
@@ -1068,13 +1157,13 @@ function abrirModalChat(contextoDirecto = null) {
       msgContexto.setAttribute('data-contexto-plato', chatContextoPlato.id);
       msgContexto.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
       msgContexto.innerHTML = `
-        <div class="w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs flex-shrink-0">
+        <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0">
           <i class="fa-solid fa-utensils"></i>
         </div>
-        <div class="bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800/80 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-rose-950 dark:text-rose-100">
+        <div class="bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-emerald-950 dark:text-emerald-100">
           <div class="flex items-center space-x-1.5 mb-1">
-            <span class="font-black text-rose-600 dark:text-rose-400">🍽️ ${chatContextoPlato.nombre}</span>
-            <span class="text-[10px] font-black bg-rose-200/80 dark:bg-rose-900/80 px-2 py-0.5 rounded-full text-rose-800 dark:text-rose-200">$${chatContextoPlato.precio.toFixed(2)}</span>
+            <span class="font-black text-emerald-600 dark:text-emerald-400">🍽️ ${chatContextoPlato.nombre}</span>
+            <span class="text-[10px] font-black bg-emerald-200/80 dark:bg-emerald-900/80 px-2 py-0.5 rounded-full text-emerald-800 dark:text-emerald-200">$${chatContextoPlato.precio.toFixed(2)}</span>
           </div>
           <p class="leading-relaxed">¡Hola! Veo que estás consultando sobre <strong>${chatContextoPlato.nombre}</strong>. ¿Deseas saber el tiempo estimado de salida, si podemos empacar la salsa aparte o verificar disponibilidad inmediata?</p>
         </div>
@@ -1122,7 +1211,7 @@ function enviarMensajeChat() {
   const msgUser = document.createElement('div');
   msgUser.className = 'flex items-start justify-end space-x-2 animate-in fade-in duration-200';
   msgUser.innerHTML = `
-    <div class="bg-rose-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
+    <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
       ${platoEtiqueta ? `<div class="text-[10px] opacity-80 font-bold mb-0.5">🍽️ Sobre: ${platoEtiqueta}</div>` : ''}
       ${texto}
     </div>
@@ -1163,11 +1252,11 @@ function enviarMensajeChat() {
     
     let respuestaTexto = '¡Mensaje recibido! Nuestro equipo de cocina está en línea y activo. ¿Deseas que preparemos tu orden ya mismo?';
     if (chatContextoPlato) {
-      respuestaTexto = `¡Recibido! Sobre **${chatContextoPlato.nombre}**: sale caliente y recién hecho en unos 15 a 20 minutos. ¡Puedes agregarlo a tu comanda o confirmar con nosotros directo por WhatsApp! 🛵💨`;
+      respuestaTexto = `¡Recibido! Sobre **${chatContextoPlato.nombre}**: sale caliente y recién hecho en unos 15 a 20 minutos. ¡Puedes agregarlo a tu pedido o confirmar con nosotros directo por WhatsApp! 🛵💨`;
     }
 
     msgRespuesta.innerHTML = `
-      <div class="w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs flex-shrink-0">
+      <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0">
         <i class="fa-solid fa-utensils"></i>
       </div>
       <div class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/60 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-stone-800 dark:text-stone-200 space-y-1.5">

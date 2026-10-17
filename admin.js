@@ -12,43 +12,46 @@ function getRutaFoto(ruta) {
 
 let platosAdmin = JSON.parse(localStorage.getItem('adomicilio_platos_custom') || 'null');
 
-if (!platosAdmin) {
+const VERSION_ADMIN_CATALOGO = 'v3.2_fotos_reales_bebidas';
+const versionGuardadaAdmin = localStorage.getItem('adomicilio_version_catalogo');
+
+if (!platosAdmin || versionGuardadaAdmin !== VERSION_ADMIN_CATALOGO) {
   platosAdmin = [
     {
       id: 'D01',
-      nombre: 'Trío de Empanadas Crujientes',
+      nombre: 'Trío de Empanadas de Maíz Crujientes (Mechada, Molida, Pollo)',
       categoria: 'Desayunos',
-      descripcion: '3 empanadas doraditas de harina de maíz rellenas con cazón fresco, carne mechada jugosa y queso blanco.',
+      descripcion: '3 empanadas doraditas de harina de maíz recién fritas con masa crujiente. Rellenos a elegir: carne mechada jugosa, molida criolla, pollo mechado, cazón margariteño o queso blanco derretido.',
       precio: 4.50,
       disponible: true,
-      foto: '../assets/imagenes/empanadas_doradas.jpg'
+      foto: 'assets/imagenes/empanadas_maiz_reales.png'
     },
     {
       id: 'D02',
-      nombre: 'Ración de Tequeños con Guasacaca (6 unid)',
+      nombre: 'Ración de Tequeños Dorados Artesanales (6 unid)',
       categoria: 'Desayunos',
-      descripcion: 'Seis tequeños tradicionales rellenos de abundante queso blanco derretido, acompañados de guasacaca.',
+      descripcion: 'Seis tequeños tradicionales de masa de trigo crujiente rellenos de abundante queso blanco derretido, acompañados de guasacaca cremosa.',
       precio: 5.00,
       disponible: true,
-      foto: '../assets/imagenes/tequenos_guasacaca.jpg'
+      foto: 'assets/imagenes/tequenos_reales.png'
     },
     {
       id: 'D03',
-      nombre: 'Pastelitos Andinos Dorados (3 unid)',
+      nombre: 'Empanadas de Trigo y Pastelitos Andinos (3 unid)',
       categoria: 'Desayunos',
-      descripcion: 'Tres pastelitos hojaldrados y crujientes con masa fina tradicional, rellenos de carne molida con papa criolla.',
+      descripcion: 'Tres pastelitos de masa fina de trigo con borde repulgado y fritura crujiente, rellenos de carne molida sazonada, pollo o queso.',
       precio: 4.50,
       disponible: true,
-      foto: '../assets/imagenes/pastelitos_guasacaca.jpg'
+      foto: 'assets/imagenes/empanadas_trigo_reales.png'
     },
     {
-      id: 'D04',
-      nombre: 'Combo Desayuno con Refresco Frío',
-      categoria: 'Bebidas',
-      descripcion: 'Bebida fría en lata a elegir (Coca-Cola Original, Chinotto refrescante o 7Up con limón).',
-      precio: 1.50,
+      id: 'D05',
+      nombre: 'Ración de Arepitas Tostadas Rellenas (3 unid)',
+      categoria: 'Desayunos',
+      descripcion: 'Tres arepitas doradas y asadas rellenas con abundante carne mechada, pollo desmechado y queso amarillo rallado, acompañadas de nata llanera.',
+      precio: 5.50,
       disponible: true,
-      foto: '../assets/imagenes/refrescos_desayuno.jpg'
+      foto: 'assets/imagenes/empanadas_maiz_reales.png'
     },
     {
       id: 'A01',
@@ -57,7 +60,7 @@ if (!platosAdmin) {
       descripcion: 'Poderoso sancocho de costilla de res tierna con jojoto, yuca y cilantro, acompañado con porción de arroz blanco y 2 arepitas.',
       precio: 7.50,
       disponible: true,
-      foto: '../assets/imagenes/sopa_costilla_arepitas.jpg'
+      foto: 'assets/imagenes/sopa_costilla_arepitas.jpg'
     },
     {
       id: 'A02',
@@ -66,7 +69,7 @@ if (!platosAdmin) {
       descripcion: 'Humeante y reconfortante sopa de pollo criollo con verduras campesinas, servida con arroz blanco y arepitas doradas.',
       precio: 6.50,
       disponible: true,
-      foto: '../assets/imagenes/sopa_costilla_arepitas.jpg'
+      foto: 'assets/imagenes/sopa_costilla_arepitas.jpg'
     },
     {
       id: 'C01',
@@ -75,7 +78,7 @@ if (!platosAdmin) {
       descripcion: 'Cachapa de maíz tierno recién molido dorada en budare, rellena de auténtico queso de mano y trozos de cochino frito.',
       precio: 8.50,
       disponible: true,
-      foto: '../assets/imagenes/cachapa_queso_mano.jpg'
+      foto: 'assets/imagenes/cachapa_queso_mano.jpg'
     },
     {
       id: 'R01',
@@ -88,12 +91,12 @@ if (!platosAdmin) {
     },
     {
       id: 'R02',
-      nombre: 'Pizza Familiar Mixta A Domicilio',
+      nombre: 'Pizza Familiar Artesanal con Queso Fundido',
       categoria: 'Comida Rápida',
-      descripcion: 'Masa artesanal a la piedra, salsa de tomate natural, abundante queso mozzarella, jamón, pepperoni, champiñones y orégano.',
+      descripcion: 'Pizza familiar horneada a la piedra con salsa de tomate natural, abundante queso mozzarella fundido y orégano.',
       precio: 10.00,
       disponible: true,
-      foto: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80'
+      foto: 'assets/imagenes/pizza_artesanal_real.png'
     },
     {
       id: 'R03',
@@ -105,16 +108,35 @@ if (!platosAdmin) {
       foto: 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?w=800&auto=format&fit=crop&q=80'
     },
     {
-      id: 'R04',
-      nombre: 'Pollo Asado a la Leña (Medio Pollo con Guarnición)',
-      categoria: 'Comida Rápida',
-      descripcion: 'Medio pollo dorado a la brasa sazonado con adobo criollo y limón, servido con hallaquitas de maíz y ensalada.',
-      precio: 8.00,
+      id: 'B01',
+      nombre: 'Refresco en Botella Familiar (Coca-Cola / Pepsi / Chinotto)',
+      categoria: 'Bebidas',
+      descripcion: 'Refresco bien frío en botella retornable o no retornable a elegir sabor y tamaño (1 Litro, 1.5 Litros o 2 Litros).',
+      precio: 2.50,
       disponible: true,
-      foto: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800&auto=format&fit=crop&q=80'
+      foto: 'assets/imagenes/refrescos_1l_variados.png'
+    },
+    {
+      id: 'B02',
+      nombre: 'Refresco en Lata Fría 355ml (Coca-Cola / Pepsi / Frescolita)',
+      categoria: 'Bebidas',
+      descripcion: 'Lata individual de refresco extra fría lista para destapar: Coca-Cola, Pepsi, Frescolita, Chinotto, Hit Naranja o Hit Uva.',
+      precio: 1.50,
+      disponible: true,
+      foto: 'assets/imagenes/coca_cola_lata.png'
+    },
+    {
+      id: 'B03',
+      nombre: 'Jugo Natural Frío de Frutas (500ml)',
+      categoria: 'Bebidas',
+      descripcion: 'Jugo 100% natural preparado al instante bien frío: Piña, Parchita, Melón o Fresa.',
+      precio: 2.00,
+      disponible: true,
+      foto: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800&auto=format&fit=crop&q=80'
     }
   ];
   guardarEnStorage();
+  localStorage.setItem('adomicilio_version_catalogo', VERSION_ADMIN_CATALOGO);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -185,21 +207,21 @@ function renderizarTablaAdmin() {
             ${p.categoria}
           </span>
         </td>
-        <td class="py-3 px-4 font-black text-rose-600 dark:text-rose-400 text-sm">
+        <td class="py-3 px-4 font-black text-emerald-600 dark:text-emerald-400 text-sm">
           $${p.precio.toFixed(2)}
         </td>
         <td class="py-3 px-4">
           <button onclick="toggleDisponibilidad('${p.id}')" class="px-3 py-1 rounded-full font-bold text-[11px] transition ${
             p.disponible 
               ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200' 
-              : 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 hover:bg-rose-200'
+              : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200'
           }">
             <i class="fa-solid ${p.disponible ? 'fa-check' : 'fa-ban'} mr-1"></i>
             ${p.disponible ? 'Disponible Hoy' : 'Agotado'}
           </button>
         </td>
         <td class="py-3 px-4 text-right space-x-2">
-          <button onclick="editarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-rose-600 transition" title="Editar">
+          <button onclick="editarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-emerald-600 transition" title="Editar">
             <i class="fa-solid fa-pen-to-square"></i>
           </button>
           <button onclick="eliminarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-red-500 transition" title="Quitar del Menú">
@@ -228,7 +250,7 @@ function renderizarTablaAdmin() {
             <div class="flex-1 min-w-0">
               <div class="flex items-start justify-between gap-1.5">
                 <h4 class="font-bold text-xs sm:text-sm text-stone-900 dark:text-white leading-tight break-words">${p.nombre}</h4>
-                <span class="font-black text-rose-600 dark:text-rose-400 text-sm shrink-0">$${p.precio.toFixed(2)}</span>
+                <span class="font-black text-emerald-600 dark:text-emerald-400 text-sm shrink-0">$${p.precio.toFixed(2)}</span>
               </div>
               <div class="flex items-center gap-1.5 mt-1">
                 <span class="px-2 py-0.5 rounded-full bg-stone-200/70 dark:bg-stone-700/80 text-[10px] font-bold text-stone-700 dark:text-stone-300">
@@ -246,14 +268,14 @@ function renderizarTablaAdmin() {
             <button onclick="toggleDisponibilidad('${p.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition ${
               p.disponible 
                 ? 'bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200' 
-                : 'bg-rose-100/90 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 hover:bg-rose-200'
+                : 'bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200'
             }">
-              <i class="fa-solid ${p.disponible ? 'fa-circle-check text-emerald-600 dark:text-emerald-400' : 'fa-circle-xmark text-rose-600 dark:text-rose-400'} text-xs"></i>
+              <i class="fa-solid ${p.disponible ? 'fa-circle-check text-emerald-600 dark:text-emerald-400' : 'fa-circle-xmark text-emerald-600 dark:text-emerald-400'} text-xs"></i>
               <span>${p.disponible ? 'Disponible' : 'Agotado'}</span>
             </button>
 
             <!-- Botón Editar -->
-            <button onclick="editarPlato('${p.id}')" class="py-1.5 px-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:text-rose-600 dark:hover:text-rose-400 font-bold text-xs flex items-center space-x-1.5 shadow-2xs transition">
+            <button onclick="editarPlato('${p.id}')" class="py-1.5 px-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:text-emerald-600 dark:hover:text-emerald-400 font-bold text-xs flex items-center space-x-1.5 shadow-2xs transition">
               <i class="fa-solid fa-pen-to-square text-xs text-stone-500 dark:text-stone-400"></i>
               <span>Editar</span>
             </button>
@@ -357,7 +379,7 @@ function agregarFilaExtraFormulario(nombre = '', precio = '0.50') {
       type="text" 
       placeholder="Nombre de salsa o extra (ej: Guasacaca)" 
       value="${nombre}" 
-      class="extra-nombre flex-1 px-2.5 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-rose-500 text-stone-900 dark:text-white">
+      class="extra-nombre flex-1 px-2.5 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 text-stone-900 dark:text-white">
     <div class="flex items-center space-x-1 w-24">
       <span class="text-xs text-stone-400 font-bold">$</span>
       <input 
@@ -366,7 +388,7 @@ function agregarFilaExtraFormulario(nombre = '', precio = '0.50') {
         min="0" 
         placeholder="0.50" 
         value="${precio}" 
-        class="extra-precio w-full px-2 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-rose-500 text-stone-900 dark:text-white text-right">
+        class="extra-precio w-full px-2 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 text-stone-900 dark:text-white text-right">
     </div>
     <button type="button" onclick="this.closest('.fila-extra').remove()" class="w-7 h-7 rounded-lg text-stone-400 hover:text-red-500 transition flex items-center justify-center text-xs" title="Eliminar este extra">
       <i class="fa-solid fa-trash-can"></i>
@@ -634,13 +656,13 @@ function renderizarAdminChat() {
     <div class="p-3.5 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-2">
       <div class="flex items-center justify-between text-xs">
         <span class="font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-user-circle text-rose-500"></i> ${m.cliente || 'Comensal'}
+          <i class="fa-solid fa-user-circle text-emerald-500"></i> ${m.cliente || 'Comensal'}
         </span>
         <span class="text-[10px] text-stone-400">${m.fecha || ''}</span>
       </div>
 
       ${m.plato ? `
-        <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-[11px] font-bold">
+        <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
           <i class="fa-solid fa-utensils text-[10px]"></i>
           <span>Consultó sobre: ${m.plato} (${m.categoria || 'Menú'})</span>
         </div>

@@ -72,13 +72,13 @@
       
       <!-- Logo y Título de Panel -->
       <div class="flex items-center space-x-2 shrink-0">
-        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 shrink-0">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
           <i class="fa-solid fa-utensils text-sm sm:text-lg"></i>
         </div>
         <div>
           <h1 class="text-xs sm:text-xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1">
             <span>A Domicilio</span>
-            <span class="text-[8px] sm:text-[10px] px-1 sm:px-2 py-0.2 sm:py-0.5 rounded-full bg-rose-600 text-white font-bold uppercase tracking-wider">Admin</span>
+            <span class="text-[8px] sm:text-[10px] px-1 sm:px-2 py-0.2 sm:py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase tracking-wider">Admin</span>
           </h1>
           <p class="text-[9px] sm:text-[11px] text-stone-500 dark:text-stone-400 -mt-0.5 font-medium truncate max-w-[90px] sm:max-w-none hidden xs:block">
             Gestión Carta
@@ -90,7 +90,7 @@
       <div class="flex items-center gap-1 sm:gap-2 shrink-0">
         
         <!-- Ver Menú Público -->
-        <a href="index.html" target="_blank" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-rose-600 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Ver Menú Público">
+        <a href="index.html" target="_blank" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-emerald-600 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Ver Menú Público">
           <i class="fa-solid fa-arrow-up-right-from-square text-[11px] sm:text-xs"></i>
           <span class="hidden md:inline">Ver Menú</span>
         </a>
@@ -113,10 +113,10 @@
         </button>
 
         <!-- Consultas / Chat de Clientes -->
-        <button onclick="abrirModalAdminChat()" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition relative" title="Consultas y Preguntas de Comensales">
+        <button onclick="abrirModalAdminChat()" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition relative" title="Consultas y Preguntas de Comensales">
           <i class="fa-solid fa-comments text-[11px] sm:text-xs"></i>
           <span class="hidden md:inline">Consultas</span>
-          <span id="badgeAdminChat" class="w-2 h-2 rounded-full bg-rose-600 absolute -top-0.5 -right-0.5 animate-pulse"></span>
+          <span id="badgeAdminChat" class="w-2 h-2 rounded-full bg-emerald-600 absolute -top-0.5 -right-0.5 animate-pulse"></span>
         </button>
 
         <!-- Ajustes Generales / Categoría Predeterminada -->
@@ -143,7 +143,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
       
       <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-5 rounded-3xl shadow-xs flex items-center space-x-3.5">
-        <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
           <i class="fa-solid fa-utensils"></i>
         </div>
         <div>
@@ -195,12 +195,12 @@
             id="filtroBusquedaAdmin" 
             placeholder="Buscar plato por nombre o categoría..." 
             oninput="filtrarPlatosAdmin()"
-            class="w-full pl-9 pr-4 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+            class="w-full pl-9 pr-4 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
         </div>
       </div>
 
       <!-- Botón Agregar Plato -->
-      <button onclick="abrirModalNuevoPlato()" class="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-rose-600/30 flex items-center justify-center space-x-2 transition">
+      <button onclick="abrirModalNuevoPlato()" class="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/30 flex items-center justify-center space-x-2 transition">
         <i class="fa-solid fa-plus-circle text-sm"></i>
         <span>Agregar Nuevo Plato</span>
       </button>
@@ -264,13 +264,13 @@
       <div class="space-y-3">
         <div>
           <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Nombre del Plato *</label>
-          <input type="text" id="editNombre" placeholder="Ej: Cachapa Especial con Queso y Pernil" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+          <input type="text" id="editNombre" placeholder="Ej: Cachapa Especial con Queso y Pernil" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Categoría *</label>
-            <select id="editCategoria" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+            <select id="editCategoria" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
               <option value="Desayunos">Desayunos (Empanadas / Tequeños)</option>
               <option value="Almuerzos">Almuerzos (Sopas Criollas)</option>
               <option value="Cachapas">Cachapas Tradicionales</option>
@@ -280,18 +280,18 @@
           </div>
           <div>
             <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Precio Base (USD) *</label>
-            <input type="number" step="0.5" id="editPrecio" placeholder="Ej: 5.50" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+            <input type="number" step="0.5" id="editPrecio" placeholder="Ej: 5.50" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
           </div>
         </div>
 
         <div>
           <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Descripción / Ingredientes *</label>
-          <textarea id="editDescripcion" rows="2" placeholder="Describe los ingredientes, forma de preparación o acompañantes..." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40"></textarea>
+          <textarea id="editDescripcion" rows="2" placeholder="Describe los ingredientes, forma de preparación o acompañantes..." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40"></textarea>
         </div>
 
         <div>
           <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Ruta o URL de la Foto</label>
-          <input type="text" id="editFoto" placeholder="Ej: ../assets/imagenes/empanadas_doradas.jpg o enlace Drive" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+          <input type="text" id="editFoto" placeholder="Ej: ../assets/imagenes/empanadas_doradas.jpg o enlace Drive" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
         </div>
 
         <!-- SECCIÓN MODULAR DE ADICIONALES Y SALSAS -->
@@ -299,12 +299,12 @@
           <div class="flex items-center justify-between">
             <div>
               <label class="text-xs font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1.5">
-                <i class="fa-solid fa-pepper-hot text-rose-500"></i>
+                <i class="fa-solid fa-pepper-hot text-emerald-500"></i>
                 <span>Salsas, Adicionales y Extras del Plato</span>
               </label>
               <p class="text-[11px] text-stone-400">Guasacaca, tártara, doble queso o raciones extra con su precio.</p>
             </div>
-            <button type="button" onclick="agregarFilaExtraFormulario()" class="px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 hover:bg-rose-100 text-xs font-bold flex items-center gap-1 transition">
+            <button type="button" onclick="agregarFilaExtraFormulario()" class="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 text-xs font-bold flex items-center gap-1 transition">
               <i class="fa-solid fa-plus text-[10px]"></i>
               <span>+ Agregar Extra</span>
             </button>
@@ -320,7 +320,7 @@
 
       <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end space-x-2">
         <button onclick="cerrarModalEditarPlato()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
-        <button onclick="guardarPlatoAdmin()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar Plato</button>
+        <button onclick="guardarPlatoAdmin()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30">Guardar Plato</button>
       </div>
 
     </div>
@@ -366,7 +366,7 @@
     <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
         <div class="flex items-center space-x-2 text-amber-600 dark:text-amber-400">
-          <i class="fa-solid fa-motorcycle text-xl text-rose-500"></i>
+          <i class="fa-solid fa-motorcycle text-xl text-emerald-500"></i>
           <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Promoción Delivery Gratis</h3>
         </div>
         <button onclick="cerrarModalConfigDelivery()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
@@ -378,39 +378,39 @@
         <!-- Switch Activar -->
         <label class="flex items-center justify-between p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700/60 cursor-pointer">
           <span class="font-bold text-stone-800 dark:text-stone-200">¿Activar Promoción de Delivery Gratis?</span>
-          <input type="checkbox" id="cfgDeliveryActivo" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500">
+          <input type="checkbox" id="cfgDeliveryActivo" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500">
         </label>
 
         <!-- Mínimo de Unidades -->
         <div>
           <label class="font-bold text-stone-700 dark:text-stone-300 block mb-1">Unidades Mínimas para Delivery Gratis *</label>
-          <input type="number" id="cfgDeliveryMinUnidades" min="1" step="1" value="2" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+          <input type="number" id="cfgDeliveryMinUnidades" min="1" step="1" value="2" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
           <p class="text-[11px] text-stone-400 mt-1">Ej: A partir de 2 platos pedidos, el comensal obtiene envío sin costo.</p>
         </div>
 
         <!-- Texto de la Píldora Promocional -->
         <div>
           <label class="font-bold text-stone-700 dark:text-stone-300 block mb-1">Texto en el Catálogo Público *</label>
-          <input type="text" id="cfgDeliveryTextoPromo" placeholder="Ej: Envío Gratis a partir de 2 unid." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+          <input type="text" id="cfgDeliveryTextoPromo" placeholder="Ej: Envío Gratis a partir de 2 unid." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
         </div>
 
         <!-- Condiciones Detalladas -->
         <div>
           <label class="font-bold text-stone-700 dark:text-stone-300 block mb-1">Condiciones / Explicación al hacer Clic</label>
-          <textarea id="cfgDeliveryCondiciones" rows="2" placeholder="Describe los términos o zonas que cubre el delivery gratis..." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40"></textarea>
+          <textarea id="cfgDeliveryCondiciones" rows="2" placeholder="Describe los términos o zonas que cubre el delivery gratis..." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40"></textarea>
         </div>
       </div>
 
       <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end space-x-2">
         <button onclick="cerrarModalConfigDelivery()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
-        <button onclick="guardarConfigDelivery()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar Delivery</button>
+        <button onclick="guardarConfigDelivery()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30">Guardar Delivery</button>
       </div>
     </div>
   </div>
   <div id="modalConfigAPI" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
-        <div class="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
+        <div class="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
           <i class="fa-solid fa-cloud text-xl"></i>
           <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Google Sheets ERP</h3>
         </div>
@@ -429,7 +429,7 @@
 
       <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end space-x-2">
         <button onclick="cerrarModalConfigAPI()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
-        <button onclick="guardarConfigAPI()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar y Vincular</button>
+        <button onclick="guardarConfigAPI()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30">Guardar y Vincular</button>
       </div>
     </div>
   </div>
@@ -443,7 +443,7 @@
       <!-- Encabezado -->
       <div class="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-800/60">
         <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-md">
+          <div class="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
             <i class="fa-solid fa-comments text-base"></i>
           </div>
           <div>
@@ -451,7 +451,7 @@
             <span class="text-[11px] text-stone-500 dark:text-stone-400">Preguntas sobre platos y tiempos de cocina</span>
           </div>
         </div>
-        <button onclick="cerrarModalAdminChat()" class="w-8 h-8 rounded-full bg-stone-200/60 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-rose-600 hover:text-white transition">
+        <button onclick="cerrarModalAdminChat()" class="w-8 h-8 rounded-full bg-stone-200/60 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
@@ -468,8 +468,8 @@
           id="adminInputRespuesta" 
           placeholder="Escribe tu respuesta al comensal..." 
           onkeydown="if(event.key === 'Enter') responderAdminChat()"
-          class="flex-1 px-3.5 py-2.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
-        <button onclick="responderAdminChat()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md transition flex items-center space-x-1.5">
+          class="flex-1 px-3.5 py-2.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
+        <button onclick="responderAdminChat()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition flex items-center space-x-1.5">
           <i class="fa-solid fa-paper-plane text-xs"></i>
           <span>Responder</span>
         </button>
@@ -485,7 +485,7 @@
     <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
       
       <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
-        <div class="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
+        <div class="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
           <i class="fa-solid fa-sliders text-xl"></i>
           <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Ajustes del Menú</h3>
         </div>
@@ -497,7 +497,7 @@
       <div class="space-y-4 text-xs">
         <div>
           <label class="font-bold text-stone-800 dark:text-stone-200 block mb-1.5">Categoría Predeterminada al Cargar el Catálogo *</label>
-          <select id="cfgCategoriaPredeterminada" class="w-full px-3 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-rose-500/40">
+          <select id="cfgCategoriaPredeterminada" class="w-full px-3 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/40">
             <option value="Todos">✨ Todos los Platos (Por defecto)</option>
             <option value="Desayunos">🥟 Desayuno Criollo</option>
             <option value="Almuerzos">🍲 Sopas & Almuerzos</option>
@@ -518,7 +518,7 @@
               type="email" 
               id="cfgEmailContacto" 
               placeholder="inghumbertoacosta@gmail.com" 
-              class="w-full pl-9 pr-4 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-rose-500/40">
+              class="w-full pl-9 pr-4 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/40">
           </div>
           <p class="text-[11px] text-stone-400 mt-1 leading-relaxed">
             Se muestra al pie de página del catálogo de comida para que los clientes puedan enviarte correos directamente.
@@ -528,7 +528,7 @@
 
       <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end space-x-2">
         <button onclick="cerrarModalConfigGeneral()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
-        <button onclick="guardarConfigGeneral()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar Ajustes</button>
+        <button onclick="guardarConfigGeneral()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30">Guardar Ajustes</button>
       </div>
 
     </div>
@@ -540,7 +540,7 @@
     <span id="toastAdminTexto">Listo</span>
   </div>
 
-  <script src="api.js"></script>
-  <script src="admin.js?v=2.2"></script>
+  <script src="api.js?v=3.2"></script>
+  <script src="admin.js?v=3.2"></script>
 </body>
 </html>

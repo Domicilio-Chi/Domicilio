@@ -57,22 +57,61 @@
     body {
       transition: background-color 0.3s ease, color 0.3s ease;
     }
-    /* Animación Guía Intermitente para Categorías (Efecto Toca Aquí) */
-    @keyframes guiaPulso {
+    /* Animación Vibrante Fluctuante Azul / Blanco para el Chat */
+    @keyframes chatBordeVibrante {
       0%, 100% {
-        transform: scale(1.04);
-        box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.4), 0 8px 16px -2px rgba(225, 29, 72, 0.25);
+        box-shadow: 0 0 0 2px #0284c7, 0 0 14px rgba(2, 132, 199, 0.75);
+        border-color: #38bdf8;
+        transform: scale(1);
+      }
+      25% {
+        transform: scale(1.05) rotate(-2deg);
       }
       50% {
-        transform: scale(1.08);
-        box-shadow: 0 0 0 5px rgba(225, 29, 72, 0.65), 0 12px 24px -4px rgba(225, 29, 72, 0.35);
+        box-shadow: 0 0 0 3px #ffffff, 0 0 18px rgba(255, 255, 255, 0.95);
+        border-color: #ffffff;
+        transform: scale(1.08) rotate(2deg);
+      }
+      75% {
+        transform: scale(1.04) rotate(-1deg);
       }
     }
-    .categoria-guia-activa {
-      animation: guiaPulso 1.3s infinite ease-in-out !important;
-      border-color: #f43f5e !important;
-      background-color: rgba(244, 63, 94, 0.12) !important;
-      color: #e11d48 !important;
+    @keyframes chatIconoFluctua {
+      0%, 100% {
+        color: #38bdf8;
+        text-shadow: 0 0 8px rgba(56, 189, 248, 0.9);
+      }
+      50% {
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.95);
+      }
+    }
+    .chat-pulsante-azul-blanco {
+      animation: chatBordeVibrante 1.8s infinite ease-in-out !important;
+      background-color: rgba(2, 132, 199, 0.18) !important;
+      border: 2px solid #38bdf8 !important;
+    }
+    .chat-pulsante-azul-blanco i {
+      animation: chatIconoFluctua 1.8s infinite ease-in-out !important;
+    }
+
+    /* Animación Suave y Elegante para Categorías (Efecto Onda una a una) */
+    @keyframes guiaOndaSuave {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      50% {
+        transform: translateY(-2px) scale(1.06);
+        box-shadow: 0 4px 14px -2px rgba(225, 29, 72, 0.4), 0 0 0 2px rgba(225, 29, 72, 0.6);
+        border-color: #f43f5e !important;
+        background-color: rgba(244, 63, 94, 0.12) !important;
+        color: #e11d48 !important;
+      }
+    }
+    .categoria-guia-suave {
+      animation: guiaOndaSuave 1.6s ease-in-out !important;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 10 !important;
     }
   </style>
@@ -164,15 +203,20 @@
         </div>
 
         <!-- BLOQUE 2: BOTONERA DE ACCIÓN RÁPIDA (DERECHA EN MÓVIL) -->
-        <div class="flex items-center space-x-1.5 sm:space-x-2.5 order-2 md:order-3">
+        <div class="flex items-center space-x-1 sm:space-x-2 order-2">
           
+          <!-- Botón de Búsqueda (Lupita para abrir buscador colapsable) -->
+          <button id="btnToggleBuscador" onclick="toggleBuscador()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800/90 text-stone-600 dark:text-stone-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-stone-700 flex items-center justify-center transition shadow-xs cursor-pointer" title="Buscar platos">
+            <i class="fa-solid fa-magnifying-glass text-sm sm:text-base"></i>
+          </button>
+
           <!-- Botón Conmutador Modo Claro / Modo Oscuro -->
           <button id="btnToggleTema" onclick="conmutarTema()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800/90 text-stone-600 dark:text-amber-400 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center transition shadow-xs" title="Cambiar Tema Visual">
             <i id="iconoTema" class="fa-solid fa-moon text-sm sm:text-base"></i>
           </button>
 
-          <!-- Botón Chat Web en Vivo -->
-          <button onclick="abrirModalChat()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800/90 text-stone-600 dark:text-stone-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-stone-700 flex items-center justify-center transition shadow-xs" title="Chat de Consultas">
+          <!-- Botón Chat Web en Vivo (Vibrante Fluctuante Azul / Blanco) -->
+          <button id="btnAbrirChatHeader" onclick="abrirModalChat()" class="chat-pulsante-azul-blanco w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition shadow-md cursor-pointer" title="Chat de Consultas con el Chef">
             <i class="fa-solid fa-comments text-sm sm:text-base"></i>
           </button>
 
@@ -189,32 +233,44 @@
           </button>
         </div>
 
-        <!-- BLOQUE 3: BUSCADOR (FILA 2 EN MÓVIL, CENTRO EN ESCRITORIO) -->
-        <div class="order-3 md:order-2 w-full md:flex-1 md:max-w-md mx-0 md:mx-4">
-          <div class="relative">
-            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs sm:text-sm"></i>
+      </div>
+
+      <!-- PANEL DE BÚSQUEDA COLAPSABLE CON SUGERENCIAS INTERACTIVAS -->
+      <div id="panelBuscadorColapsable" class="hidden w-full pt-3 pb-1 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700/80 rounded-2xl p-2.5 shadow-lg max-w-xl mx-auto">
+          <div class="relative flex items-center">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 text-stone-400 text-xs sm:text-sm"></i>
             <input 
               type="text" 
               id="inputBuscador" 
-              placeholder="Buscar empanadas, cachapas, sopa de costilla..." 
-              oninput="filtrarPorBusqueda()"
-              class="w-full pl-9 pr-8 py-2 sm:py-2.5 bg-stone-100 dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70 rounded-xl text-xs sm:text-sm placeholder:text-stone-400 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500 transition shadow-inner">
-            <button id="btnLimpiarBuscador" onclick="limpiarBuscador()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
-              <i class="fa-solid fa-circle-xmark text-xs sm:text-sm"></i>
-            </button>
+              placeholder="¿Qué te provoca hoy? (ej. empanadas, cachapa, sopa...)" 
+              oninput="alEscribirBuscador()"
+              class="w-full pl-8 pr-16 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs sm:text-sm placeholder:text-stone-400 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-rose-500/40">
+            <div class="absolute right-2 flex items-center space-x-1">
+              <button id="btnLimpiarBuscador" onclick="limpiarBuscador()" class="hidden w-6 h-6 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 flex items-center justify-center">
+                <i class="fa-solid fa-circle-xmark text-xs"></i>
+              </button>
+              <button onclick="cerrarBuscador()" class="px-2 py-1 text-[11px] font-bold text-stone-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+                Cerrar
+              </button>
+            </div>
+          </div>
+          <!-- Contenedor dinámico de sugerencias abajo -->
+          <div id="sugerenciasBuscador" class="px-1">
+            <!-- Inyección de chips sugeridos o coincidencias de platos -->
           </div>
         </div>
-
       </div>
+
     </div>
   </header>
 
   <!-- ========================================== -->
   <!-- SELECTOR DESLIZANTE DE CATEGORÍAS -->
   <!-- ========================================== -->
-  <section class="sticky top-[69px] sm:top-[77px] z-30 bg-[#FAFAF9]/95 dark:bg-[#0C0A09]/95 backdrop-blur-md py-3 border-b border-stone-200/80 dark:border-stone-800/80">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6">
-      <div id="contenedorCategorias" class="flex flex-wrap sm:flex-nowrap items-center gap-2 py-1 overflow-x-auto no-scrollbar scroll-smooth">
+  <section class="sticky top-[57px] sm:top-[65px] z-30 bg-[#FAFAF9]/95 dark:bg-[#0C0A09]/95 backdrop-blur-md py-2.5 border-b border-stone-200/80 dark:border-stone-800/80">
+    <div class="max-w-7xl mx-auto px-2 sm:px-6">
+      <div id="contenedorCategorias" class="flex items-center gap-2 py-1 overflow-x-auto no-scrollbar scroll-smooth">
         <!-- Renderizado dinámico de píldoras -->
       </div>
     </div>
@@ -629,7 +685,7 @@
   </div>
 
   <!-- Conector API y Lógica Principal del Menú -->
-  <script src="api.js?v=2.2"></script>
-  <script src="app.js?v=2.2"></script>
+  <script src="api.js?v=2.3"></script>
+  <script src="app.js?v=2.3"></script>
 </body>
 </html>

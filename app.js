@@ -346,12 +346,12 @@ function renderizarCategorias() {
   if (!contenedor) return;
 
   const categorias = [
-    { id: 'Todos', nombre: 'Todos', icono: 'fa-solid fa-border-all' },
-    { id: 'Desayunos', nombre: 'Desayuno Criollo', icono: 'fa-solid fa-sun' },
-    { id: 'Almuerzos', nombre: 'Sopas & Almuerzos', icono: 'fa-solid fa-bowl-food' },
-    { id: 'Cachapas', nombre: 'Cachapas', icono: 'fa-solid fa-wheat-awn' },
-    { id: 'Comida Rápida', nombre: 'Rápida & Parrilla', icono: 'fa-solid fa-burger' },
-    { id: 'Bebidas', nombre: 'Bebidas Frías', icono: 'fa-solid fa-bottle-water' }
+    { id: 'Todos', nombre: 'Todos', nombreMovil: 'Todos', icono: 'fa-solid fa-border-all' },
+    { id: 'Desayunos', nombre: 'Desayuno Criollo', nombreMovil: 'Desayunos', icono: 'fa-solid fa-sun' },
+    { id: 'Almuerzos', nombre: 'Sopas & Almuerzos', nombreMovil: 'Sopas', icono: 'fa-solid fa-bowl-food' },
+    { id: 'Cachapas', nombre: 'Cachapas', nombreMovil: 'Cachapas', icono: 'fa-solid fa-wheat-awn' },
+    { id: 'Comida Rápida', nombre: 'Rápida & Parrilla', nombreMovil: 'Rápida', icono: 'fa-solid fa-burger' },
+    { id: 'Bebidas', nombre: 'Bebidas Frías', nombreMovil: 'Bebidas', icono: 'fa-solid fa-bottle-water' }
   ];
 
   contenedor.innerHTML = categorias.map(c => {
@@ -360,13 +360,16 @@ function renderizarCategorias() {
       <button 
         onclick="seleccionarCategoria('${c.id}')"
         data-cat="${c.id}"
-        class="btn-categoria-pill flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 shadow-xs ${
+        class="btn-categoria-pill flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 shadow-xs flex-shrink-0 cursor-pointer ${
           activa 
-            ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-105' 
+            ? 'cat-activa-permanente bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-105' 
             : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700/60 hover:bg-rose-50 dark:hover:bg-stone-700'
         }">
         <i class="${c.icono} text-xs"></i>
-        <span>${c.nombre}</span>
+        <span>
+          <span class="inline sm:hidden">${c.nombreMovil}</span>
+          <span class="hidden sm:inline">${c.nombre}</span>
+        </span>
       </button>
     `;
   }).join('');
@@ -376,29 +379,28 @@ function iniciarGuiaSecuencialCategorias() {
   if (timerGuiaCategorias) clearInterval(timerGuiaCategorias);
 
   timerGuiaCategorias = setInterval(() => {
-    if (!guiaCategoriasActiva) return;
     const botones = document.querySelectorAll('.btn-categoria-pill');
     if (!botones || botones.length === 0) return;
 
-    botones.forEach(b => b.classList.remove('categoria-guia-activa'));
-    
-    // Resaltar secuencialmente: uno tras otro con animación pulso "toca aquí"
-    const btnActual = botones[indiceGuiaCategorias % botones.length];
-    if (btnActual) {
-      btnActual.classList.add('categoria-guia-activa');
+    botones.forEach(b => b.classList.remove('categoria-guia-suave'));
+
+    // Resaltar secuencialmente: uno tras otro con animación suave de onda
+    const idx = indiceGuiaCategorias % botones.length;
+    const btnActual = botones[idx];
+    if (btnActual && !btnActual.classList.contains('cat-activa-permanente')) {
+      btnActual.classList.add('categoria-guia-suave');
+      // En móvil, desplazar suavemente si el botón se encuentra fuera del ancho visible
+      if (window.innerWidth < 640 && btnActual.offsetLeft > (window.innerWidth - 80)) {
+        btnActual.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
     }
     indiceGuiaCategorias++;
-  }, 1600);
+  }, 1800);
 }
 
 function detenerGuiaCategorias() {
-  guiaCategoriasActiva = false;
-  if (timerGuiaCategorias) {
-    clearInterval(timerGuiaCategorias);
-    timerGuiaCategorias = null;
-  }
   const botones = document.querySelectorAll('.btn-categoria-pill');
-  botones.forEach(b => b.classList.remove('categoria-guia-activa'));
+  botones.forEach(b => b.classList.remove('categoria-guia-suave'));
 }
 
 function seleccionarCategoria(catId) {
@@ -502,23 +504,148 @@ function renderizarPlatos() {
   `).join('');
 }
 
-// Búsqueda en tiempo real
-function filtrarPorBusqueda() {
+// ==========================================
+// BÚSQUEDA COLAPSABLE Y SUGERENCIAS EN TIEMPO REAL
+// ==========================================
+function toggleBuscador() {
+  const panel = document.getElementById('panelBuscadorColapsable');
+  const input = document.getElementById('inputBuscador');
+  const btn = document.getElementById('btnToggleBuscador');
+  if (!panel) return;
+
+  const estaOculto = panel.classList.contains('hidden');
+  if (estaOculto) {
+    panel.classList.remove('hidden');
+    if (btn) btn.classList.add('bg-rose-100', 'text-rose-600', 'dark:bg-rose-950/80', 'dark:text-rose-400');
+    setTimeout(() => {
+      if (input) input.focus();
+      renderizarSugerenciasBusqueda('');
+    }, 60);
+  } else {
+    cerrarBuscador();
+  }
+}
+
+function cerrarBuscador() {
+  const panel = document.getElementById('panelBuscadorColapsable');
+  const input = document.getElementById('inputBuscador');
+  const btn = document.getElementById('btnToggleBuscador');
+  if (!panel) return;
+
+  panel.classList.add('hidden');
+  if (btn) btn.classList.remove('bg-rose-100', 'text-rose-600', 'dark:bg-rose-950/80', 'dark:text-rose-400');
+  if (input && input.value) {
+    input.value = '';
+    renderizarPlatos();
+  }
+}
+
+function alEscribirBuscador() {
   const input = document.getElementById('inputBuscador');
   const btnLimpiar = document.getElementById('btnLimpiarBuscador');
-  if (input.value) {
-    btnLimpiar.classList.remove('hidden');
-  } else {
-    btnLimpiar.classList.add('hidden');
+  const valor = input ? input.value : '';
+
+  if (btnLimpiar) {
+    if (valor) btnLimpiar.classList.remove('hidden');
+    else btnLimpiar.classList.add('hidden');
   }
+
+  filtrarPorBusqueda();
+  renderizarSugerenciasBusqueda(valor);
+}
+
+function filtrarPorBusqueda() {
   renderizarPlatos();
 }
 
 function limpiarBuscador() {
   const input = document.getElementById('inputBuscador');
-  input.value = '';
-  document.getElementById('btnLimpiarBuscador').classList.add('hidden');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  const btnLimpiar = document.getElementById('btnLimpiarBuscador');
+  if (btnLimpiar) btnLimpiar.classList.add('hidden');
   renderizarPlatos();
+  renderizarSugerenciasBusqueda('');
+}
+
+function renderizarSugerenciasBusqueda(termino) {
+  const cont = document.getElementById('sugerenciasBuscador');
+  if (!cont) return;
+
+  termino = (termino || '').toLowerCase().trim();
+
+  // Chips sugeridos rápidos cuando no hay texto
+  if (!termino) {
+    const sugeridos = [
+      { label: '🥟 Empanadas', query: 'empanada' },
+      { label: '🧀 Tequeños', query: 'tequeño' },
+      { label: '🌽 Cachapas', query: 'cachapa' },
+      { label: '🍲 Sopa de Costilla', query: 'costilla' },
+      { label: '🍔 Hamburguesa', query: 'hamburguesa' },
+      { label: '🥤 Bebidas', query: 'refresco' }
+    ];
+    cont.innerHTML = `
+      <div class="pt-2">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 block mb-1.5">Sugerencias populares:</span>
+        <div class="flex flex-wrap gap-1.5">
+          ${sugeridos.map(s => `
+            <button 
+              type="button"
+              onclick="aplicarSugerenciaBusqueda('${s.query}')" 
+              class="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/50 dark:hover:text-rose-400 transition cursor-pointer border border-stone-200/80 dark:border-stone-700/60">
+              ${s.label}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Filtrar platos que coincidan para sugerir abajo en tiempo real
+  const coincidencias = platos.filter(p => 
+    p.nombre.toLowerCase().includes(termino) ||
+    p.categoria.toLowerCase().includes(termino) ||
+    p.descripcion.toLowerCase().includes(termino)
+  ).slice(0, 4);
+
+  if (coincidencias.length === 0) {
+    cont.innerHTML = `
+      <div class="pt-2 text-stone-400 text-xs italic">
+        No hay coincidencias directas para "${termino}". Explora nuestro menú general abajo.
+      </div>
+    `;
+    return;
+  }
+
+  cont.innerHTML = `
+    <div class="pt-2 space-y-1">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 block">Platos encontrados:</span>
+      <div class="divide-y divide-stone-100 dark:divide-stone-800">
+        ${coincidencias.map(p => `
+          <div 
+            onclick="abrirModalPlato('${p.id}')"
+            class="py-1.5 px-2 flex items-center justify-between rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer transition">
+            <div class="flex items-center space-x-2 min-w-0 pr-2">
+              <span class="text-base">${p.icono || '🍽️'}</span>
+              <span class="text-xs font-bold text-stone-800 dark:text-stone-200 truncate">${p.nombre}</span>
+            </div>
+            <span class="text-xs font-black text-rose-600 dark:text-rose-400 flex-shrink-0">$${p.precio.toFixed(2)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function aplicarSugerenciaBusqueda(query) {
+  const input = document.getElementById('inputBuscador');
+  if (input) {
+    input.value = query;
+    alEscribirBuscador();
+  }
 }
 
 // ==========================================

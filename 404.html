@@ -57,6 +57,24 @@
     body {
       transition: background-color 0.3s ease, color 0.3s ease;
     }
+    /* Animación Guía Intermitente para Categorías (Efecto Toca Aquí) */
+    @keyframes guiaPulso {
+      0%, 100% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.4), 0 8px 16px -2px rgba(225, 29, 72, 0.25);
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 5px rgba(225, 29, 72, 0.65), 0 12px 24px -4px rgba(225, 29, 72, 0.35);
+      }
+    }
+    .categoria-guia-activa {
+      animation: guiaPulso 1.3s infinite ease-in-out !important;
+      border-color: #f43f5e !important;
+      background-color: rgba(244, 63, 94, 0.12) !important;
+      color: #e11d48 !important;
+      z-index: 10 !important;
+    }
   </style>
 
   <!-- Micro-script anti-FOUC para tema -->
@@ -185,7 +203,7 @@
   <!-- ========================================== -->
   <section class="sticky top-[69px] sm:top-[77px] z-30 bg-[#FAFAF9]/95 dark:bg-[#0C0A09]/95 backdrop-blur-md py-3 border-b border-stone-200/80 dark:border-stone-800/80">
     <div class="max-w-7xl mx-auto px-3 sm:px-6">
-      <div id="contenedorCategorias" class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1">
+      <div id="contenedorCategorias" class="flex flex-wrap sm:flex-nowrap items-center gap-2 py-1 overflow-x-auto no-scrollbar scroll-smooth">
         <!-- Renderizado dinámico de píldoras -->
       </div>
     </div>
@@ -313,6 +331,15 @@
           </div>
           <span id="badgeDeliveryStatusPlato" class="text-[10px] bg-amber-200/70 dark:bg-amber-900/60 px-2 py-0.5 rounded-full font-bold">Promo</span>
         </div>
+
+        <!-- BOTÓN CONSULTAR / CHAT SOBRE ESTE PLATO -->
+        <button 
+          type="button"
+          onclick="consultarPlatoDesdeModal()" 
+          class="w-full bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition border border-rose-200 dark:border-rose-800/60 shadow-xs">
+          <i class="fa-solid fa-comments text-rose-500"></i>
+          <span>¿Tienes dudas? Consulta al chef sobre este plato</span>
+        </button>
 
         <!-- CANTIDAD Y BOTÓN AGREGAR -->
         <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2.5">
@@ -462,6 +489,17 @@
         </button>
       </div>
 
+      <!-- Banner de Contexto de Plato (cuando se consulta desde una ficha específica) -->
+      <div id="chatBannerContexto" class="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/70 border-b border-rose-200 dark:border-rose-900/60 flex items-center justify-between text-xs text-rose-900 dark:text-rose-200 hidden flex-shrink-0">
+        <div class="flex items-center space-x-2 truncate">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+          <span class="font-bold truncate" id="chatContextoTexto">Consultando sobre un plato</span>
+        </div>
+        <button onclick="limpiarContextoChat()" class="text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 text-xs ml-2 font-bold flex-shrink-0" title="Quitar contexto">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
       <!-- Área de Mensajes -->
       <div id="chatMensajesArea" class="p-4 flex-1 overflow-y-auto space-y-3 bg-[#FAFAF9] dark:bg-[#141210]">
         <div class="flex items-start space-x-2">
@@ -472,6 +510,13 @@
             ¡Hola! 👋 Bienvenido a <strong>A Domicilio</strong>. ¿Tienes dudas sobre los ingredientes de algún plato o tiempo estimado de despacho? ¡Escríbenos aquí!
           </div>
         </div>
+      </div>
+
+      <!-- Chips de Preguntas Rápidas / FAQ -->
+      <div id="chatChipsPreguntas" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-1.5 bg-stone-50 dark:bg-stone-800/60 border-t border-stone-200 dark:border-stone-800 text-[11px] flex-shrink-0">
+        <button onclick="enviarChipChat('⏱️ ¿Cuánto tiempo tarda la preparación?')" class="px-2.5 py-1 rounded-full bg-white dark:bg-stone-700 border border-stone-200 dark:border-stone-600 whitespace-nowrap hover:border-rose-400 font-medium text-stone-700 dark:text-stone-200 transition">⏱️ ¿Cuánto tarda?</button>
+        <button onclick="enviarChipChat('🌶️ ¿Viene con salsas aparte?')" class="px-2.5 py-1 rounded-full bg-white dark:bg-stone-700 border border-stone-200 dark:border-stone-600 whitespace-nowrap hover:border-rose-400 font-medium text-stone-700 dark:text-stone-200 transition">🌶️ ¿Trae salsas?</button>
+        <button onclick="enviarChipChat('🛵 ¿Está disponible para entrega inmediata?')" class="px-2.5 py-1 rounded-full bg-white dark:bg-stone-700 border border-stone-200 dark:border-stone-600 whitespace-nowrap hover:border-rose-400 font-medium text-stone-700 dark:text-stone-200 transition">🛵 ¿Entrega inmediata?</button>
       </div>
 
       <!-- Input Mensaje -->

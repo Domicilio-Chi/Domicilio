@@ -112,6 +112,19 @@
           <i class="fa-brands fa-whatsapp text-base"></i>
         </button>
 
+        <!-- Consultas / Chat de Clientes -->
+        <button onclick="abrirModalAdminChat()" class="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 text-xs font-bold flex items-center space-x-1.5 transition relative" title="Consultas y Preguntas de Comensales">
+          <i class="fa-solid fa-comments text-xs"></i>
+          <span class="hidden sm:inline">Consultas</span>
+          <span id="badgeAdminChat" class="w-2 h-2 rounded-full bg-rose-600 absolute -top-0.5 -right-0.5 animate-pulse"></span>
+        </button>
+
+        <!-- Ajustes Generales / Categoría Predeterminada -->
+        <button onclick="abrirModalConfigGeneral()" class="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 text-xs font-bold flex items-center space-x-1.5 transition" title="Ajustes Generales y Categoría Inicial">
+          <i class="fa-solid fa-sliders text-xs"></i>
+          <span class="hidden sm:inline">Ajustes</span>
+        </button>
+
         <!-- Conmutador Tema -->
         <button id="btnToggleTemaAdmin" onclick="conmutarTemaAdmin()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-amber-400 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center transition" title="Cambiar Tema Visual">
           <i id="iconoTemaAdmin" class="fa-solid fa-moon text-sm"></i>
@@ -411,6 +424,91 @@
         <button onclick="cerrarModalConfigAPI()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
         <button onclick="guardarConfigAPI()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar y Vincular</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE CONSULTAS Y CHAT DE CLIENTES (ADMIN) -->
+  <!-- ========================================== -->
+  <div id="modalAdminChat" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-lg shadow-2xl relative text-stone-900 dark:text-stone-100 h-[88vh] max-h-[600px] flex flex-col overflow-hidden">
+      
+      <!-- Encabezado -->
+      <div class="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-800/60">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-md">
+            <i class="fa-solid fa-comments text-base"></i>
+          </div>
+          <div>
+            <h3 class="font-black font-heading text-base text-stone-900 dark:text-white leading-tight">Consultas de Clientes en Vivo</h3>
+            <span class="text-[11px] text-stone-500 dark:text-stone-400">Preguntas sobre platos y tiempos de cocina</span>
+          </div>
+        </div>
+        <button onclick="cerrarModalAdminChat()" class="w-8 h-8 rounded-full bg-stone-200/60 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-rose-600 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Lista de Mensajes y Consultas -->
+      <div id="adminChatListaMensajes" class="p-4 flex-1 overflow-y-auto space-y-3 bg-[#FAFAF9] dark:bg-[#12100E]">
+        <!-- Inyección dinámica de consultas -->
+      </div>
+
+      <!-- Barra de Respuesta -->
+      <div class="p-3 border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex items-center space-x-2">
+        <input 
+          type="text" 
+          id="adminInputRespuesta" 
+          placeholder="Escribe tu respuesta al comensal..." 
+          onkeydown="if(event.key === 'Enter') responderAdminChat()"
+          class="flex-1 px-3.5 py-2.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+        <button onclick="responderAdminChat()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+          <span>Responder</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL CONFIGURACIÓN GENERAL Y CATEGORÍA INICIAL -->
+  <!-- ========================================== -->
+  <div id="modalConfigGeneral" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+        <div class="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
+          <i class="fa-solid fa-sliders text-xl"></i>
+          <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Ajustes del Menú</h3>
+        </div>
+        <button onclick="cerrarModalConfigGeneral()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="font-bold text-stone-800 dark:text-stone-200 block mb-1.5">Categoría Predeterminada al Cargar el Catálogo *</label>
+          <select id="cfgCategoriaPredeterminada" class="w-full px-3 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-rose-500/40">
+            <option value="Todos">✨ Todos los Platos (Por defecto)</option>
+            <option value="Desayunos">🥟 Desayuno Criollo</option>
+            <option value="Almuerzos">🍲 Sopas & Almuerzos</option>
+            <option value="Cachapas">🌽 Cachapas</option>
+            <option value="Comida Rápida">🍔 Rápida & Parrilla</option>
+            <option value="Bebidas">🥤 Bebidas Frías</option>
+          </select>
+          <p class="text-[11px] text-stone-400 mt-1.5 leading-relaxed">
+            Elige qué sección verán los comensales automáticamente al entrar al catálogo online (ej. para promocionar Cachapas al mediodía o Desayunos en la mañana).
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end space-x-2">
+        <button onclick="cerrarModalConfigGeneral()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
+        <button onclick="guardarConfigGeneral()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar Ajustes</button>
+      </div>
+
     </div>
   </div>
 

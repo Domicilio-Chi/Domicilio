@@ -170,12 +170,16 @@ let comanda = JSON.parse(localStorage.getItem('adomicilio_comanda') || '[]');
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
+  const catPred = localStorage.getItem('adomicilio_categoria_predeterminada') || 'Todos';
+  categoriaSeleccionada = catPred;
+
   renderizarCategorias();
   renderizarPlatos();
   actualizarBadgeComanda();
   actualizarIconoTema();
   actualizarBannersDelivery();
   configurarCierreModales();
+  iniciarGuiaSecuencialCategorias();
 });
 
 // ==========================================
@@ -291,8 +295,12 @@ function actualizarIconoTema() {
 }
 
 // ==========================================
-// RENDERIZADO DE CATEGORÍAS
+// RENDERIZADO DE CATEGORÍAS Y GUÍA SECUENCIAL
 // ==========================================
+let timerGuiaCategorias = null;
+let indiceGuiaCategorias = 0;
+let guiaCategoriasActiva = true;
+
 function renderizarCategorias() {
   const contenedor = document.getElementById('contenedorCategorias');
   if (!contenedor) return;
@@ -311,7 +319,8 @@ function renderizarCategorias() {
     return `
       <button 
         onclick="seleccionarCategoria('${c.id}')"
-        class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-xs ${
+        data-cat="${c.id}"
+        class="btn-categoria-pill flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 shadow-xs ${
           activa 
             ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-105' 
             : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700/60 hover:bg-rose-50 dark:hover:bg-stone-700'
@@ -323,7 +332,37 @@ function renderizarCategorias() {
   }).join('');
 }
 
+function iniciarGuiaSecuencialCategorias() {
+  if (timerGuiaCategorias) clearInterval(timerGuiaCategorias);
+
+  timerGuiaCategorias = setInterval(() => {
+    if (!guiaCategoriasActiva) return;
+    const botones = document.querySelectorAll('.btn-categoria-pill');
+    if (!botones || botones.length === 0) return;
+
+    botones.forEach(b => b.classList.remove('categoria-guia-activa'));
+    
+    // Resaltar secuencialmente: uno tras otro con animación pulso "toca aquí"
+    const btnActual = botones[indiceGuiaCategorias % botones.length];
+    if (btnActual) {
+      btnActual.classList.add('categoria-guia-activa');
+    }
+    indiceGuiaCategorias++;
+  }, 1600);
+}
+
+function detenerGuiaCategorias() {
+  guiaCategoriasActiva = false;
+  if (timerGuiaCategorias) {
+    clearInterval(timerGuiaCategorias);
+    timerGuiaCategorias = null;
+  }
+  const botones = document.querySelectorAll('.btn-categoria-pill');
+  botones.forEach(b => b.classList.remove('categoria-guia-activa'));
+}
+
 function seleccionarCategoria(catId) {
+  detenerGuiaCategorias();
   categoriaSeleccionada = catId;
   renderizarCategorias();
   renderizarPlatos();
@@ -825,14 +864,77 @@ function compartirPlato(id) {
 }
 
 // ==========================================
-// CHAT WEB EN VIVO
+// CHAT WEB EN VIVO CON CONTEXTO DE PLATO
 // ==========================================
-function abrirModalChat() {
-  document.getElementById('modalChat').classList.remove('hidden');
+let chatContextoPlato = null;
+
+function consultarPlatoDesdeModal() {
+  if (!platoSeleccionadoModal) return;
+  chatContextoPlato = { ...platoSeleccionadoModal };
+  cerrarModalPlato();
+  abrirModalChat();
+}
+
+function abrirModalChat(contextoDirecto = null) {
+  if (contextoDirecto) {
+    chatContextoPlato = contextoDirecto;
+  }
+
+  const modal = document.getElementById('modalChat');
+  const banner = document.getElementById('chatBannerContexto');
+  const textoBanner = document.getElementById('chatContextoTexto');
+  
+  if (chatContextoPlato) {
+    if (banner) banner.classList.remove('hidden');
+    if (textoBanner) {
+      textoBanner.textContent = `Consultando: ${chatContextoPlato.nombre} ($${chatContextoPlato.precio.toFixed(2)})`;
+    }
+    
+    // Insertar bienvenida contextual si no se ha añadido aún para este plato
+    const area = document.getElementById('chatMensajesArea');
+    const yaExiste = area.querySelector(`[data-contexto-plato="${chatContextoPlato.id}"]`);
+    if (!yaExiste) {
+      const msgContexto = document.createElement('div');
+      msgContexto.setAttribute('data-contexto-plato', chatContextoPlato.id);
+      msgContexto.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
+      msgContexto.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs flex-shrink-0">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <div class="bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800/80 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-rose-950 dark:text-rose-100">
+          <div class="flex items-center space-x-1.5 mb-1">
+            <span class="font-black text-rose-600 dark:text-rose-400">🍽️ ${chatContextoPlato.nombre}</span>
+            <span class="text-[10px] font-black bg-rose-200/80 dark:bg-rose-900/80 px-2 py-0.5 rounded-full text-rose-800 dark:text-rose-200">$${chatContextoPlato.precio.toFixed(2)}</span>
+          </div>
+          <p class="leading-relaxed">¡Hola! Veo que estás consultando sobre <strong>${chatContextoPlato.nombre}</strong>. ¿Deseas saber el tiempo estimado de salida, si podemos empacar la salsa aparte o verificar disponibilidad inmediata?</p>
+        </div>
+      `;
+      area.appendChild(msgContexto);
+      area.scrollTop = area.scrollHeight;
+    }
+  } else {
+    if (banner) banner.classList.add('hidden');
+  }
+
+  modal.classList.remove('hidden');
 }
 
 function cerrarModalChat() {
   document.getElementById('modalChat').classList.add('hidden');
+}
+
+function limpiarContextoChat() {
+  chatContextoPlato = null;
+  const banner = document.getElementById('chatBannerContexto');
+  if (banner) banner.classList.add('hidden');
+}
+
+function enviarChipChat(texto) {
+  const input = document.getElementById('chatInputTexto');
+  if (input) {
+    input.value = texto;
+    enviarMensajeChat();
+  }
 }
 
 function enviarMensajeChat() {
@@ -842,11 +944,16 @@ function enviarMensajeChat() {
 
   const area = document.getElementById('chatMensajesArea');
   
+  // Si hay contexto de plato, formatear el texto
+  const platoEtiqueta = chatContextoPlato ? chatContextoPlato.nombre : null;
+  const categoriaEtiqueta = chatContextoPlato ? chatContextoPlato.categoria : categoriaSeleccionada;
+
   // Mensaje del Comensal
   const msgUser = document.createElement('div');
-  msgUser.className = 'flex items-start justify-end space-x-2';
+  msgUser.className = 'flex items-start justify-end space-x-2 animate-in fade-in duration-200';
   msgUser.innerHTML = `
     <div class="bg-rose-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
+      ${platoEtiqueta ? `<div class="text-[10px] opacity-80 font-bold mb-0.5">🍽️ Sobre: ${platoEtiqueta}</div>` : ''}
       ${texto}
     </div>
   `;
@@ -854,21 +961,65 @@ function enviarMensajeChat() {
   input.value = '';
   area.scrollTop = area.scrollHeight;
 
-  // Respuesta simulada de Cocina en 1 segundo
+  // Guardar en historial local de chat
+  const historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  const nuevoMensaje = {
+    id: 'MSG-' + Date.now(),
+    fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    cliente: 'Comensal en Línea',
+    plato: platoEtiqueta,
+    categoria: categoriaEtiqueta,
+    mensaje: texto,
+    emisor: 'cliente'
+  };
+  historialChat.push(nuevoMensaje);
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialChat));
+
+  // Enviar a Google Sheets ERP si la API está configurada
+  if (window.API && typeof API.enviarMensajeChat === 'function') {
+    API.enviarMensajeChat({
+      clienteId: localStorage.getItem('adomicilio_cliente_id') || 'cliente_' + Date.now(),
+      nombre: 'Comensal en Línea',
+      mensaje: platoEtiqueta ? `[Consulta: ${platoEtiqueta}] ${texto}` : texto,
+      plato: platoEtiqueta,
+      categoria: categoriaEtiqueta
+    }).catch(e => console.warn('Error enviando mensaje a Sheets:', e));
+  }
+
+  // Respuesta inteligente del Chef / Cocina
   setTimeout(() => {
     const msgRespuesta = document.createElement('div');
-    msgRespuesta.className = 'flex items-start space-x-2';
+    msgRespuesta.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
+    
+    let respuestaTexto = '¡Mensaje recibido! Nuestro equipo de cocina está en línea y activo. ¿Deseas que preparemos tu orden ya mismo?';
+    if (chatContextoPlato) {
+      respuestaTexto = `¡Recibido! Sobre **${chatContextoPlato.nombre}**: sale caliente y recién hecho en unos 15 a 20 minutos. ¡Puedes agregarlo a tu comanda o confirmar con nosotros directo por WhatsApp! 🛵💨`;
+    }
+
     msgRespuesta.innerHTML = `
       <div class="w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs flex-shrink-0">
         <i class="fa-solid fa-utensils"></i>
       </div>
-      <div class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/60 rounded-2xl rounded-tl-none p-3 max-w-[80%] text-xs shadow-xs text-stone-800 dark:text-stone-200">
-        ¡Mensaje recibido! Nuestro equipo de cocina está en línea. Si deseas que preparemos tu pedido de inmediato, envíanos tu comanda por WhatsApp. 🛵💨
+      <div class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/60 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-stone-800 dark:text-stone-200 space-y-1.5">
+        <p class="leading-relaxed">${respuestaTexto}</p>
+        <button onclick="confirmarPorWhatsAppDesdeChat('${platoEtiqueta || ''}')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition mt-1">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>Confirmar por WhatsApp</span>
+        </button>
       </div>
     `;
     area.appendChild(msgRespuesta);
     area.scrollTop = area.scrollHeight;
-  }, 1000);
+  }, 900);
+}
+
+function confirmarPorWhatsAppDesdeChat(platoNombre) {
+  const telWA = localStorage.getItem('adomicilio_whatsapp_pedidos') || '584141234567';
+  let texto = '¡Hola A Domicilio! Estoy chateando en la web y me interesa ordenar.';
+  if (platoNombre) {
+    texto = `¡Hola A Domicilio! Estoy consultando sobre *${platoNombre}* y deseo confirmar mi pedido. ¿Me pueden atender?`;
+  }
+  window.open(`https://wa.me/${telWA.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
 // ==========================================

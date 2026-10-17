@@ -454,7 +454,9 @@ function configurarCierreModalesAdmin() {
     { id: 'modalEditarPlato', close: cerrarModalEditarPlato },
     { id: 'modalConfigWhatsApp', close: cerrarModalConfigWhatsApp },
     { id: 'modalConfigDelivery', close: cerrarModalConfigDelivery },
-    { id: 'modalConfigAPI', close: cerrarModalConfigAPI }
+    { id: 'modalConfigAPI', close: cerrarModalConfigAPI },
+    { id: 'modalAdminChat', close: cerrarModalAdminChat },
+    { id: 'modalConfigGeneral', close: cerrarModalConfigGeneral }
   ];
 
   modales.forEach(m => {
@@ -474,6 +476,8 @@ function configurarCierreModalesAdmin() {
       cerrarModalConfigWhatsApp();
       cerrarModalConfigDelivery();
       cerrarModalConfigAPI();
+      cerrarModalAdminChat();
+      cerrarModalConfigGeneral();
     }
   });
 }
@@ -533,4 +537,123 @@ function mostrarToastAdmin(texto) {
   setTimeout(() => {
     toast.classList.add('hidden');
   }, 2500);
+}
+
+// ==========================================
+// CONSULTAS Y CHAT DE CLIENTES EN ADMIN
+// ==========================================
+function abrirModalAdminChat() {
+  renderizarAdminChat();
+  document.getElementById('modalAdminChat').classList.remove('hidden');
+}
+
+function cerrarModalAdminChat() {
+  document.getElementById('modalAdminChat').classList.add('hidden');
+}
+
+function renderizarAdminChat() {
+  const listaContenedor = document.getElementById('adminChatListaMensajes');
+  if (!listaContenedor) return;
+
+  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  
+  if (mensajes.length === 0) {
+    listaContenedor.innerHTML = `
+      <div class="text-center py-12 text-stone-400">
+        <i class="fa-solid fa-comments text-3xl mb-2 text-stone-300 dark:text-stone-700"></i>
+        <p class="text-xs font-bold">No hay consultas de comensales registradas aún.</p>
+        <p class="text-[11px] text-stone-400 mt-1">Cuando un cliente pregunte sobre una cachapa, sopa o plato, aparecerá aquí con el nombre del plato.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listaContenedor.innerHTML = mensajes.slice().reverse().map(m => `
+    <div class="p-3.5 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-user-circle text-rose-500"></i> ${m.cliente || 'Comensal'}
+        </span>
+        <span class="text-[10px] text-stone-400">${m.fecha || ''}</span>
+      </div>
+
+      ${m.plato ? `
+        <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-[11px] font-bold">
+          <i class="fa-solid fa-utensils text-[10px]"></i>
+          <span>Consultó sobre: ${m.plato} (${m.categoria || 'Menú'})</span>
+        </div>
+      ` : ''}
+
+      <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed bg-stone-50 dark:bg-stone-900/60 p-2.5 rounded-xl border border-stone-100 dark:border-stone-800">
+        "${m.mensaje}"
+      </p>
+
+      <div class="flex items-center justify-end space-x-2 pt-1">
+        <button onclick="responderPorWhatsAppAdmin('${m.plato || ''}', '${encodeURIComponent(m.mensaje)}')" class="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center space-x-1.5 transition">
+          <i class="fa-brands fa-whatsapp text-xs"></i>
+          <span>Responder en WhatsApp</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function responderAdminChat() {
+  const input = document.getElementById('adminInputRespuesta');
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  mensajes.push({
+    id: 'MSG-' + Date.now(),
+    fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    cliente: 'Cocina A Domicilio (Chef)',
+    mensaje: texto,
+    emisor: 'admin'
+  });
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+
+  if (window.API && typeof API.enviarMensajeChat === 'function') {
+    API.enviarMensajeChat({
+      clienteId: 'admin',
+      nombre: 'Cocina A Domicilio',
+      mensaje: `[Respuesta Cocina]: ${texto}`,
+      emisor: 'admin'
+    }).catch(e => console.warn(e));
+  }
+
+  input.value = '';
+  renderizarAdminChat();
+  mostrarToastAdmin('Respuesta enviada al chat');
+}
+
+function responderPorWhatsAppAdmin(platoNombre, msgEncoded) {
+  const msg = decodeURIComponent(msgEncoded);
+  const texto = `¡Hola! Te escribe el chef de A Domicilio con respecto a tu consulta sobre *${platoNombre || 'nuestro menú'}*: "${msg}". Estamos listos para preparártelo.`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+// ==========================================
+// CONFIGURACIÓN GENERAL Y CATEGORÍA INICIAL
+// ==========================================
+function abrirModalConfigGeneral() {
+  const catPred = localStorage.getItem('adomicilio_categoria_predeterminada') || 'Todos';
+  document.getElementById('cfgCategoriaPredeterminada').value = catPred;
+  document.getElementById('modalConfigGeneral').classList.remove('hidden');
+}
+
+function cerrarModalConfigGeneral() {
+  document.getElementById('modalConfigGeneral').classList.add('hidden');
+}
+
+function guardarConfigGeneral() {
+  const cat = document.getElementById('cfgCategoriaPredeterminada').value;
+  localStorage.setItem('adomicilio_categoria_predeterminada', cat);
+  
+  if (window.API && typeof API.guardarConfig === 'function') {
+    API.guardarConfig({ categoria_predeterminada: cat }).catch(e => console.warn(e));
+  }
+
+  cerrarModalConfigGeneral();
+  mostrarToastAdmin(`Categoría inicial guardada: ${cat}`);
 }

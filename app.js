@@ -382,15 +382,15 @@ function renderizarPlatos() {
           onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80'"
           class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
         
-        <!-- Píldora de Categoría -->
-        <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-white/20">
-          ${p.icono || '🍽️'} ${p.categoria}
-        </span>
-
-        <!-- Badge Precio -->
-        <span class="absolute top-3 right-3 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md text-stone-900 dark:text-white font-black text-xs px-3 py-1 rounded-full shadow-md border border-stone-200 dark:border-stone-700">
-          $${p.precio.toFixed(2)}
-        </span>
+        <!-- Píldoras sobre la Foto: Nombre del Plato a la Izquierda y Precio a la Derecha -->
+        <div class="absolute top-3 inset-x-3 flex items-center justify-between gap-2 pointer-events-none">
+          <span class="bg-black/75 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20 shadow-md truncate max-w-[68%]" title="${p.nombre}">
+            ${p.nombre}
+          </span>
+          <span class="bg-rose-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md flex-shrink-0 tracking-tight">
+            $${p.precio.toFixed(2)}
+          </span>
+        </div>
       </div>
 
       <!-- Información del Plato -->

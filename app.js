@@ -457,7 +457,8 @@ function abrirModalPlato(id) {
   document.getElementById('modalCantidad').textContent = '1';
   document.getElementById('modalTituloPlato').textContent = platoSeleccionadoModal.nombre;
   document.getElementById('modalDescripcionPlato').textContent = platoSeleccionadoModal.descripcion;
-  document.getElementById('modalCategoriaPlato').textContent = platoSeleccionadoModal.categoria;
+  const badgeCat = document.getElementById('modalCategoriaPlato');
+  if (badgeCat) badgeCat.textContent = platoSeleccionadoModal.categoria;
   document.getElementById('modalFotoPlato').src = getRutaFoto(platoSeleccionadoModal.foto);
   document.getElementById('modalPrecioBase').textContent = `$${platoSeleccionadoModal.precio.toFixed(2)}`;
   document.getElementById('inputNotasCocina').value = '';

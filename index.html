@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>A Domicilio | Menú Gastronómico y Comandas en Línea</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#E11D48',
+              gold: '#F59E0B',
+              green: '#10B981',
+              dark: '#0C0A09',
+              cardDark: '#1C1917'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Outfit', sans-serif;
+    }
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+      width: 100% !important;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Animación suave para transiciones cromáticas */
+    body {
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+  </style>
+
+  <!-- Micro-script anti-FOUC para tema -->
+  <script>
+    (function() {
+      const temaGuardado = localStorage.getItem('adomicilio_tema') || 'claro';
+      if (temaGuardado === 'oscuro') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+</head>
+<body class="bg-[#FAFAF9] dark:bg-[#0C0A09] text-stone-800 dark:text-stone-100 min-h-screen flex flex-col antialiased selection:bg-rose-500 selection:text-white">
+
+  <!-- ========================================== -->
+  <!-- BARRA DE NAVEGACIÓN PRINCIPAL (2 FILAS EN MÓVIL) -->
+  <!-- ========================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-[#141210]/95 backdrop-blur-md border-b border-stone-200 dark:border-stone-800/80 shadow-sm transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3">
+      
+      <!-- Contenedor Flex Responsive -->
+      <div class="flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2.5">
+        
+        <!-- BLOQUE 1: LOGO Y BADGE "ABIERTO" -->
+        <div class="flex items-center space-x-2.5 order-1">
+          <a href="#" class="flex items-center space-x-2 group">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-utensils text-lg"></i>
+            </div>
+            <div>
+              <span class="text-xl sm:text-2xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1">
+                A Domicilio
+                <span class="text-xs px-1.5 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider">Fast</span>
+              </span>
+              <p class="text-[11px] text-stone-500 dark:text-stone-400 -mt-1 font-medium hidden sm:block">Sabor criollo & comida caliente en tu puerta</p>
+            </div>
+          </a>
+          
+          <div class="flex items-center space-x-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-full text-xs font-semibold shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Cocina Abierta</span>
+          </div>
+        </div>
+
+        <!-- BLOQUE 2: BOTONERA DE ACCIÓN RÁPIDA (DERECHA EN MÓVIL) -->
+        <div class="flex items-center space-x-1.5 sm:space-x-2.5 order-2 md:order-3">
+          
+          <!-- Botón Conmutador Modo Claro / Modo Oscuro -->
+          <button id="btnToggleTema" onclick="conmutarTema()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800/90 text-stone-600 dark:text-amber-400 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center transition shadow-xs" title="Cambiar Tema Visual">
+            <i id="iconoTema" class="fa-solid fa-moon text-sm sm:text-base"></i>
+          </button>
+
+          <!-- Botón Chat Web en Vivo -->
+          <button onclick="abrirModalChat()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800/90 text-stone-600 dark:text-stone-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-stone-700 flex items-center justify-center transition shadow-xs" title="Chat de Consultas">
+            <i class="fa-solid fa-comments text-sm sm:text-base"></i>
+          </button>
+
+          <!-- Botón WhatsApp Directo de Cocina -->
+          <a id="btnWhatsAppDirecto" href="https://wa.me/584120000000?text=Hola%20A%20Domicilio!%20Quisiera%20hacer%20un%20pedido%20de%20comida" target="_blank" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition shadow-md shadow-emerald-500/20" title="Escribir al WhatsApp de Cocina">
+            <i class="fa-brands fa-whatsapp text-base sm:text-lg"></i>
+          </a>
+
+          <!-- Botón Ver Comanda / Carrito con Badge -->
+          <button onclick="abrirModalComanda()" class="relative flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-700 text-white px-3 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-rose-600/30 transition">
+            <i class="fa-solid fa-receipt text-sm"></i>
+            <span class="hidden sm:inline">Comanda</span>
+            <span id="badgeCantidadComanda" class="w-5 h-5 rounded-full bg-amber-400 text-stone-900 text-xs font-black flex items-center justify-center shadow-xs">0</span>
+          </button>
+        </div>
+
+        <!-- BLOQUE 3: BUSCADOR (FILA 2 EN MÓVIL, CENTRO EN ESCRITORIO) -->
+        <div class="order-3 md:order-2 w-full md:flex-1 md:max-w-md mx-0 md:mx-4">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs sm:text-sm"></i>
+            <input 
+              type="text" 
+              id="inputBuscador" 
+              placeholder="Buscar empanadas, cachapas, sopa de costilla..." 
+              oninput="filtrarPorBusqueda()"
+              class="w-full pl-9 pr-8 py-2 sm:py-2.5 bg-stone-100 dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70 rounded-xl text-xs sm:text-sm placeholder:text-stone-400 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500 transition shadow-inner">
+            <button id="btnLimpiarBuscador" onclick="limpiarBuscador()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+              <i class="fa-solid fa-circle-xmark text-xs sm:text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- BANNER GASTRONÓMICO DE BIENVENIDA -->
+  <!-- ========================================== -->
+  <section class="max-w-7xl mx-auto px-3 sm:px-6 mt-4">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white p-5 sm:p-8 shadow-xl shadow-rose-500/10">
+      <div class="relative z-10 max-w-xl">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider mb-2.5">
+          <i class="fa-solid fa-fire-burner"></i> Comida Caliente & Recién Hecha
+        </span>
+        <h2 class="text-2xl sm:text-4xl font-black font-heading tracking-tight leading-tight">
+          ¡El mejor sabor criollo directo a tu mesa!
+        </h2>
+        <p class="text-xs sm:text-sm text-white/90 mt-2 font-medium">
+          Empanadas crujientes, tequeños dorados, sopitas de costilla reconfortantes y cachapas con queso de mano. Arma tu comanda y recibe en minutos.
+        </p>
+      </div>
+      <!-- Elemento decorativo de fondo -->
+      <div class="absolute -right-8 -bottom-8 opacity-20 pointer-events-none text-white text-9xl">
+        <i class="fa-solid fa-burger"></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- SELECTOR DESLIZANTE DE CATEGORÍAS -->
+  <!-- ========================================== -->
+  <section class="sticky top-[69px] sm:top-[77px] z-30 bg-[#FAFAF9]/95 dark:bg-[#0C0A09]/95 backdrop-blur-md py-3 border-b border-stone-200/80 dark:border-stone-800/80">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6">
+      <div id="contenedorCategorias" class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1">
+        <!-- Renderizado dinámico de píldoras -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- CUADRÍCULA DEL MENÚ DE PLATOS -->
+  <!-- ========================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6">
+    <!-- Encabezado de Sección y Contador -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h3 id="tituloCategoriaActiva" class="text-xl sm:text-2xl font-black font-heading text-stone-900 dark:text-white">
+          Todos los Platos
+        </h3>
+        <p id="subtituloCategoria" class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+          Explora nuestro menú disponible para despacho inmediato
+        </p>
+      </div>
+      <span id="contadorPlatos" class="text-xs font-bold px-3 py-1 rounded-full bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+        0 platos
+      </span>
+    </div>
+
+    <!-- Grid de Platos -->
+    <div id="gridPlatos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+      <!-- Inyección dinámica de tarjetas de comida -->
+    </div>
+
+    <!-- Estado Vacío (si no hay resultados) -->
+    <div id="estadoVacio" class="hidden text-center py-16">
+      <div class="w-16 h-16 mx-auto rounded-3xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <h4 class="text-lg font-bold font-heading text-stone-800 dark:text-stone-200">No encontramos ese plato</h4>
+      <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 max-w-xs mx-auto">Prueba buscando con otra palabra o revisa nuestras categorías principales.</p>
+      <button onclick="seleccionarCategoria('Todos')" class="mt-4 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md transition">
+        Ver Todo el Menú
+      </button>
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- FOOTER -->
+  <!-- ========================================== -->
+  <footer class="bg-white dark:bg-[#141210] border-t border-stone-200 dark:border-stone-800 mt-auto py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
+      <div class="flex items-center justify-center space-x-2">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white text-xs">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <span class="text-lg font-black font-heading tracking-tight text-stone-900 dark:text-white">A Domicilio</span>
+      </div>
+      <p class="text-xs text-stone-500 dark:text-stone-400 max-w-sm mx-auto">
+        Comida tradicional venezolana y comida rápida preparada al momento con ingredientes frescos.
+      </p>
+      <div class="text-[11px] text-stone-400 dark:text-stone-500 pt-2 border-t border-stone-100 dark:border-stone-800/60 flex items-center justify-center gap-4">
+        <span>© 2026 A Domicilio. Todos los derechos reservados.</span>
+        <a href="admin.html" class="hover:text-rose-500 dark:hover:text-rose-400 transition" title="Acceso de Administrador">
+          <i class="fa-solid fa-lock text-[10px]"></i> Admin
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE PLATO (DETALLE Y EXTRAS) -->
+  <!-- ========================================== -->
+  <div id="modalPlato" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-lg shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] overflow-y-auto">
+      
+      <!-- Botón Cerrar -->
+      <button onclick="cerrarModalPlato()" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-md transition" title="Cerrar">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <!-- Imagen Grande -->
+      <div class="relative h-60 sm:h-72 bg-stone-950 overflow-hidden rounded-t-3xl">
+        <img id="modalFotoPlato" src="" alt="Plato" class="w-full h-full object-cover">
+        <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/20">
+          <span id="modalCategoriaPlato">Desayuno</span>
+        </div>
+      </div>
+
+      <!-- Contenido del Plato -->
+      <div class="p-5 sm:p-6 space-y-4">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 id="modalTituloPlato" class="text-xl sm:text-2xl font-black font-heading text-stone-900 dark:text-white leading-tight">
+              Nombre del Plato
+            </h3>
+            <p id="modalDescripcionPlato" class="text-xs sm:text-sm text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
+              Descripción completa del plato.
+            </p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="text-xs text-stone-400 block font-medium">Precio base</span>
+            <span id="modalPrecioBase" class="text-2xl font-black font-heading text-rose-600 dark:text-rose-400">
+              $0.00
+            </span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN DE EXTRAS / ADICIONALES DE COMIDA -->
+        <div class="pt-3 border-t border-stone-200 dark:border-stone-800">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-plus-circle text-rose-500"></i> ¿Deseas agregar adicionales?
+          </h4>
+          <div id="contenedorExtras" class="space-y-2">
+            <!-- Inyección de opciones de extras -->
+          </div>
+        </div>
+
+        <!-- NOTAS DE COCINA (EJ: SIN CEBOLLA, SALSA APARTE) -->
+        <div class="pt-2">
+          <label class="text-xs font-bold text-stone-600 dark:text-stone-300 block mb-1">
+            Instrucciones para la cocina (opcional):
+          </label>
+          <input 
+            type="text" 
+            id="inputNotasCocina" 
+            placeholder="Ej: salsa aparte, arepita bien tostada..." 
+            class="w-full px-3 py-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-rose-500/40">
+        </div>
+
+        <!-- CANTIDAD Y BOTÓN AGREGAR -->
+        <div class="pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3">
+          <!-- Selector Cantidad -->
+          <div class="flex items-center space-x-2 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-1">
+            <button onclick="modificarCantidadModal(-1)" class="w-8 h-8 rounded-xl bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 flex items-center justify-center font-bold hover:bg-stone-200 transition">
+              <i class="fa-solid fa-minus text-xs"></i>
+            </button>
+            <span id="modalCantidad" class="w-8 text-center text-sm font-black">1</span>
+            <button onclick="modificarCantidadModal(1)" class="w-8 h-8 rounded-xl bg-white dark:bg-stone-700 text-stone-700 dark:text-stone-200 flex items-center justify-center font-bold hover:bg-stone-200 transition">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+          </div>
+
+          <!-- Botón Agregar con Total Dinámico -->
+          <button onclick="agregarPlatoAComanda()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 px-4 rounded-2xl font-bold text-sm shadow-lg shadow-rose-600/30 flex items-center justify-between transition">
+            <span>Agregar a Comanda</span>
+            <span id="modalTotalCalculado" class="font-black text-amber-300">$0.00</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE COMANDA / CARRITO DE PEDIDOS -->
+  <!-- ========================================== -->
+  <div id="modalComanda" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] flex flex-col">
+      
+      <!-- Encabezado Comanda -->
+      <div class="p-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <i class="fa-solid fa-receipt text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-black font-heading leading-tight">Tu Comanda</h3>
+            <p class="text-xs text-stone-400">Revisa tus platos antes de despachar</p>
+          </div>
+        </div>
+        <button onclick="cerrarModalComanda()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Lista de Ítems (Scrollable) -->
+      <div id="listaComandaItems" class="p-5 space-y-3 overflow-y-auto flex-1">
+        <!-- Inyección dinámica de platos pedidos -->
+      </div>
+
+      <!-- Formulario de Entrega y Envío por WhatsApp -->
+      <div class="p-5 border-t border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-950/40 space-y-3 flex-shrink-0">
+        <div class="space-y-2">
+          <input 
+            type="text" 
+            id="comandaClienteNombre" 
+            placeholder="Tu Nombre completo *" 
+            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none">
+          <input 
+            type="text" 
+            id="comandaClienteDireccion" 
+            placeholder="Dirección exacta de entrega (Sector, Calle, Casa/Apto) *" 
+            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/40 outline-none">
+        </div>
+
+        <!-- Totales -->
+        <div class="flex items-center justify-between text-sm font-bold pt-1">
+          <span class="text-stone-500 dark:text-stone-400">Total a pagar:</span>
+          <span id="comandaTotalPagar" class="text-xl font-black text-rose-600 dark:text-rose-400">$0.00</span>
+        </div>
+
+        <!-- Botón Enviar Pedido a Cocina -->
+        <button onclick="enviarComandaWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 transition">
+          <i class="fa-brands fa-whatsapp text-lg"></i>
+          <span>Enviar Comanda a Cocina</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE CHAT WEB DIRECTO -->
+  <!-- ========================================== -->
+  <div id="modalChat" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 h-[88vh] max-h-[580px] flex flex-col overflow-hidden">
+      
+      <!-- Encabezado Chat -->
+      <div class="bg-gradient-to-r from-rose-600 to-amber-600 p-4 text-white flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-sm">
+            <i class="fa-solid fa-comments text-base"></i>
+          </div>
+          <div>
+            <h4 class="font-black font-heading text-sm sm:text-base leading-tight">Chat A Domicilio</h4>
+            <span class="text-[11px] text-white/80 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Atención en línea
+            </span>
+          </div>
+        </div>
+        <button onclick="cerrarModalChat()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Área de Mensajes -->
+      <div id="chatMensajesArea" class="p-4 flex-1 overflow-y-auto space-y-3 bg-[#FAFAF9] dark:bg-[#141210]">
+        <div class="flex items-start space-x-2">
+          <div class="w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs flex-shrink-0">
+            <i class="fa-solid fa-utensils"></i>
+          </div>
+          <div class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/60 rounded-2xl rounded-tl-none p-3 max-w-[80%] text-xs shadow-xs text-stone-800 dark:text-stone-200">
+            ¡Hola! 👋 Bienvenido a <strong>A Domicilio</strong>. ¿Tienes dudas sobre los ingredientes de algún plato o tiempo estimado de despacho? ¡Escríbenos aquí!
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Mensaje -->
+      <div class="p-3 border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex items-center space-x-2 flex-shrink-0">
+        <input 
+          type="text" 
+          id="chatInputTexto" 
+          placeholder="Escribe tu consulta aquí..." 
+          onkeydown="if(event.key === 'Enter') enviarMensajeChat()"
+          class="flex-1 px-3.5 py-2.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs placeholder:text-stone-400 text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-rose-500/40">
+        <button onclick="enviarMensajeChat()" class="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST FLOTANTE -->
+  <div id="toastNotificacion" class="fixed bottom-6 right-6 z-50 bg-stone-900/95 dark:bg-white/95 text-white dark:text-stone-900 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center space-x-2 hidden animate-in slide-in-from-bottom duration-200 backdrop-blur-md">
+    <i id="toastIcono" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600 text-sm"></i>
+    <span id="toastMensaje">Notificación</span>
+  </div>
+
+  <!-- Conector API y Lógica Principal del Menú -->
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

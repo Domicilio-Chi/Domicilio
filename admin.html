@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>A Domicilio | Panel de Administración y Control ERP</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#E11D48',
+              gold: '#F59E0B',
+              green: '#10B981',
+              dark: '#0C0A09',
+              cardDark: '#1C1917'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Outfit', sans-serif;
+    }
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+      width: 100% !important;
+    }
+  </style>
+
+  <!-- Micro-script anti-FOUC -->
+  <script>
+    (function() {
+      const temaGuardado = localStorage.getItem('adomicilio_tema') || 'claro';
+      if (temaGuardado === 'oscuro') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+</head>
+<body class="bg-[#FAFAF9] dark:bg-[#0C0A09] text-stone-800 dark:text-stone-100 min-h-screen flex flex-col antialiased">
+
+  <!-- ========================================== -->
+  <!-- BARRA SUPERIOR ADMIN -->
+  <!-- ========================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-[#141210]/95 backdrop-blur-md border-b border-stone-200 dark:border-stone-800/80 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      
+      <!-- Logo y Título de Panel -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20">
+          <i class="fa-solid fa-utensils text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-2">
+            A Domicilio
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-600 text-white font-bold uppercase tracking-wider">Panel Admin</span>
+          </h1>
+          <p class="text-[11px] text-stone-500 dark:text-stone-400 -mt-0.5 font-medium">
+            Gestión de Carta, Precios y Comandas (ANDY Paz)
+          </p>
+        </div>
+      </div>
+
+      <!-- Botones de Acción Admin -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        
+        <!-- Ver Menú Público -->
+        <a href="index.html" target="_blank" class="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-rose-600 text-xs font-bold flex items-center space-x-1.5 transition">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+          <span class="hidden sm:inline">Ver Menú Público</span>
+        </a>
+
+        <!-- Configurar Google Sheets / API -->
+        <button onclick="abrirModalConfigAPI()" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold flex items-center space-x-1.5 transition" title="Vincular con Google Sheets">
+          <i class="fa-solid fa-cloud text-xs"></i>
+          <span class="hidden md:inline">Google Sheets ERP</span>
+        </button>
+
+        <!-- Configurar WhatsApps -->
+        <button onclick="abrirModalConfigWhatsApp()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 flex items-center justify-center transition" title="Configurar Teléfonos WhatsApp">
+          <i class="fa-brands fa-whatsapp text-base"></i>
+        </button>
+
+        <!-- Conmutador Tema -->
+        <button id="btnToggleTemaAdmin" onclick="conmutarTemaAdmin()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-amber-400 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center transition" title="Cambiar Tema Visual">
+          <i id="iconoTemaAdmin" class="fa-solid fa-moon text-sm"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- CONTENIDO PRINCIPAL ADMIN -->
+  <!-- ========================================== -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 space-y-6">
+    
+    <!-- TARJETAS DE MÉTRICAS RÁPIDAS -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-5 rounded-3xl shadow-xs flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <div>
+          <span class="text-xs text-stone-400 font-medium">Platos en Carta</span>
+          <h4 id="metricaTotalPlatos" class="text-xl sm:text-2xl font-black font-heading text-stone-900 dark:text-white">11</h4>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-5 rounded-3xl shadow-xs flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+          <span class="text-xs text-stone-400 font-medium">Disponibles Hoy</span>
+          <h4 id="metricaPlatosActivos" class="text-xl sm:text-2xl font-black font-heading text-emerald-600 dark:text-emerald-400">11</h4>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-5 rounded-3xl shadow-xs flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div>
+          <span class="text-xs text-stone-400 font-medium">Comandas Recibidas</span>
+          <h4 id="metricaComandas" class="text-xl sm:text-2xl font-black font-heading text-stone-900 dark:text-white">0</h4>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 sm:p-5 rounded-3xl shadow-xs flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-comments"></i>
+        </div>
+        <div>
+          <span class="text-xs text-stone-400 font-medium">Mensajes Web</span>
+          <h4 id="metricaMensajes" class="text-xl sm:text-2xl font-black font-heading text-stone-900 dark:text-white">0</h4>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BARRA DE GESTIÓN: BUSCADOR Y BOTÓN AGREGAR -->
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-4 rounded-3xl shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      
+      <div class="flex items-center space-x-2 w-full sm:w-auto flex-1 max-w-md">
+        <div class="relative w-full">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+          <input 
+            type="text" 
+            id="filtroBusquedaAdmin" 
+            placeholder="Buscar plato por nombre o categoría..." 
+            oninput="filtrarPlatosAdmin()"
+            class="w-full pl-9 pr-4 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+        </div>
+      </div>
+
+      <!-- Botón Agregar Plato -->
+      <button onclick="abrirModalNuevoPlato()" class="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-rose-600/30 flex items-center justify-center space-x-2 transition">
+        <i class="fa-solid fa-plus-circle text-sm"></i>
+        <span>Agregar Nuevo Plato</span>
+      </button>
+
+    </div>
+
+    <!-- TABLA DE GESTIÓN DE PLATOS -->
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl shadow-xs overflow-hidden">
+      <div class="p-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+        <div>
+          <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Carta de Platos y Precios</h3>
+          <p class="text-xs text-stone-500 dark:text-stone-400">Activa, desactiva o ajusta precios de los platos en tiempo real</p>
+        </div>
+        <span class="text-xs px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 font-bold text-stone-600 dark:text-stone-300">
+          Sincronizado con Google Sheets
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-stone-50 dark:bg-stone-800/60 text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider border-b border-stone-200 dark:border-stone-800">
+            <tr>
+              <th class="py-3 px-4">Plato</th>
+              <th class="py-3 px-4">Categoría</th>
+              <th class="py-3 px-4">Precio (USD)</th>
+              <th class="py-3 px-4">Disponibilidad</th>
+              <th class="py-3 px-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaPlatosAdmin" class="divide-y divide-stone-100 dark:divide-stone-800 text-stone-700 dark:text-stone-300">
+            <!-- Filas inyectadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL AGREGAR / EDITAR PLATO -->
+  <!-- ========================================== -->
+  <div id="modalEditarPlato" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-lg shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] overflow-y-auto p-5 sm:p-6 space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+        <h3 id="modalEditarTitulo" class="font-black font-heading text-lg">Agregar Plato</h3>
+        <button onclick="cerrarModalEditarPlato()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="editPlatoId">
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Nombre del Plato *</label>
+          <input type="text" id="editNombre" placeholder="Ej: Cachapa Especial con Queso y Pernil" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Categoría *</label>
+            <select id="editCategoria" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+              <option value="Desayunos">Desayunos (Empanadas / Tequeños)</option>
+              <option value="Almuerzos">Almuerzos (Sopas Criollas)</option>
+              <option value="Cachapas">Cachapas Tradicionales</option>
+              <option value="Comida Rápida">Comida Rápida & Parrilla</option>
+              <option value="Bebidas">Bebidas Frías</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Precio Base (USD) *</label>
+            <input type="number" step="0.5" id="editPrecio" placeholder="Ej: 5.50" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Descripción / Ingredientes *</label>
+          <textarea id="editDescripcion" rows="2" placeholder="Describe los ingredientes, forma de preparación o acompañantes..." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40"></textarea>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Ruta o URL de la Foto</label>
+          <input type="text" id="editFoto" placeholder="Ej: ../assets/imagenes/empanadas_doradas.jpg o enlace Drive" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-rose-500/40">
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end space-x-2">
+        <button onclick="cerrarModalEditarPlato()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
+        <button onclick="guardarPlatoAdmin()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar Plato</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL CONFIGURACIÓN DE WHATSAPP -->
+  <!-- ========================================== -->
+  <div id="modalConfigWhatsApp" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+        <div class="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
+          <i class="fa-brands fa-whatsapp text-xl"></i>
+          <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Líneas de WhatsApp</h3>
+        </div>
+        <button onclick="cerrarModalConfigWhatsApp()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Teléfono Principal (Cocina / Comandas) *</label>
+          <input type="text" id="cfgTelCocina" placeholder="Ej: 584121234567" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Teléfono Secundario (Atención / Repartidores)</label>
+          <input type="text" id="cfgTelRepartidores" placeholder="Ej: 584141234567" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none">
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end space-x-2">
+        <button onclick="cerrarModalConfigWhatsApp()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
+        <button onclick="guardarConfigWhatsApp()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30">Guardar Teléfonos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL CONFIGURACIÓN DE GOOGLE SHEETS / API -->
+  <!-- ========================================== -->
+  <div id="modalConfigAPI" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+        <div class="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
+          <i class="fa-solid fa-cloud text-xl"></i>
+          <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white">Google Sheets ERP</h3>
+        </div>
+        <button onclick="cerrarModalConfigAPI()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">URL de la Web App de Apps Script *</label>
+          <input type="text" id="cfgApiUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none">
+          <p class="text-[11px] text-stone-400 mt-1">Pega aquí el enlace de implementación como Aplicación Web desde tu cuenta <strong>elchichote@gmail.com</strong>.</p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-end space-x-2">
+        <button onclick="cerrarModalConfigAPI()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">Cancelar</button>
+        <button onclick="guardarConfigAPI()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30">Guardar y Vincular</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICACIÓN -->
+  <div id="toastAdmin" class="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold hidden flex items-center space-x-2">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastAdminTexto">Listo</span>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

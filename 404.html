@@ -94,6 +94,40 @@
 <body class="bg-[#FAFAF9] dark:bg-[#0C0A09] text-stone-800 dark:text-stone-100 min-h-screen flex flex-col antialiased selection:bg-rose-500 selection:text-white">
 
   <!-- ========================================== -->
+  <!-- SPLASH / PRESENTACIÓN INTRODUCTORIA TEMPORAL (2.5s) -->
+  <!-- ========================================== -->
+  <div id="splashPresentacion" class="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/85 backdrop-blur-md transition-all duration-500 ease-out p-4">
+    <div class="relative w-full max-w-lg overflow-hidden rounded-3xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white p-6 sm:p-8 shadow-2xl border border-white/20 transform transition-transform duration-500 scale-100">
+      <div class="relative z-10">
+        <div class="flex items-center justify-between mb-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-fire-burner"></i> Comida Caliente & Recién Hecha
+          </span>
+          <button onclick="cerrarSplashInmediato()" class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full font-bold backdrop-blur-md transition flex items-center gap-1 shadow-xs cursor-pointer">
+            <span>Entrar ya</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black font-heading tracking-tight leading-tight">
+          ¡El mejor sabor criollo directo a tu mesa!
+        </h2>
+        <p class="text-xs sm:text-sm text-white/90 mt-2 font-medium leading-relaxed">
+          Empanadas crujientes, tequeños dorados, sopitas de costilla reconfortantes y cachapas con queso de mano. Arma tu comanda y recibe en minutos.
+        </p>
+        <div class="mt-5 flex items-center justify-between pt-3 border-t border-white/20 text-xs text-white/80">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-clock"></i> Despacho en minutos</span>
+          <div class="w-24 h-1.5 bg-white/30 rounded-full overflow-hidden">
+            <div id="barraProgresoSplash" class="h-full bg-white rounded-full transition-all duration-[2400ms] ease-linear" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Elemento decorativo de fondo -->
+      <div class="absolute -right-8 -bottom-8 opacity-15 pointer-events-none text-white text-9xl">
+        <i class="fa-solid fa-burger"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
   <!-- BARRA DE NAVEGACIÓN PRINCIPAL (2 FILAS EN MÓVIL) -->
   <!-- ========================================== -->
   <header class="sticky top-0 z-40 bg-white/95 dark:bg-[#141210]/95 backdrop-blur-md border-b border-stone-200 dark:border-stone-800/80 shadow-sm transition-colors duration-300">
@@ -176,29 +210,6 @@
   </header>
 
   <!-- ========================================== -->
-  <!-- BANNER GASTRONÓMICO DE BIENVENIDA -->
-  <!-- ========================================== -->
-  <section class="max-w-7xl mx-auto px-3 sm:px-6 mt-4">
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white p-5 sm:p-8 shadow-xl shadow-rose-500/10">
-      <div class="relative z-10 max-w-xl">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider mb-2.5">
-          <i class="fa-solid fa-fire-burner"></i> Comida Caliente & Recién Hecha
-        </span>
-        <h2 class="text-2xl sm:text-4xl font-black font-heading tracking-tight leading-tight">
-          ¡El mejor sabor criollo directo a tu mesa!
-        </h2>
-        <p class="text-xs sm:text-sm text-white/90 mt-2 font-medium">
-          Empanadas crujientes, tequeños dorados, sopitas de costilla reconfortantes y cachapas con queso de mano. Arma tu comanda y recibe en minutos.
-        </p>
-      </div>
-      <!-- Elemento decorativo de fondo -->
-      <div class="absolute -right-8 -bottom-8 opacity-20 pointer-events-none text-white text-9xl">
-        <i class="fa-solid fa-burger"></i>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========================================== -->
   <!-- SELECTOR DESLIZANTE DE CATEGORÍAS -->
   <!-- ========================================== -->
   <section class="sticky top-[69px] sm:top-[77px] z-30 bg-[#FAFAF9]/95 dark:bg-[#0C0A09]/95 backdrop-blur-md py-3 border-b border-stone-200/80 dark:border-stone-800/80">
@@ -260,6 +271,16 @@
       <p class="text-xs text-stone-500 dark:text-stone-400 max-w-sm mx-auto">
         Comida tradicional venezolana y comida rápida preparada al momento con ingredientes frescos.
       </p>
+
+      <!-- Línea de Contacto -->
+      <div class="flex flex-wrap items-center justify-center gap-1.5 text-xs pt-1">
+        <span class="font-bold text-stone-700 dark:text-stone-300">Contáctanos:</span>
+        <a id="footerEmailContacto" href="mailto:inghumbertoacosta@gmail.com" class="text-rose-600 dark:text-rose-400 font-semibold hover:underline inline-flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-envelope text-xs"></i>
+          <span id="textoEmailContacto">inghumbertoacosta@gmail.com</span>
+        </a>
+      </div>
+
       <div class="text-[11px] text-stone-400 dark:text-stone-500 pt-2 border-t border-stone-100 dark:border-stone-800/60 flex items-center justify-center">
         <span>© 2026 A Domicilio. Todos los derechos reservados.</span>
       </div>
@@ -272,10 +293,15 @@
   <div id="modalPlato" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
     <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-lg shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] overflow-y-auto">
       
-      <!-- Botón Cerrar -->
-      <button onclick="cerrarModalPlato()" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition shadow-md" title="Cerrar">
-        <i class="fa-solid fa-xmark text-sm"></i>
-      </button>
+      <!-- Acciones Superiores: Compartir y Cerrar -->
+      <div class="absolute top-3 right-3 z-20 flex items-center gap-2">
+        <button onclick="compartirPlatoDesdeModal(event)" class="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition shadow-md" title="Compartir este plato">
+          <i class="fa-solid fa-share-nodes text-xs"></i>
+        </button>
+        <button onclick="cerrarModalPlato()" class="w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition shadow-md" title="Cerrar">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
 
       <!-- Imagen Compacta y Optimizada para Móviles -->
       <div class="relative h-40 sm:h-52 bg-stone-950 overflow-hidden rounded-t-3xl">
@@ -603,7 +629,7 @@
   </div>
 
   <!-- Conector API y Lógica Principal del Menú -->
-  <script src="api.js?v=2.1"></script>
-  <script src="app.js?v=2.1"></script>
+  <script src="api.js?v=2.2"></script>
+  <script src="app.js?v=2.2"></script>
 </body>
 </html>

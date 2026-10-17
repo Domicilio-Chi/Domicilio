@@ -173,14 +173,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const catPred = localStorage.getItem('adomicilio_categoria_predeterminada') || 'Todos';
   categoriaSeleccionada = catPred;
 
+  iniciarSplashPresentacion();
   renderizarCategorias();
   renderizarPlatos();
   actualizarBadgeComanda();
   actualizarIconoTema();
   actualizarBannersDelivery();
+  actualizarEmailContactoFooter();
   configurarCierreModales();
   iniciarGuiaSecuencialCategorias();
 });
+
+// ==========================================
+// PRESENTACIÓN INTRODUCTORIA (SPLASH TEMPORAL 2.5s)
+// ==========================================
+function iniciarSplashPresentacion() {
+  const splash = document.getElementById('splashPresentacion');
+  if (!splash) return;
+
+  setTimeout(() => {
+    const barra = document.getElementById('barraProgresoSplash');
+    if (barra) barra.style.width = '100%';
+  }, 50);
+
+  setTimeout(() => {
+    cerrarSplashInmediato();
+  }, 2500);
+}
+
+function cerrarSplashInmediato() {
+  const splash = document.getElementById('splashPresentacion');
+  if (!splash || splash.dataset.cerrado === 'true') return;
+  splash.dataset.cerrado = 'true';
+  splash.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+  setTimeout(() => {
+    splash.style.display = 'none';
+  }, 500);
+}
+
+// ==========================================
+// CORREO DE CONTACTO EN FOOTER
+// ==========================================
+function actualizarEmailContactoFooter() {
+  const email = localStorage.getItem('adomicilio_email_contacto') || 'inghumbertoacosta@gmail.com';
+  const aLink = document.getElementById('footerEmailContacto');
+  const txtSpan = document.getElementById('textoEmailContacto');
+  if (aLink) aLink.href = `mailto:${email}`;
+  if (txtSpan) txtSpan.textContent = email;
+}
 
 // ==========================================
 // CONFIGURACIÓN DE DELIVERY GRATIS
@@ -410,10 +450,12 @@ function renderizarPlatos() {
 
   estadoVacio.classList.add('hidden');
   grid.innerHTML = filtrados.map(p => `
-    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group">
+    <div 
+      onclick="abrirModalPlato('${p.id}')"
+      class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group cursor-pointer select-none">
       
       <!-- Contenedor Foto -->
-      <div class="relative h-48 bg-stone-950 overflow-hidden cursor-pointer" onclick="abrirModalPlato('${p.id}')">
+      <div class="relative h-48 bg-stone-950 overflow-hidden">
         <img 
           src="${getRutaFoto(p.foto)}" 
           alt="${p.nombre}" 
@@ -432,32 +474,26 @@ function renderizarPlatos() {
         </div>
       </div>
 
-      <!-- Información del Plato -->
-      <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+      <!-- Información del Plato (Todo el bloque es interactivo) -->
+      <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
           <h4 class="font-heading font-black text-base text-stone-900 dark:text-white leading-snug group-hover:text-rose-600 transition">
             ${p.nombre}
           </h4>
-          <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-2 leading-relaxed">
+          <p class="text-xs text-stone-500 dark:text-stone-400 mt-1.5 line-clamp-2 leading-relaxed">
             ${p.descripcion}
           </p>
         </div>
 
-        <!-- Botones de Acción -->
-        <div class="pt-2 flex items-center space-x-2">
-          <button 
-            onclick="abrirModalPlato('${p.id}')"
-            class="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-md shadow-rose-600/20 flex items-center justify-center space-x-1.5 transition">
-            <i class="fa-solid fa-plus-circle text-xs"></i>
-            <span>Pedir / Extras</span>
-          </button>
-          
-          <button 
-            onclick="compartirPlato('${p.id}')"
-            class="w-9 h-9 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition shadow-xs"
-            title="Compartir Plato">
-            <i class="fa-solid fa-share-nodes text-xs"></i>
-          </button>
+        <!-- Barra Inferior Limpia e Informativa -->
+        <div class="pt-3 flex items-center justify-between text-xs text-stone-400 dark:text-stone-500 border-t border-stone-100 dark:border-stone-800/80 mt-3">
+          <span class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span>Toca para ver extras y pedir</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </span>
+          <span class="text-[11px] font-medium flex items-center gap-1">
+            <i class="fa-solid fa-fire text-amber-500 text-[10px]"></i> Recién hecho
+          </span>
         </div>
 
       </div>
@@ -860,6 +896,13 @@ function compartirPlato(id) {
   } else {
     navigator.clipboard.writeText(`${texto} - ${window.location.href}`);
     mostrarToast('Enlace copiado al portapapeles 📋');
+  }
+}
+
+function compartirPlatoDesdeModal(event) {
+  if (event) event.stopPropagation();
+  if (platoSeleccionadoModal && platoSeleccionadoModal.id) {
+    compartirPlato(platoSeleccionadoModal.id);
   }
 }
 

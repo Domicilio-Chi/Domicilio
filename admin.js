@@ -639,6 +639,11 @@ function responderPorWhatsAppAdmin(platoNombre, msgEncoded) {
 function abrirModalConfigGeneral() {
   const catPred = localStorage.getItem('adomicilio_categoria_predeterminada') || 'Todos';
   document.getElementById('cfgCategoriaPredeterminada').value = catPred;
+
+  const emailContacto = localStorage.getItem('adomicilio_email_contacto') || 'inghumbertoacosta@gmail.com';
+  const inputEmail = document.getElementById('cfgEmailContacto');
+  if (inputEmail) inputEmail.value = emailContacto;
+
   document.getElementById('modalConfigGeneral').classList.remove('hidden');
 }
 
@@ -649,11 +654,20 @@ function cerrarModalConfigGeneral() {
 function guardarConfigGeneral() {
   const cat = document.getElementById('cfgCategoriaPredeterminada').value;
   localStorage.setItem('adomicilio_categoria_predeterminada', cat);
+
+  const inputEmail = document.getElementById('cfgEmailContacto');
+  const email = inputEmail ? inputEmail.value.trim() : 'inghumbertoacosta@gmail.com';
+  if (email) {
+    localStorage.setItem('adomicilio_email_contacto', email);
+  }
   
   if (window.API && typeof API.guardarConfig === 'function') {
-    API.guardarConfig({ categoria_predeterminada: cat }).catch(e => console.warn(e));
+    API.guardarConfig({ 
+      categoria_predeterminada: cat,
+      email_contacto: email 
+    }).catch(e => console.warn(e));
   }
 
   cerrarModalConfigGeneral();
-  mostrarToastAdmin(`Categoría inicial guardada: ${cat}`);
+  mostrarToastAdmin(`Ajustes guardados correctamente`);
 }

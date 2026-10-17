@@ -224,7 +224,7 @@ function renderizarTablaAdmin() {
         <div class="p-3.5 bg-stone-50/90 dark:bg-stone-800/40 rounded-2xl border border-stone-200/80 dark:border-stone-800 space-y-2.5 shadow-2xs">
           <!-- Fila Superior: Foto, Nombre, Categoría, ID y Precio -->
           <div class="flex items-start space-x-3">
-            <img src="${getRutaFoto(p.foto)}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'" class="w-13 h-13 rounded-2xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs shrink-0">
+            <img src="${getRutaFoto(p.foto)}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'" class="rounded-2xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs shrink-0" style="width: 58px; height: 58px; min-width: 58px; min-height: 58px;">
             <div class="flex-1 min-w-0">
               <div class="flex items-start justify-between gap-1.5">
                 <h4 class="font-bold text-xs sm:text-sm text-stone-900 dark:text-white leading-tight break-words">${p.nombre}</h4>
@@ -236,7 +236,7 @@ function renderizarTablaAdmin() {
                 </span>
                 <span class="text-[10px] text-stone-400 font-mono">#${p.id}</span>
               </div>
-              ${p.descripcion ? `<p class="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-1 mt-1">${p.descripcion}</p>` : ''}
+              ${p.descripcion ? `<p class="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-2 mt-1 leading-snug">${p.descripcion}</p>` : ''}
             </div>
           </div>
 

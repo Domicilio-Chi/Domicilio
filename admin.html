@@ -68,66 +68,66 @@
   <!-- BARRA SUPERIOR ADMIN -->
   <!-- ========================================== -->
   <header class="sticky top-0 z-40 bg-white/95 dark:bg-[#141210]/95 backdrop-blur-md border-b border-stone-200 dark:border-stone-800/80 shadow-xs">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+    <div class="max-w-7xl mx-auto px-2.5 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-1.5">
       
       <!-- Logo y Título de Panel -->
-      <div class="flex items-center space-x-2.5 sm:space-x-3 shrink-0">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 shrink-0">
-          <i class="fa-solid fa-utensils text-base sm:text-lg"></i>
+      <div class="flex items-center space-x-2 shrink-0">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 shrink-0">
+          <i class="fa-solid fa-utensils text-sm sm:text-lg"></i>
         </div>
         <div>
-          <h1 class="text-base sm:text-xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1.5">
-            A Domicilio
-            <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-rose-600 text-white font-bold uppercase tracking-wider">Admin</span>
+          <h1 class="text-xs sm:text-xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1">
+            <span>A Domicilio</span>
+            <span class="text-[8px] sm:text-[10px] px-1 sm:px-2 py-0.2 sm:py-0.5 rounded-full bg-rose-600 text-white font-bold uppercase tracking-wider">Admin</span>
           </h1>
-          <p class="text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 -mt-0.5 font-medium truncate max-w-[130px] sm:max-w-none">
-            Gestión de Carta (ANDY Paz)
+          <p class="text-[9px] sm:text-[11px] text-stone-500 dark:text-stone-400 -mt-0.5 font-medium truncate max-w-[90px] sm:max-w-none hidden xs:block">
+            Gestión Carta
           </p>
         </div>
       </div>
 
-      <!-- Botones de Acción Admin (Iconos compactos en móvil, completos en escritorio) -->
-      <div class="flex items-center space-x-1.5 sm:space-x-2 flex-wrap justify-end gap-y-1.5">
+      <!-- Botones de Acción Admin (Fila única compacta en móvil, expandida en escritorio) -->
+      <div class="flex items-center gap-1 sm:gap-2 shrink-0">
         
         <!-- Ver Menú Público -->
-        <a href="index.html" target="_blank" class="w-8 h-8 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-rose-600 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Ver Menú Público">
-          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-          <span class="hidden sm:inline">Ver Menú Público</span>
+        <a href="index.html" target="_blank" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:text-rose-600 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Ver Menú Público">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[11px] sm:text-xs"></i>
+          <span class="hidden md:inline">Ver Menú</span>
         </a>
 
         <!-- Configurar Google Sheets / API -->
-        <button onclick="abrirModalConfigAPI()" class="w-8 h-8 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Vincular con Google Sheets">
-          <i class="fa-solid fa-cloud text-xs"></i>
+        <button onclick="abrirModalConfigAPI()" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Vincular con Google Sheets">
+          <i class="fa-solid fa-cloud text-[11px] sm:text-xs"></i>
           <span class="hidden md:inline">Google Sheets ERP</span>
         </button>
 
         <!-- Configurar Delivery Gratis -->
-        <button onclick="abrirModalConfigDelivery()" class="w-8 h-8 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Configurar Promoción de Delivery Gratis">
-          <i class="fa-solid fa-motorcycle text-xs"></i>
+        <button onclick="abrirModalConfigDelivery()" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Configurar Promoción de Delivery Gratis">
+          <i class="fa-solid fa-motorcycle text-[11px] sm:text-xs"></i>
           <span class="hidden sm:inline">Delivery</span>
         </button>
 
         <!-- Configurar WhatsApps -->
-        <button onclick="abrirModalConfigWhatsApp()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 flex items-center justify-center transition" title="Configurar Teléfonos WhatsApp">
-          <i class="fa-brands fa-whatsapp text-sm sm:text-base"></i>
+        <button onclick="abrirModalConfigWhatsApp()" class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 flex items-center justify-center transition" title="Configurar Teléfonos WhatsApp">
+          <i class="fa-brands fa-whatsapp text-xs sm:text-base"></i>
         </button>
 
         <!-- Consultas / Chat de Clientes -->
-        <button onclick="abrirModalAdminChat()" class="w-8 h-8 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition relative" title="Consultas y Preguntas de Comensales">
-          <i class="fa-solid fa-comments text-xs"></i>
-          <span class="hidden sm:inline">Consultas</span>
+        <button onclick="abrirModalAdminChat()" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition relative" title="Consultas y Preguntas de Comensales">
+          <i class="fa-solid fa-comments text-[11px] sm:text-xs"></i>
+          <span class="hidden md:inline">Consultas</span>
           <span id="badgeAdminChat" class="w-2 h-2 rounded-full bg-rose-600 absolute -top-0.5 -right-0.5 animate-pulse"></span>
         </button>
 
         <!-- Ajustes Generales / Categoría Predeterminada -->
-        <button onclick="abrirModalConfigGeneral()" class="w-8 h-8 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Ajustes Generales y Categoría Inicial">
-          <i class="fa-solid fa-sliders text-xs"></i>
+        <button onclick="abrirModalConfigGeneral()" class="w-7 h-7 sm:w-auto px-0 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 text-xs font-bold flex items-center justify-center sm:space-x-1.5 transition" title="Ajustes Generales y Categoría Inicial">
+          <i class="fa-solid fa-sliders text-[11px] sm:text-xs"></i>
           <span class="hidden sm:inline">Ajustes</span>
         </button>
 
         <!-- Conmutador Tema -->
-        <button id="btnToggleTemaAdmin" onclick="conmutarTemaAdmin()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-amber-400 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center transition" title="Cambiar Tema Visual">
-          <i id="iconoTemaAdmin" class="fa-solid fa-moon text-xs sm:text-sm"></i>
+        <button id="btnToggleTemaAdmin" onclick="conmutarTemaAdmin()" class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-amber-400 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center transition" title="Cambiar Tema Visual">
+          <i id="iconoTemaAdmin" class="fa-solid fa-moon text-[11px] sm:text-sm"></i>
         </button>
       </div>
 

@@ -161,6 +161,7 @@ function actualizarIconoTemaAdmin() {
 // ==========================================
 function renderizarTablaAdmin() {
   const tbody = document.getElementById('tablaPlatosAdmin');
+  const contenedorMovil = document.getElementById('listaCardsAdminMovil');
   const filtro = document.getElementById('filtroBusquedaAdmin')?.value.toLowerCase().trim() || '';
 
   let lista = platosAdmin;
@@ -168,43 +169,104 @@ function renderizarTablaAdmin() {
     lista = lista.filter(p => p.nombre.toLowerCase().includes(filtro) || p.categoria.toLowerCase().includes(filtro));
   }
 
-  tbody.innerHTML = lista.map((p, idx) => `
-    <tr class="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition">
-      <td class="py-3 px-4 flex items-center space-x-3">
-        <img src="${getRutaFoto(p.foto)}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'" class="w-10 h-10 rounded-xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs">
-        <div>
-          <span class="font-bold text-stone-900 dark:text-white block">${p.nombre}</span>
-          <span class="text-[11px] text-stone-400 line-clamp-1">${p.descripcion}</span>
+  // 1. Renderizar tabla para Escritorio (md y superior)
+  if (tbody) {
+    tbody.innerHTML = lista.map((p) => `
+      <tr class="hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition">
+        <td class="py-3 px-4 flex items-center space-x-3">
+          <img src="${getRutaFoto(p.foto)}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'" class="w-10 h-10 rounded-xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs">
+          <div>
+            <span class="font-bold text-stone-900 dark:text-white block">${p.nombre}</span>
+            <span class="text-[11px] text-stone-400 line-clamp-1">${p.descripcion}</span>
+          </div>
+        </td>
+        <td class="py-3 px-4 font-medium text-stone-600 dark:text-stone-300">
+          <span class="px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-[11px]">
+            ${p.categoria}
+          </span>
+        </td>
+        <td class="py-3 px-4 font-black text-rose-600 dark:text-rose-400 text-sm">
+          $${p.precio.toFixed(2)}
+        </td>
+        <td class="py-3 px-4">
+          <button onclick="toggleDisponibilidad('${p.id}')" class="px-3 py-1 rounded-full font-bold text-[11px] transition ${
+            p.disponible 
+              ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200' 
+              : 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 hover:bg-rose-200'
+          }">
+            <i class="fa-solid ${p.disponible ? 'fa-check' : 'fa-ban'} mr-1"></i>
+            ${p.disponible ? 'Disponible Hoy' : 'Agotado'}
+          </button>
+        </td>
+        <td class="py-3 px-4 text-right space-x-2">
+          <button onclick="editarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-rose-600 transition" title="Editar">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+          <button onclick="eliminarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-red-500 transition" title="Quitar del Menú">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // 2. Renderizar tarjetas para Móvil (pantallas < 768px)
+  if (contenedorMovil) {
+    if (lista.length === 0) {
+      contenedorMovil.innerHTML = `
+        <div class="py-8 text-center text-stone-400">
+          <i class="fa-solid fa-utensils text-2xl mb-2"></i>
+          <p class="text-xs">No se encontraron platos que coincidan con la búsqueda</p>
         </div>
-      </td>
-      <td class="py-3 px-4 font-medium text-stone-600 dark:text-stone-300">
-        <span class="px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-[11px]">
-          ${p.categoria}
-        </span>
-      </td>
-      <td class="py-3 px-4 font-black text-rose-600 dark:text-rose-400 text-sm">
-        $${p.precio.toFixed(2)}
-      </td>
-      <td class="py-3 px-4">
-        <button onclick="toggleDisponibilidad('${p.id}')" class="px-3 py-1 rounded-full font-bold text-[11px] transition ${
-          p.disponible 
-            ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200' 
-            : 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 hover:bg-rose-200'
-        }">
-          <i class="fa-solid ${p.disponible ? 'fa-check' : 'fa-ban'} mr-1"></i>
-          ${p.disponible ? 'Disponible Hoy' : 'Agotado'}
-        </button>
-      </td>
-      <td class="py-3 px-4 text-right space-x-2">
-        <button onclick="editarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-rose-600 transition" title="Editar">
-          <i class="fa-solid fa-pen-to-square"></i>
-        </button>
-        <button onclick="eliminarPlato('${p.id}')" class="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-red-500 transition" title="Quitar del Menú">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      </td>
-    </tr>
-  `).join('');
+      `;
+    } else {
+      contenedorMovil.innerHTML = lista.map((p) => `
+        <div class="p-3.5 bg-stone-50/90 dark:bg-stone-800/40 rounded-2xl border border-stone-200/80 dark:border-stone-800 space-y-2.5 shadow-2xs">
+          <!-- Fila Superior: Foto, Nombre, Categoría, ID y Precio -->
+          <div class="flex items-start space-x-3">
+            <img src="${getRutaFoto(p.foto)}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'" class="w-13 h-13 rounded-2xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs shrink-0">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-1.5">
+                <h4 class="font-bold text-xs sm:text-sm text-stone-900 dark:text-white leading-tight break-words">${p.nombre}</h4>
+                <span class="font-black text-rose-600 dark:text-rose-400 text-sm shrink-0">$${p.precio.toFixed(2)}</span>
+              </div>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="px-2 py-0.5 rounded-full bg-stone-200/70 dark:bg-stone-700/80 text-[10px] font-bold text-stone-700 dark:text-stone-300">
+                  ${p.categoria}
+                </span>
+                <span class="text-[10px] text-stone-400 font-mono">#${p.id}</span>
+              </div>
+              ${p.descripcion ? `<p class="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-1 mt-1">${p.descripcion}</p>` : ''}
+            </div>
+          </div>
+
+          <!-- Fila Inferior: Disponibilidad, Editar y Eliminar (100% visible, sin cortes) -->
+          <div class="flex items-center gap-2 pt-1 border-t border-stone-200/60 dark:border-stone-700/50">
+            <!-- Botón Disponibilidad -->
+            <button onclick="toggleDisponibilidad('${p.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition ${
+              p.disponible 
+                ? 'bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200' 
+                : 'bg-rose-100/90 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 hover:bg-rose-200'
+            }">
+              <i class="fa-solid ${p.disponible ? 'fa-circle-check text-emerald-600 dark:text-emerald-400' : 'fa-circle-xmark text-rose-600 dark:text-rose-400'} text-xs"></i>
+              <span>${p.disponible ? 'Disponible' : 'Agotado'}</span>
+            </button>
+
+            <!-- Botón Editar -->
+            <button onclick="editarPlato('${p.id}')" class="py-1.5 px-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:text-rose-600 dark:hover:text-rose-400 font-bold text-xs flex items-center space-x-1.5 shadow-2xs transition">
+              <i class="fa-solid fa-pen-to-square text-xs text-stone-500 dark:text-stone-400"></i>
+              <span>Editar</span>
+            </button>
+
+            <!-- Botón Eliminar -->
+            <button onclick="eliminarPlato('${p.id}')" class="w-8 h-8 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-400 hover:text-red-500 hover:border-red-300 shadow-2xs flex items-center justify-center transition shrink-0" title="Eliminar Plato">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
 
   actualizarMetricas();
 }

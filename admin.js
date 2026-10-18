@@ -12,7 +12,7 @@ function getRutaFoto(ruta) {
 
 let platosAdmin = JSON.parse(localStorage.getItem('adomicilio_platos_custom') || 'null');
 
-const VERSION_ADMIN_CATALOGO = 'v3.2_fotos_reales_bebidas';
+const VERSION_ADMIN_CATALOGO = 'v3.3_opciones_rellenos_opcionales';
 const versionGuardadaAdmin = localStorage.getItem('adomicilio_version_catalogo');
 
 if (!platosAdmin || versionGuardadaAdmin !== VERSION_ADMIN_CATALOGO) {

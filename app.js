@@ -18,15 +18,16 @@ const MENU_INICIAL = [
     nombre: 'Empanadas de Harina de Maíz (3 unid)',
     categoria: 'Desayunos',
     icono: '🥟',
-    descripcion: 'Tres empanadas doradas y crujientes de harina de maíz precocida con masa crocante. Escoge tu relleno favorito: carne mechada, molida, pollo, mojito de cazón o queso.',
+    descripcion: 'Tres empanadas doradas y crujientes de harina de maíz precocida con masa crocante. Escoge tus opciones favoritas: queso, guiso de carne, pollo, cazón, mechada o de todo.',
     precio: 4.50,
     foto: 'assets/imagenes/empanadas_maiz_reales.png',
     extras: [
-      { id: 'ext_rell_mechada', nombre: 'Relleno: Carne Mechada jugosa criolla', precio: 0.00 },
-      { id: 'ext_rell_molida', nombre: 'Relleno: Carne Molida sazonada', precio: 0.00 },
-      { id: 'ext_rell_pollo', nombre: 'Relleno: Pollo desmechado criollo', precio: 0.00 },
-      { id: 'ext_rell_mojito', nombre: 'Relleno: Mojito / Cazón oriental', precio: 0.00 },
-      { id: 'ext_rell_queso', nombre: 'Relleno: Queso blanco llanero', precio: 0.00 },
+      { id: 'ext_rell_queso', nombre: 'Empanada de Queso blanco', precio: 0.00 },
+      { id: 'ext_rell_guiso', nombre: 'Empanada de Guiso (Carne molida)', precio: 0.00 },
+      { id: 'ext_rell_pollo', nombre: 'Empanada de Pollo mechado criollo', precio: 0.00 },
+      { id: 'ext_rell_cazon', nombre: 'Empanada de Cazón / Sazón oriental', precio: 0.00 },
+      { id: 'ext_rell_mechada', nombre: 'Empanada de Carne Mechada', precio: 0.00 },
+      { id: 'ext_rell_detodo', nombre: 'Empanada Mixta / De Todo (Combinada)', precio: 0.00 },
       { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 },
       { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5 Litros', precio: 3.00 },
       { id: 'ext_guasacaca', nombre: 'Ración extra de Guasacaca verde fresca', precio: 0.50 },
@@ -57,10 +58,11 @@ const MENU_INICIAL = [
     precio: 4.50,
     foto: 'assets/imagenes/empanadas_trigo_reales.png',
     extras: [
-      { id: 'ext_trigo_mechada', nombre: 'Relleno: Carne Mechada jugosa', precio: 0.00 },
-      { id: 'ext_trigo_molida', nombre: 'Relleno: Carne Molida con papitas criollas', precio: 0.00 },
-      { id: 'ext_trigo_pollo', nombre: 'Relleno: Pollo campesino criollo', precio: 0.00 },
-      { id: 'ext_trigo_queso', nombre: 'Relleno: Queso blanco fundido', precio: 0.00 },
+      { id: 'ext_trigo_queso', nombre: 'Pastelito de Queso blanco', precio: 0.00 },
+      { id: 'ext_trigo_guiso', nombre: 'Pastelito de Guiso de carne', precio: 0.00 },
+      { id: 'ext_trigo_pollo', nombre: 'Pastelito de Pollo campesino', precio: 0.00 },
+      { id: 'ext_trigo_mechada', nombre: 'Pastelito de Carne Mechada', precio: 0.00 },
+      { id: 'ext_trigo_detodo', nombre: 'Pastelito Mixto / Con Todo', precio: 0.00 },
       { id: 'ext_beb_lata', nombre: '🥤 Refresco en lata fría (355ml)', precio: 1.50 },
       { id: 'ext_beb_1_5l', nombre: '🍾 Refresco Botella 1.5 Litros', precio: 3.00 },
       { id: 'ext_past_guasacaca', nombre: 'Ración extra de Guasacaca verde fresca', precio: 0.50 }
@@ -238,7 +240,7 @@ const MENU_INICIAL = [
 ];
 
 function cargarPlatosActivos() {
-  const versionActual = 'v3.2_fotos_reales_bebidas';
+  const versionActual = 'v3.3_opciones_rellenos_opcionales';
   const versionGuardada = localStorage.getItem('adomicilio_menu_version');
   
   if (versionGuardada !== versionActual) {
@@ -769,7 +771,10 @@ function abrirModalPlato(id) {
             class="checkbox-extra w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-stone-300">
           <span class="font-medium text-stone-800 dark:text-stone-200">${e.nombre}</span>
         </div>
-        <span class="font-bold text-emerald-600 dark:text-emerald-400">+${e.precio > 0 ? '$' + e.precio.toFixed(2) : 'Gratis'}</span>
+        ${e.precio > 0 
+          ? `<span class="font-bold text-emerald-600 dark:text-emerald-400">+$${e.precio.toFixed(2)}</span>` 
+          : `<span class="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/80 border border-emerald-300/60 dark:border-emerald-800 px-2.5 py-0.5 rounded-full">Opcional</span>`
+        }
       </label>
     `).join('');
   } else {

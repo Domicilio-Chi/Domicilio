@@ -530,17 +530,17 @@
   <!-- MODAL DE COMANDA / CARRITO DE PEDIDOS -->
   <!-- ========================================== -->
   <div id="modalComanda" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] flex flex-col">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-lg shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] flex flex-col overflow-hidden">
       
       <!-- Encabezado Comanda -->
-      <div class="p-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between flex-shrink-0">
+      <div class="p-4 sm:p-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between flex-shrink-0 bg-stone-50/50 dark:bg-stone-950/20">
         <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
+          <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shadow-xs">
             <i class="fa-solid fa-receipt text-base"></i>
           </div>
           <div>
-            <h3 class="text-lg font-black font-heading leading-tight">Tu Pedido</h3>
-            <p class="text-xs text-stone-400">Revisa tus platos antes de despachar</p>
+            <h3 class="text-base sm:text-lg font-black font-heading leading-tight">Tu Pedido</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400">Revisa tus platos y cantidades seleccionadas</p>
           </div>
         </div>
         <button onclick="cerrarModalComanda()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
@@ -548,80 +548,162 @@
         </button>
       </div>
 
-      <!-- Lista de Ítems (Scrollable) -->
-      <div id="listaComandaItems" class="p-5 space-y-3 overflow-y-auto flex-1">
-        <!-- Inyección dinámica de platos pedidos -->
-      </div>
-
-      <!-- Formulario de Entrega y Envío por WhatsApp -->
-      <div class="p-4 sm:p-5 border-t border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-950/40 space-y-2.5 flex-shrink-0">
-        
-        <!-- Indicador de Delivery Gratis en Comanda -->
+      <!-- Banner de Delivery Gratis en Comanda -->
+      <div class="px-4 sm:px-5 pt-3 flex-shrink-0">
         <div id="indicadorDeliveryComanda" class="p-2.5 rounded-2xl border text-xs font-bold flex items-center justify-between transition-colors">
           <!-- Inyectado dinámicamente desde app.js -->
         </div>
+      </div>
 
-        <div class="space-y-2">
-          <!-- Nombre y Teléfono -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input 
-              type="text" 
-              id="comandaClienteNombre" 
-              placeholder="Tu Nombre completo *" 
-              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white">
-            <input 
-              type="tel" 
-              id="comandaClienteTelefono" 
-              placeholder="Teléfono / WhatsApp *" 
-              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white">
+      <!-- Lista de Ítems AMPLIA con Desplazamiento Vertical Cómodo y Borde Inferior Sutil -->
+      <div class="relative flex-1 min-h-[240px] max-h-[52vh] sm:max-h-[58vh] flex flex-col px-4 sm:px-5 py-3">
+        <div id="listaComandaItems" class="overflow-y-auto space-y-2.5 pr-1 flex-1">
+          <!-- Inyección dinámica de platos pedidos -->
+        </div>
+        <!-- Borde sutil inferior con degradado para indicar scroll continuo -->
+        <div class="pointer-events-none h-4 bg-gradient-to-t from-white dark:from-stone-900 to-transparent -mt-4 relative z-10"></div>
+      </div>
+
+      <!-- Bloque Compacto: Botón para Abrir/Rellenar Formulario de Entrega -->
+      <div class="px-4 sm:px-5 py-2.5 bg-stone-50 dark:bg-stone-950/60 border-t border-stone-200 dark:border-stone-800 flex-shrink-0">
+        <button 
+          type="button" 
+          onclick="abrirModalDatosEntrega()" 
+          class="w-full flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:border-emerald-500 shadow-xs transition group">
+          <div class="flex items-center space-x-2.5 min-w-0 pr-2 text-left">
+            <div id="iconoDatosEntrega" class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-location-dot text-sm"></i>
+            </div>
+            <div class="min-w-0">
+              <p id="resumenDatosEntregaTitulo" class="text-xs font-bold text-stone-900 dark:text-white truncate">
+                Datos de Entrega y Pago
+              </p>
+              <p id="resumenDatosEntregaSubtitulo" class="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                Toca aquí para indicar tu nombre, dirección y pago
+              </p>
+            </div>
           </div>
+          <span id="badgeBotonDatosEntrega" class="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 border border-emerald-300/60 dark:border-emerald-800 px-3 py-1 rounded-xl shrink-0 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            <span>Rellenar</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </span>
+        </button>
+      </div>
 
-          <!-- Dirección Exacta -->
+      <!-- Barra Inferior Fija: BOTÓN UNIFICADO CON PRECIO Y ENVIAR PEDIDO EN UN SOLO ELEMENTO -->
+      <div class="p-3.5 sm:p-4 border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex-shrink-0">
+        <button 
+          onclick="enviarComandaWhatsApp()" 
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-2xl font-bold text-sm sm:text-base shadow-lg shadow-emerald-600/30 flex items-center justify-between transition active:scale-[0.99]">
+          <div class="flex items-center space-x-2">
+            <i class="fa-brands fa-whatsapp text-xl"></i>
+            <span>Enviar Pedido a Cocina</span>
+          </div>
+          <span id="comandaTotalPagar" class="text-base sm:text-lg font-black text-amber-300 tracking-tight">
+            $0.00
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE DATOS DE ENTREGA Y PAGO (VENTANA DEDICADA) -->
+  <!-- ========================================== -->
+  <div id="modalDatosEntrega" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl w-[94vw] sm:w-full max-w-md shadow-2xl relative text-stone-900 dark:text-stone-100 max-h-[92vh] flex flex-col overflow-hidden">
+      
+      <!-- Encabezado Modal Datos -->
+      <div class="p-4 sm:p-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between flex-shrink-0 bg-stone-50/50 dark:bg-stone-950/20">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shadow-xs">
+            <i class="fa-solid fa-map-location-dot text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black font-heading leading-tight">Datos de Entrega y Pago</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400">Guarda tus datos para despachos rápidos</p>
+          </div>
+        </div>
+        <button onclick="cerrarModalDatosEntrega()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Formulario de Campos con Scroll interno -->
+      <div class="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1">
+        <div>
+          <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1">Nombre Completo *</label>
+          <input 
+            type="text" 
+            id="comandaClienteNombre" 
+            placeholder="Ej: Carlos Pérez" 
+            class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1">Teléfono / WhatsApp *</label>
+          <input 
+            type="tel" 
+            id="comandaClienteTelefono" 
+            placeholder="Ej: +58 412 1234567" 
+            class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1">Dirección Exacta de Entrega *</label>
           <input 
             type="text" 
             id="comandaClienteDireccion" 
-            placeholder="Dirección exacta de entrega (Sector, Calle, Casa/Apto) *" 
-            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white">
+            placeholder="Sector, Calle, Casa o Nro de Apto" 
+            class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-medium">
+        </div>
 
-          <!-- Punto de Referencia y Método de Pago -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input 
-              type="text" 
-              id="comandaPuntoReferencia" 
-              placeholder="Punto de referencia (color de portón, etc.)" 
-              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white">
-            
-            <select 
-              id="comandaMetodoPago" 
-              class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-medium">
-              <option value="Efectivo Divisas ($ USD)">💵 Efectivo Divisas ($ USD)</option>
-              <option value="Pago Móvil (Bs)">📱 Pago Móvil (Bs)</option>
-              <option value="Efectivo Bolívares (Bs)">💵 Efectivo Bolívares (Bs)</option>
-              <option value="Zelle / Binance Pay">⚡ Zelle / Binance Pay</option>
-              <option value="Punto de Venta al Recibir">💳 Punto de Venta al Recibir</option>
-            </select>
-          </div>
+        <div>
+          <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1">Punto de Referencia (Opcional)</label>
+          <input 
+            type="text" 
+            id="comandaPuntoReferencia" 
+            placeholder="Ej: Portón blanco, frente al abasto" 
+            class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-medium">
+        </div>
 
-          <!-- Con cuánto paga (Para cambio/vuelto) -->
+        <div>
+          <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1">Método de Pago</label>
+          <select 
+            id="comandaMetodoPago" 
+            class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-semibold">
+            <option value="Efectivo Divisas ($ USD)">💵 Efectivo Divisas ($ USD)</option>
+            <option value="Pago Móvil (Bs)">📱 Pago Móvil (Bs)</option>
+            <option value="Efectivo Bolívares (Bs)">💵 Efectivo Bolívares (Bs)</option>
+            <option value="Zelle / Binance Pay">⚡ Zelle / Binance Pay</option>
+            <option value="Punto de Venta al Recibir">💳 Punto de Venta al Recibir</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1">¿Pagas con billete exacto o requieres cambio?</label>
           <input 
             type="text" 
             id="comandaPagaCon" 
-            placeholder="¿Pagas con billete exacto o necesitas cambio? (Ej: Pago con $20)" 
-            class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white">
+            placeholder="Ej: Pago con billete de $20 (requiero vuelto)" 
+            class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none text-stone-900 dark:text-white font-medium">
         </div>
+      </div>
 
-        <!-- Totales -->
-        <div class="flex items-center justify-between text-sm font-bold pt-1">
-          <span class="text-stone-500 dark:text-stone-400">Total a pagar:</span>
-          <span id="comandaTotalPagar" class="text-xl font-black text-emerald-600 dark:text-emerald-400">$0.00</span>
-        </div>
-
-        <!-- Botón Enviar Pedido a Cocina -->
-        <button onclick="enviarComandaWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 transition">
-          <i class="fa-brands fa-whatsapp text-lg"></i>
-          <span>Enviar Pedido a Cocina</span>
+      <!-- Botón Guardar Datos -->
+      <div class="p-3.5 sm:p-4 border-t border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-950/40 flex-shrink-0">
+        <button 
+          type="button" 
+          onclick="guardarDatosEntregaDesdeModal()" 
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-bold text-sm shadow-md transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-check text-sm"></i>
+          <span>Guardar y Confirmar Datos</span>
         </button>
       </div>
+
+    </div>
+  </div>
 
     </div>
   </div>

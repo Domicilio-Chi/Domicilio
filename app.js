@@ -278,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
   actualizarIconoTema();
   actualizarBannersDelivery();
   actualizarEmailContactoFooter();
+  cargarDatosEntregaGuardados();
   configurarCierreModales();
   iniciarGuiaSecuencialCategorias();
 });
@@ -377,6 +378,7 @@ function configurarCierreModales() {
   const modales = [
     { id: 'modalPlato', close: cerrarModalPlato },
     { id: 'modalComanda', close: cerrarModalComanda },
+    { id: 'modalDatosEntrega', close: cerrarModalDatosEntrega },
     { id: 'modalChat', close: cerrarModalChat },
     { id: 'modalInfoDelivery', close: cerrarModalInfoDelivery }
   ];
@@ -883,6 +885,7 @@ function agregarPlatoAComanda() {
 // ==========================================
 function abrirModalComanda() {
   renderizarListaComanda();
+  actualizarResumenDatosEntrega();
   document.getElementById('modalComanda').classList.remove('hidden');
 }
 
@@ -1005,12 +1008,18 @@ function eliminarItemComanda(idx) {
   renderizarListaComanda();
 }
 
-function enviarComandaWhatsApp() {
-  if (comanda.length === 0) {
-    mostrarToast('Tu pedido está vacío');
-    return;
-  }
+// ==========================================
+// GESTIÓN DE DATOS DE ENTREGA Y PAGO
+// ==========================================
+function abrirModalDatosEntrega() {
+  document.getElementById('modalDatosEntrega')?.classList.remove('hidden');
+}
 
+function cerrarModalDatosEntrega() {
+  document.getElementById('modalDatosEntrega')?.classList.add('hidden');
+}
+
+function guardarDatosEntregaDesdeModal() {
   const nombre = document.getElementById('comandaClienteNombre')?.value.trim();
   const telefono = document.getElementById('comandaClienteTelefono')?.value.trim();
   const direccion = document.getElementById('comandaClienteDireccion')?.value.trim();
@@ -1029,8 +1038,82 @@ function enviarComandaWhatsApp() {
     return;
   }
   if (!direccion) {
-    mostrarToast('Por favor escribe la dirección de entrega');
+    mostrarToast('Por favor escribe tu dirección exacta');
     document.getElementById('comandaClienteDireccion')?.focus();
+    return;
+  }
+
+  const datos = { nombre, telefono, direccion, puntoReferencia, metodoPago, pagaCon };
+  localStorage.setItem('adomicilio_datos_cliente', JSON.stringify(datos));
+  actualizarResumenDatosEntrega();
+  cerrarModalDatosEntrega();
+  mostrarToast('✔ Datos de entrega guardados');
+}
+
+function cargarDatosEntregaGuardados() {
+  try {
+    const guardados = localStorage.getItem('adomicilio_datos_cliente');
+    if (guardados) {
+      const d = JSON.parse(guardados);
+      if (document.getElementById('comandaClienteNombre') && d.nombre) document.getElementById('comandaClienteNombre').value = d.nombre;
+      if (document.getElementById('comandaClienteTelefono') && d.telefono) document.getElementById('comandaClienteTelefono').value = d.telefono;
+      if (document.getElementById('comandaClienteDireccion') && d.direccion) document.getElementById('comandaClienteDireccion').value = d.direccion;
+      if (document.getElementById('comandaPuntoReferencia') && d.puntoReferencia) document.getElementById('comandaPuntoReferencia').value = d.puntoReferencia;
+      if (document.getElementById('comandaMetodoPago') && d.metodoPago) document.getElementById('comandaMetodoPago').value = d.metodoPago;
+      if (document.getElementById('comandaPagaCon') && d.pagaCon) document.getElementById('comandaPagaCon').value = d.pagaCon;
+    }
+  } catch(e) {}
+  actualizarResumenDatosEntrega();
+}
+
+function actualizarResumenDatosEntrega() {
+  const nombre = document.getElementById('comandaClienteNombre')?.value.trim();
+  const direccion = document.getElementById('comandaClienteDireccion')?.value.trim();
+  const metodoPago = document.getElementById('comandaMetodoPago')?.value || '';
+  
+  const titulo = document.getElementById('resumenDatosEntregaTitulo');
+  const subtitulo = document.getElementById('resumenDatosEntregaSubtitulo');
+  const badge = document.getElementById('badgeBotonDatosEntrega');
+  const icono = document.getElementById('iconoDatosEntrega');
+
+  if (!titulo || !subtitulo) return;
+
+  if (nombre && direccion) {
+    titulo.textContent = `📍 Enviar a: ${nombre}`;
+    subtitulo.textContent = `${direccion} • ${metodoPago.split(' ')[0] || ''}`;
+    if (badge) {
+      badge.innerHTML = `<span>Editar</span> <i class="fa-solid fa-pen text-[10px]"></i>`;
+      badge.className = 'text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/80 border border-amber-300/60 dark:border-amber-800 px-3 py-1 rounded-xl shrink-0 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform';
+    }
+    if (icono) {
+      icono.className = 'w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0';
+    }
+  } else {
+    titulo.textContent = 'Datos de Entrega y Pago';
+    subtitulo.textContent = 'Toca aquí para indicar tu nombre, dirección y pago';
+    if (badge) {
+      badge.innerHTML = `<span>Rellenar</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>`;
+      badge.className = 'text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 border border-emerald-300/60 dark:border-emerald-800 px-3 py-1 rounded-xl shrink-0 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform';
+    }
+  }
+}
+
+function enviarComandaWhatsApp() {
+  if (comanda.length === 0) {
+    mostrarToast('Tu pedido está vacío');
+    return;
+  }
+
+  const nombre = document.getElementById('comandaClienteNombre')?.value.trim();
+  const telefono = document.getElementById('comandaClienteTelefono')?.value.trim();
+  const direccion = document.getElementById('comandaClienteDireccion')?.value.trim();
+  const puntoReferencia = document.getElementById('comandaPuntoReferencia')?.value.trim();
+  const metodoPago = document.getElementById('comandaMetodoPago')?.value || 'Efectivo Divisas ($ USD)';
+  const pagaCon = document.getElementById('comandaPagaCon')?.value.trim();
+
+  if (!nombre || !telefono || !direccion) {
+    mostrarToast('Por favor completa tus datos de entrega');
+    abrirModalDatosEntrega();
     return;
   }
 

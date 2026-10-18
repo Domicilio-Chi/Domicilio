@@ -292,6 +292,8 @@ function iniciarSplashPresentacion() {
   setTimeout(() => {
     const barra = document.getElementById('barraProgresoSplash');
     if (barra) barra.style.width = '100%';
+    const barraMovil = document.getElementById('barraProgresoSplashMovil');
+    if (barraMovil) barraMovil.style.width = '100%';
   }, 50);
 
   setTimeout(() => {

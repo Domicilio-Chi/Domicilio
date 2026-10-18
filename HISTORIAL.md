@@ -636,3 +636,18 @@
   * `capturas/mejora_57_admin_boton_y_modal_gestor_categorias.png`: Ventana modal del Gestor de Categorías en el panel de administración.
   * `capturas/mejora_58_catalogo_nueva_categoria_postres_activa.png`: Barra de categorías del cliente mostrando la nueva categoría creada desde admin (ej. Postres).
 - **Commits en GitHub Pages:** `44fc151` en `origin/main`.
+
+
+---
+
+## 🧹 HITO: SIMPLIFICACIÓN Y LIMPIEZA DEL FOOTER PÚBLICO
+
+### 1. Eliminación de Elementos Redundantes
+- **Eliminación del Logo y Título Duplicado:** Se retiró el bloque `<div class="flex items-center justify-center space-x-2">` con el icono y el texto *"A Domicilio"* en el pie de página, evitando la redundancia con la cabecera superior.
+- **Eliminación del Párrafo Descriptivo:** Se removió el texto *"Comida tradicional venezolana y comida rápida preparada al momento con ingredientes frescos."*, permitiendo una visualización mucho más limpia, directa y liviana.
+- **Conservación de la Línea de Contacto:** Se mantuvo intacto el enlace interactivo con el correo electrónico editable (`Contáctanos: ✉️ inghumbertoacosta@gmail.com`) y el copyright centrado.
+
+### 2. Evidencias Visuales y Commits
+- **Captura Generada:**
+  * `capturas/mejora_59_footer_limpio_solo_correo_sin_redundancias.png`: Muestra el pie de página simplificado y minimalista al final de los platos.
+- **Commits en GitHub Pages:** `5357b7a` en `origin/main`.

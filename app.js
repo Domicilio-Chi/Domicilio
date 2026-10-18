@@ -477,18 +477,6 @@ function seleccionarCategoria(catId) {
   renderizarCategorias();
   renderizarPlatos();
 
-  const tit = document.getElementById('tituloCategoriaActiva');
-  const sub = document.getElementById('subtituloCategoria');
-  if (tit && sub) {
-    if (catId === 'Todos') {
-      tit.textContent = 'Todos los Platos';
-      sub.textContent = 'Explora nuestro menú disponible para despacho inmediato';
-    } else {
-      tit.textContent = catId;
-      sub.textContent = `Platos calientes y opciones disponibles en ${catId}`;
-    }
-  }
-
   // Centrado horizontal suave ÚNICAMENTE dentro del contenedor de categorías (sin alterar el scroll de la ventana)
   const contenedor = document.getElementById('contenedorCategorias');
   if (contenedor) {
@@ -508,7 +496,6 @@ function seleccionarCategoria(catId) {
 function renderizarPlatos() {
   const grid = document.getElementById('gridPlatos');
   const estadoVacio = document.getElementById('estadoVacio');
-  const contador = document.getElementById('contadorPlatos');
   const inputBusqueda = document.getElementById('inputBuscador');
   const termino = inputBusqueda ? inputBusqueda.value.toLowerCase().trim() : '';
 
@@ -523,8 +510,6 @@ function renderizarPlatos() {
       p.categoria.toLowerCase().includes(termino)
     );
   }
-
-  contador.textContent = `${filtrados.length} ${filtrados.length === 1 ? 'plato' : 'platos'}`;
 
   if (filtrados.length === 0) {
     grid.innerHTML = '';

@@ -586,3 +586,30 @@
   * `capturas/mejora_53_chat_con_botones_borrar_individual.png`: Muestra múltiples platos en el chat con sus botones `[Agregar a mi Pedido]` y `[🗑️ Borrar]`.
   * `capturas/mejora_54_chat_despues_de_borrado_individual.png`: Muestra el chat tras eliminar una sola consulta, conservando las demás intactas con feedback visual.
 - **Commits en GitHub Pages:** `f6addc8` en `origin/main`.
+
+
+---
+
+## 🎨 HITO: RESALTE DUAL (VERDE Y BLANCO) EN BOTÓN CHEF Y GESTIÓN DE CHECKS EN ADMIN
+
+### 1. Animación Bicolor (Verde Esmeralda y Blanco Luminoso)
+- **Efecto de Pulso y Respiración:** Se enriqueció la animación `@keyframes bordeChefResalteLeve` en `index.html` con un ciclo de 4 fases (3 segundos continuos):
+  - Fase 1 (Verde Esmeralda): Borde `#10b981` y resplandor verde con expansión suave (`scale(1.015)`).
+  - Fase 2 (Transición Suave): Transición a borde claro.
+  - Fase 3 (Blanco Puro Luminoso): Borde `#ffffff` con resplandor blanco intenso (`rgba(255, 255, 255, 0.6)`) combinado con halo exterior verde (`scale(1.018)`).
+  - Fase 4: Retorno reposado al estado base.
+- **Efecto Hover Premium:** Al posar el cursor o pulsar, el borde se ilumina en blanco con halo esmeralda aumentado a `scale(1.02)`.
+
+### 2. Panel Administrador: Edición Total de Sabores, Checks, Precios y Textos
+- **Gestor Dinámico de Filas de Extras:** En `admin.html`, dentro del modal `[Editar Plato y Salsas]`, la sección *"Salsas, Adicionales y Extras del Plato"* permite al administrador:
+  1. Modificar cualquier texto (ej. cambiar nombres de sabores como "Empanada de Queso" por cualquier otro relleno).
+  2. Editar los precios en dólares (desde `$0.00` para sabores gratuitos hasta cualquier monto para adicionales, salsas o refrescos).
+  3. Eliminar opciones individuales con el botón de papelera roja `[🗑️]`.
+  4. Agregar nuevas opciones o checks con el botón `[+ Agregar Extra]`.
+  5. Guardar los cambios directamente con `[Guardar Plato]`.
+
+### 3. Evidencias Visuales y Commits
+- **Capturas Generadas:**
+  * `capturas/mejora_55_boton_chat_chef_resalte_dual_verde_blanco.png`: Botón del chef en la ficha del plato con el resalte dual de borde verde y aura blanca.
+  * `capturas/mejora_56_admin_gestion_sabores_y_checks_extras.png`: Panel administrador en `admin.html` demostrando la edición completa de checks, textos, precios y papeleras por plato.
+- **Commits en GitHub Pages:** `2c53db7` en `origin/main`.

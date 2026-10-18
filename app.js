@@ -844,6 +844,7 @@ function agregarPlatoAComanda() {
   localStorage.setItem('adomicilio_comanda', JSON.stringify(comanda));
   actualizarBadgeComanda();
   cerrarModalPlato();
+  abrirModalComanda();
   mostrarToast(`¡${platoSeleccionadoModal.nombre} agregado al pedido! 🍲`);
 }
 
@@ -1194,7 +1195,27 @@ let chatContextoPlato = null;
 
 function consultarPlatoDesdeModal() {
   if (!platoSeleccionadoModal) return;
-  chatContextoPlato = { ...platoSeleccionadoModal };
+
+  const extrasSeleccionados = [];
+  let sumaExtras = 0;
+  const checkboxes = document.querySelectorAll('.checkbox-extra:checked');
+  checkboxes.forEach(cb => {
+    extrasSeleccionados.push({
+      nombre: cb.dataset.nombre,
+      precio: parseFloat(cb.dataset.precio || 0)
+    });
+    sumaExtras += parseFloat(cb.dataset.precio || 0);
+  });
+
+  const totalCalculado = (platoSeleccionadoModal.precio + sumaExtras) * cantidadModal;
+
+  chatContextoPlato = {
+    ...platoSeleccionadoModal,
+    cantidad: cantidadModal,
+    extras: extrasSeleccionados,
+    total: totalCalculado
+  };
+
   cerrarModalPlato();
   abrirModalChat();
 }
@@ -1211,26 +1232,48 @@ function abrirModalChat(contextoDirecto = null) {
   if (chatContextoPlato) {
     if (banner) banner.classList.remove('hidden');
     if (textoBanner) {
-      textoBanner.textContent = `Consultando: ${chatContextoPlato.nombre} ($${chatContextoPlato.precio.toFixed(2)})`;
+      const cant = chatContextoPlato.cantidad || 1;
+      const cantTxt = cant > 1 ? `${cant}x ` : '';
+      const extrasTxt = chatContextoPlato.extras && chatContextoPlato.extras.length > 0 
+        ? ` (+ ${chatContextoPlato.extras.map(e => e.nombre).join(', ')})` 
+        : '';
+      const totalTxt = chatContextoPlato.total ? chatContextoPlato.total.toFixed(2) : (chatContextoPlato.precio * cant).toFixed(2);
+      textoBanner.textContent = `Consultando: ${cantTxt}${chatContextoPlato.nombre}${extrasTxt} ($${totalTxt})`;
     }
     
-    // Insertar bienvenida contextual si no se ha añadido aún para este plato
+    // Insertar bienvenida contextual si no se ha añadido aún para esta combinación exacta
     const area = document.getElementById('chatMensajesArea');
-    const yaExiste = area.querySelector(`[data-contexto-plato="${chatContextoPlato.id}"]`);
+    const contextoKey = `${chatContextoPlato.id}-${chatContextoPlato.cantidad || 1}-${(chatContextoPlato.extras || []).map(e=>e.nombre).join('-')}`;
+    const yaExiste = area.querySelector(`[data-contexto-key="${contextoKey}"]`);
     if (!yaExiste) {
       const msgContexto = document.createElement('div');
-      msgContexto.setAttribute('data-contexto-plato', chatContextoPlato.id);
+      msgContexto.setAttribute('data-contexto-key', contextoKey);
       msgContexto.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
+      
+      const cant = chatContextoPlato.cantidad || 1;
+      const cantStr = cant > 1 ? `${cant} raciones de ` : '';
+      const extrasStr = chatContextoPlato.extras && chatContextoPlato.extras.length > 0
+        ? ` con ${chatContextoPlato.extras.map(e => `<strong>${e.nombre}</strong>`).join(' y ')}`
+        : '';
+      const totalStr = chatContextoPlato.total ? `$${chatContextoPlato.total.toFixed(2)}` : `$${(chatContextoPlato.precio * cant).toFixed(2)}`;
+
       msgContexto.innerHTML = `
         <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0">
           <i class="fa-solid fa-utensils"></i>
         </div>
-        <div class="bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-emerald-950 dark:text-emerald-100">
-          <div class="flex items-center space-x-1.5 mb-1">
-            <span class="font-black text-emerald-600 dark:text-emerald-400">🍽️ ${chatContextoPlato.nombre}</span>
-            <span class="text-[10px] font-black bg-emerald-200/80 dark:bg-emerald-900/80 px-2 py-0.5 rounded-full text-emerald-800 dark:text-emerald-200">$${chatContextoPlato.precio.toFixed(2)}</span>
+        <div class="bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl rounded-tl-none p-3.5 max-w-[88%] text-xs shadow-xs text-emerald-950 dark:text-emerald-100 space-y-2">
+          <div class="flex items-center space-x-1.5">
+            <span class="font-black text-emerald-700 dark:text-emerald-400">🍽️ ${cant > 1 ? `${cant}x ` : ''}${chatContextoPlato.nombre}</span>
+            <span class="text-[10px] font-black bg-emerald-200/80 dark:bg-emerald-900/80 px-2 py-0.5 rounded-full text-emerald-800 dark:text-emerald-200">${totalStr}</span>
           </div>
-          <p class="leading-relaxed">¡Hola! Veo que estás consultando sobre <strong>${chatContextoPlato.nombre}</strong>. ¿Deseas saber el tiempo estimado de salida, si podemos empacar la salsa aparte o verificar disponibilidad inmediata?</p>
+          <p class="leading-relaxed">¡Hola! Veo que estás interesado en <strong>${cantStr}${chatContextoPlato.nombre}</strong>${extrasStr}. El monto total es de <strong>${totalStr}</strong>.</p>
+          <p class="text-[11px] opacity-90 leading-normal">¿Deseas alguna indicación especial para cocina o prefieres agregarlo directo a tu comanda?</p>
+          <div class="pt-1 flex items-center gap-2">
+            <button onclick="agregarContextoDirectoAPedido()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-cart-plus text-[10px]"></i>
+              <span>Agregar a mi Pedido</span>
+            </button>
+          </div>
         </div>
       `;
       area.appendChild(msgContexto);
@@ -1241,6 +1284,32 @@ function abrirModalChat(contextoDirecto = null) {
   }
 
   modal.classList.remove('hidden');
+}
+
+function agregarContextoDirectoAPedido() {
+  if (!chatContextoPlato) return;
+
+  const cant = chatContextoPlato.cantidad || 1;
+  const extras = chatContextoPlato.extras || [];
+  const sumaExtras = extras.reduce((acc, e) => acc + (e.precio || 0), 0);
+  const totalItem = (chatContextoPlato.precio + sumaExtras) * cant;
+
+  comanda.push({
+    idUnico: Date.now().toString(),
+    platoId: chatContextoPlato.id,
+    nombre: chatContextoPlato.nombre,
+    precioBase: chatContextoPlato.precio,
+    extras: extras,
+    notas: 'Agregado desde chat con el chef',
+    cantidad: cant,
+    totalItem: totalItem
+  });
+
+  localStorage.setItem('adomicilio_comanda', JSON.stringify(comanda));
+  actualizarBadgeComanda();
+  cerrarModalChat();
+  abrirModalComanda();
+  mostrarToast(`¡${chatContextoPlato.nombre} agregado al pedido! 🍲`);
 }
 
 function cerrarModalChat() {
@@ -1341,7 +1410,13 @@ function enviarMensajeChat() {
     
     let respuestaTexto = '¡Mensaje recibido! Nuestro equipo de cocina está en línea y activo. ¿Deseas que preparemos tu orden ya mismo?';
     if (chatContextoPlato) {
-      respuestaTexto = `¡Recibido! Sobre **${chatContextoPlato.nombre}**: sale caliente y recién hecho en unos 15 a 20 minutos. ¡Puedes agregarlo a tu pedido o confirmar con nosotros directo por WhatsApp! 🛵💨`;
+      const cant = chatContextoPlato.cantidad || 1;
+      const cantStr = cant > 1 ? `${cant}x ` : '';
+      const extrasStr = chatContextoPlato.extras && chatContextoPlato.extras.length > 0 
+        ? ` con ${chatContextoPlato.extras.map(e => e.nombre).join(', ')}` 
+        : '';
+      const totalStr = chatContextoPlato.total ? ` ($${chatContextoPlato.total.toFixed(2)})` : '';
+      respuestaTexto = `¡Recibido! Sobre **${cantStr}${chatContextoPlato.nombre}${extrasStr}**${totalStr}: sale caliente y recién hecho en unos 15 a 20 minutos. ¡Puedes agregarlo directo a tu pedido o confirmar con nosotros por WhatsApp! 🛵💨`;
     }
 
     msgRespuesta.innerHTML = `

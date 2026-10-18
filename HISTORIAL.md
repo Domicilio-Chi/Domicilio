@@ -1,4 +1,4 @@
-# 📖 Historial y Bitácora de Conversación - Proyecto Gastronómico (WebViewComida)
+﻿# 📖 Historial y Bitácora de Conversación - Proyecto Gastronómico (WebViewComida)
 
 **Responsable Técnico / Programador:** ANDY Paz  
 **Correo Electrónico Oficial (Protegido e Inmutable):** `elchichote@gmail.com`  
@@ -730,3 +730,97 @@
   * `capturas/mejora_64_admin_modal_configurar_marca_y_logo.png`: Modal administrador demostrando la edición del nombre, selector de fuente Google Fonts y cargador interactivo de logo con preview en tiempo real.
   * `capturas/mejora_65_catalogo_con_marca_fuente_y_logo_personalizado.png`: Cabecera pública del catálogo de comida mostrando el nuevo logo, nombre en fuente Montserrat y eslogan personalizado.
 - **Commits en GitHub Pages:** `7541fe7` en `origin/main`.
+
+
+---
+
+## 📝 Registro de Sesión 16 (18 de Octubre de 2026 - Mañana / Fase 1: Corrección de Backend Apps Script, Robustecimiento de Comandas y Acción obtenerComandas)
+
+### 1. Diagnóstico Técnico y Objetivos de la Fase 1
+- **Error de Referencia (ReferenceError):** Las funciones `subirFotoDrive` y `crearCarpetasDrive` hacían referencia a la variable `CARPETA_DRIVE_FOTOS`, la cual no se encontraba declarada formalmente en la sección de constantes globales de [`backend/Codigo.gs`](backend/Codigo.gs).
+- **Discrepancia en Parámetros de Comandas (`registrarComanda`):** El frontend (`src/app.js`) despachaba objetos con nomenclatura camelCase (`clienteNombre`, `clienteTelefono`, `direccionEntrega`, `detallePlatos`, `extrasSeleccionados`, `notasCocina`, `totalUSD`), mientras que el backend esperaba propiedades en formato simple (`nombre`, `telefono`, `direccion`, `platos`, `extras`, `notas`, `total`). Esto causaba que los registros en Google Sheets cayeran en valores por defecto ('Cliente General', strings vacíos o 0).
+- **Ausencia de Endpoint para Consulta de Comandas:** No existía una acción `obtenerComandas` en el método `doGet` para que el sistema pudiera consultar el listado histórico de pedidos registrados en la pestaña `Pedidos_Comanda`.
+
+### 2. Implementaciones Realizadas en `backend/Codigo.gs`
+1. **Declaración de Constante Global Drive:**
+   - Se declaró explícitamente:
+     ```javascript
+     const CARPETA_DRIVE_FOTOS = "Fotos_Platos_ADomicilio";
+     ```
+     junto a `SPREADSHEET_ID` y las constantes de nombres de pestañas (`HOJA_MENU`, `HOJA_PEDIDOS`, etc.), solventando cualquier `ReferenceError` en las operaciones de subida y creación de carpetas en Google Drive.
+
+2. **Normalización y Robustecimiento de `registrarComanda` en `doPost`:**
+   - Se implementó un mapeo flexible tolerante a ambos formatos de nomenclatura:
+     * Nombre: `datos.clienteNombre || datos.nombre || 'Cliente General'`
+     * Teléfono: `datos.clienteTelefono || datos.telefono || ''`
+     * Dirección: `datos.direccionEntrega || datos.direccion || ''`
+     * Detalle de Platos: Soporte para string o array/objeto serializado (`datos.detallePlatos !== undefined ? datos.detallePlatos : datos.platos`)
+     * Extras Seleccionados: Soporte para string o array/objeto serializado (`datos.extrasSeleccionados !== undefined ? datos.extrasSeleccionados : datos.extras`)
+     * Notas: `datos.notasCocina !== undefined ? datos.notasCocina : (datos.notas || '')`
+     * Total: `parseFloat(datos.totalUSD !== undefined ? datos.totalUSD : datos.total) || 0`
+     * Estado: `datos.estadoPedido || datos.estado || 'Pendiente'`
+     * ID Comanda: Respeta `datos.idComanda` o `datos.id` si viene del cliente, o genera `CMD-yyyyMMdd-HHmmss`.
+
+3. **Nuevo Endpoint `obtenerComandas` en `doGet`:**
+   - Se integró la acción `obtenerComandas` en el despachador de `doGet`:
+     * Lee la hoja `Pedidos_Comanda` (`HOJA_PEDIDOS`).
+     * Itera las filas ignorando registros vacíos y mapea los datos a un array de objetos JSON estructurados:
+       `{ idComanda, fechaHora, clienteNombre, clienteTelefono, direccionEntrega, detallePlatos, extrasSeleccionados, notasCocina, totalUSD, estadoPedido }`.
+     * Retorna una respuesta estándar JSON `{ exito: true, comandas: [...], total: n }`.
+
+### 3. Verificación de Integridad y Sintaxis
+- **Validación de Sintaxis JavaScript:** Se ejecutó análisis sintáctico formal del código de [`backend/Codigo.gs`](backend/Codigo.gs) mediante el motor `vm.Script` de Node.js v22.20.0, confirmando cero errores de sintaxis (`Sintaxis JavaScript VALIDA`).
+- **Pruebas de Simulación de Mapeo:** Se ejecutaron pruebas unitarias con cargas útiles reales del frontend (camelCase) y cargas útiles heredadas (formato simple), validando el 100% de coincidencia y parsing numérico/JSON.
+- **Alineación con Reglas de Gobernanza:**
+  * `REG-01`: Se mantiene la identidad y titularidad inmutable de ANDY Paz (`elchichote@gmail.com`) y el ID oficial del ERP `1nHy2HPQEqdum2g1pXAyz6eJECVX4zgIPAt8J5JZqsRA`.
+  * `REG-04`: Código 100% aislado en el ecosistema gastronómico `WebViewComida`.
+  * `REG-05`: Documentación completa registrada en `HISTORIAL.md`.
+
+---
+
+## 📝 Registro de Sesión 17 (18 de Octubre de 2026 - Mañana / Fase 2: Sincronización en Vivo Stale-While-Revalidate Cliente <-> Nube Multi-Dispositivo)
+
+### 1. Diagnóstico y Objetivos de la Fase 2
+- **Objetivo Central:** Permitir que cualquier comensal en cualquier dispositivo móvil o de escritorio que ingrese a la aplicación pública en GitHub Pages (https://domicilio-chi.github.io/Domicilio/) acceda de manera instantánea (0 ms) mediante el patrón **Stale-While-Revalidate**, manteniendo en segundo plano una sincronización automática y resiliente con los platos, precios, categorías y disponibilidad administrados en tiempo real en el ERP Google Sheets de ANDY Paz (elchichote@gmail.com).
+- **Resiliencia de Red:** La API y la interfaz deben ser totalmente tolerantes a desconexiones, tiempos de espera lentos o fallos transitorios sin emitir alertas intrusivas ni bloquear la experiencia visual del comensal.
+
+### 2. Implementaciones Técnicas Realizadas
+
+1. **Ampliación y Robustecimiento de `src/api.js` (y `comida_gh_pages/api.js`):**
+   - **Método `obtenerMenu` Resiliente:** Incorporación de `AbortController` con timeout de 8.5 segundos. Manejo de excepciones silencioso con registro informativo (`console.warn`) en modo offline; retorna `null` ante fallos para que la aplicación preserve los datos cacheados sin alterar el flujo del usuario.
+   - **Nuevo Método `obtenerConfig`:** Consulta en segundo plano `?accion=obtenerConfig` con AbortController (8.5s). Retorna el diccionario de configuración global (`NOMBRE_NEGOCIO`, `WHATSAPP_COCINA`, `WHATSAPP_SOPORTE`, `HORARIO_ATENCION`).
+   - **Nuevo Método `obtenerComandas`:** Consulta GET `?accion=obtenerComandas` con AbortController (8.5s). Retorna array estructurado de pedidos o array vacío en caso de contingencia.
+   - **Compatibilidad Híbrida Web / Node:** Métodos `getURL` y `setURL` adaptados para verificar disponibilidad de `localStorage` y soporte dual para entornos de navegador y scripts de Node.js (`module.exports`).
+
+2. **Implementación de Stale-While-Revalidate en `src/app.js` (y `comida_gh_pages/app.js`):**
+   - **Arranque Instantáneo (0 ms):** `cargarPlatosActivos()` mantiene la lectura inmediata del almacenamiento local (`adomicilio_platos_custom`) con versión actualizada `v3.5_sync_en_vivo`, asegurando renderizado inmediato sin pantalla en blanco.
+   - **Motor Asíncrono `sincronizarMenuEnVivo()`:** Disparado automáticamente al completarse el evento `DOMContentLoaded`. Realiza consulta paralela mediante `Promise.allSettled` a `API.obtenerMenu()` y `API.obtenerConfig()`.
+   - **Detección Dinámica de Cambios:** Compara la firma estructural del menú actual versus los datos devueltos por Google Sheets. Al detectar cambios (nuevos platos, precios actualizados, disponibilidad o fotos), actualiza la variable `platos`, persiste en `localStorage` (`adomicilio_platos_custom`), regenera la cuadrícula de platos y la barra de categorías, y muestra un toast sutil: *"¡Menú actualizado en vivo con cocina! 🟢"*.
+   - **Sincronización de Parámetros Globales:** Si la nube suministra `WHATSAPP_COCINA` o `NOMBRE_NEGOCIO`, actualiza dinámicamente el enlace directo de WhatsApp en la cabecera (`#btnWhatsAppDirecto`) y las políticas de contacto.
+   - **Gestión Visual de Disponibilidad:** Platos marcados con `disponible: false` se visualizan con etiqueta *"Agotado Hoy"*, filtro de opacidad/desaturación, precio en tono neutro y bloqueo preventivo con toast explicativo al intentar abrir el modal de pedido.
+   - **Categorías Adaptativas:** `obtenerCategoriasCliente()` detecta si hay platos nuevos con categorías creadas en la nube e inserta automáticamente los botones correspondientes en la barra de categorías.
+
+3. **Sincronización de Disponibilidad en Tiempo Real en `src/admin.js` (y `comida_gh_pages/admin.js`):**
+   - En la función `toggleDisponibilidad(id)`, además de guardar en `localStorage` y refrescar las tablas, se invoca `API.actualizarPrecioStock(p.id, p.precio, p.disponible)` para que el cambio de disponibilidad viaje de inmediato a la hoja `Menu_Platillos` de Google Sheets.
+   - Corrección visual en la tabla de administración y tarjetas móviles para distinguir con claridad el estado "Disponible Hoy" (verde esmeralda) versus "Agotado" (tono neutro con ícono de prohibición).
+
+4. **Cache-Buster y Despliegue en GitHub Pages:**
+   - Actualización del cache-buster a `?v=3.5` en `src/index.html`, `src/admin.html`, `comida_gh_pages/index.html`, `comida_gh_pages/admin.html` y `comida_gh_pages/404.html`.
+   - Commit y push exitoso a la rama `main` de `origin` en `comida_gh_pages` utilizando el token oficial de `domicilio_token.txt`.
+   - **Hash de Commit:** `64177d3` en `https://github.com/Domicilio-Chi/Domicilio.git`.
+
+### 3. Evidencias de Pruebas Automatizadas
+- **Script:** [`verificar_fase_2_sincronizacion.js`](verificar_fase_2_sincronizacion.js).
+- **Resultados de Validación:**
+  * Sintaxis JavaScript: 100% válida en los 6 archivos del ecosistema.
+  * `API.obtenerMenu()`: 12 platos leídos en vivo desde Google Sheets ERP.
+  * `API.obtenerConfig()`: Parámetros del restaurante recibidos correctamente.
+  * `API.obtenerComandas()`: Ejecución limpia y resiliente.
+  * Simulación en Navegador Real Headless (Chrome CDP):
+    - Carga exitosa en escritorio (1280x800) y móvil (375x812).
+    - Grid con 12 platos renderizados y sincronizados en vivo.
+    - Cero errores en consola.
+  * Capturas generadas en [`capturas/`](capturas/):
+    - `capturas/verificacion_fase_2_desktop.png` (Catálogo en escritorio con platos y categorías en vivo).
+    - `capturas/verificacion_fase_2_movil.png` (Catálogo móvil responsivo con menú actualizado).
+    - `capturas/verificacion_fase_2_admin.png` (Panel administrativo con toggle de disponibilidad en tiempo real).

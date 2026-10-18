@@ -301,6 +301,16 @@ function actualizarMetricas() {
   document.getElementById('metricaTotalPlatos').textContent = platosAdmin.length;
   const activos = platosAdmin.filter(p => p.disponible).length;
   document.getElementById('metricaPlatosActivos').textContent = activos;
+
+  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  const elMensajes = document.getElementById('metricaMensajes');
+  if (elMensajes) elMensajes.textContent = mensajes.length;
+
+  const badgeChat = document.getElementById('badgeAdminChat');
+  if (badgeChat) {
+    if (mensajes.length > 0) badgeChat.classList.remove('hidden');
+    else badgeChat.classList.add('hidden');
+  }
 }
 
 function toggleDisponibilidad(id) {
@@ -652,34 +662,74 @@ function renderizarAdminChat() {
     return;
   }
 
-  listaContenedor.innerHTML = mensajes.slice().reverse().map(m => `
-    <div class="p-3.5 rounded-2xl bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70 shadow-xs space-y-2">
-      <div class="flex items-center justify-between text-xs">
-        <span class="font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-user-circle text-emerald-500"></i> ${m.cliente || 'Comensal'}
-        </span>
-        <span class="text-[10px] text-stone-400">${m.fecha || ''}</span>
-      </div>
-
-      ${m.plato ? `
-        <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
-          <i class="fa-solid fa-utensils text-[10px]"></i>
-          <span>Consultó sobre: ${m.plato} (${m.categoria || 'Menú'})</span>
+  listaContenedor.innerHTML = mensajes.slice().reverse().map((m, idxRev) => {
+    const idxOriginal = mensajes.length - 1 - idxRev;
+    const esAdmin = m.emisor === 'admin';
+    return `
+      <div class="p-3.5 rounded-2xl ${esAdmin ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60' : 'bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70'} shadow-xs space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold ${esAdmin ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-900 dark:text-white'} flex items-center gap-1.5">
+            <i class="fa-solid ${esAdmin ? 'fa-utensils text-emerald-600' : 'fa-user-circle text-stone-500'}"></i>
+            ${m.cliente || (esAdmin ? 'Cocina A Domicilio' : 'Comensal')}
+          </span>
+          <div class="flex items-center space-x-2">
+            <span class="text-[10px] text-stone-400">${m.fecha || ''}</span>
+            <button onclick="eliminarMensajeChatAdmin('${m.id || ''}', ${idxOriginal})" class="w-6 h-6 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 flex items-center justify-center transition cursor-pointer" title="Eliminar esta consulta">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
         </div>
-      ` : ''}
 
-      <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed bg-stone-50 dark:bg-stone-900/60 p-2.5 rounded-xl border border-stone-100 dark:border-stone-800">
-        "${m.mensaje}"
-      </p>
+        ${m.plato ? `
+          <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
+            <i class="fa-solid fa-utensils text-[10px]"></i>
+            <span>Consultó sobre: ${m.plato} (${m.categoria || 'Menú'})</span>
+          </div>
+        ` : ''}
 
-      <div class="flex items-center justify-end space-x-2 pt-1">
-        <button onclick="responderPorWhatsAppAdmin('${m.plato || ''}', '${encodeURIComponent(m.mensaje)}')" class="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center space-x-1.5 transition">
-          <i class="fa-brands fa-whatsapp text-xs"></i>
-          <span>Responder en WhatsApp</span>
-        </button>
+        <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed bg-stone-50 dark:bg-stone-900/60 p-2.5 rounded-xl border border-stone-100 dark:border-stone-800">
+          "${m.mensaje}"
+        </p>
+
+        ${!esAdmin ? `
+          <div class="flex items-center justify-end space-x-2 pt-1">
+            <button onclick="responderPorWhatsAppAdmin('${m.plato || ''}', '${encodeURIComponent(m.mensaje)}')" class="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center space-x-1.5 transition cursor-pointer">
+              <i class="fa-brands fa-whatsapp text-xs"></i>
+              <span>Responder en WhatsApp</span>
+            </button>
+          </div>
+        ` : ''}
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function eliminarMensajeChatAdmin(idMensaje, idxOriginal) {
+  let mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  if (idMensaje) {
+    mensajes = mensajes.filter(m => m.id !== idMensaje);
+  } else if (typeof idxOriginal === 'number' && idxOriginal >= 0 && idxOriginal < mensajes.length) {
+    mensajes.splice(idxOriginal, 1);
+  }
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+  renderizarAdminChat();
+  actualizarMetricas();
+  mostrarToastAdmin('Consulta eliminada del registro');
+}
+
+function confirmarVaciarTodoChatAdmin() {
+  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  if (mensajes.length === 0) {
+    mostrarToastAdmin('No hay consultas registradas para vaciar');
+    return;
+  }
+  if (!confirm('¿Deseas vaciar todas las consultas del chat de clientes? Esta acción eliminará el historial del panel.')) {
+    return;
+  }
+  localStorage.removeItem('adomicilio_mensajes_chat');
+  renderizarAdminChat();
+  actualizarMetricas();
+  mostrarToastAdmin('Historial de chat vaciado con éxito');
 }
 
 function responderAdminChat() {
@@ -708,6 +758,7 @@ function responderAdminChat() {
 
   input.value = '';
   renderizarAdminChat();
+  actualizarMetricas();
   mostrarToastAdmin('Respuesta enviada al chat');
 }
 

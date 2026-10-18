@@ -1247,6 +1247,30 @@ function cerrarModalChat() {
   document.getElementById('modalChat').classList.add('hidden');
 }
 
+function confirmarVaciarChatCliente() {
+  if (!confirm('¿Deseas limpiar todos los mensajes de esta conversación?')) return;
+
+  localStorage.removeItem('adomicilio_mensajes_chat');
+  chatContextoPlato = null;
+  const banner = document.getElementById('chatBannerContexto');
+  if (banner) banner.classList.add('hidden');
+
+  const area = document.getElementById('chatMensajesArea');
+  if (area) {
+    area.innerHTML = `
+      <div class="flex items-start space-x-2">
+        <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <div class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/60 rounded-2xl rounded-tl-none p-3 max-w-[80%] text-xs shadow-xs text-stone-800 dark:text-stone-200">
+          ¡Hola! 👋 Bienvenido a <strong>A Domicilio</strong>. ¿Tienes dudas sobre los ingredientes de algún plato o tiempo estimado de despacho? ¡Escríbenos aquí!
+        </div>
+      </div>
+    `;
+  }
+  mostrarToast('Conversación limpiada');
+}
+
 function limpiarContextoChat() {
   chatContextoPlato = null;
   const banner = document.getElementById('chatBannerContexto');

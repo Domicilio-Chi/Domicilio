@@ -449,11 +449,15 @@
           <div>
             <h3 class="font-black font-heading text-base text-stone-900 dark:text-white leading-tight">Consultas de Clientes en Vivo</h3>
             <span class="text-[11px] text-stone-500 dark:text-stone-400">Preguntas sobre platos y tiempos de cocina</span>
-          </div>
+        <div class="flex items-center space-x-2">
+          <button id="btnVaciarTodoChatAdmin" onclick="confirmarVaciarTodoChatAdmin()" class="px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-600 hover:text-white text-xs font-bold transition flex items-center space-x-1 cursor-pointer" title="Vaciar todo el historial de consultas">
+            <i class="fa-solid fa-trash-can text-xs"></i>
+            <span class="hidden sm:inline">Vaciar Todo</span>
+          </button>
+          <button onclick="cerrarModalAdminChat()" class="w-8 h-8 rounded-full bg-stone-200/60 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition cursor-pointer">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
         </div>
-        <button onclick="cerrarModalAdminChat()" class="w-8 h-8 rounded-full bg-stone-200/60 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
       </div>
 
       <!-- Lista de Mensajes y Consultas -->

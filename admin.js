@@ -941,8 +941,15 @@ if (canalPresenciaAdmin) {
   };
 }
 
-// Reloj de actualización periódica cada 2.5 segundos para purga y sincronización
-setInterval(actualizarPresenciaComensales, 2500);
+// Reloj de sincronización continua cada 1.2 segundos para métricas, mensajes pendientes y presencia
+setInterval(() => {
+  actualizarMetricas();
+  actualizarPresenciaComensales();
+  const modalChat = document.getElementById('modalAdminChat');
+  if (modalChat && !modalChat.classList.contains('hidden')) {
+    renderizarAdminChat();
+  }
+}, 1200);
 
 // ==========================================
 // BANDEJA MULTIUSUARIO DE CONSULTAS Y CHAT

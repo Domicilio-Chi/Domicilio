@@ -1333,6 +1333,62 @@ function consultarPlatoDesdeModal() {
 
   cerrarModalPlato();
   abrirModalChat();
+
+  // Enviar consulta del plato de inmediato al Chef para que le notifique en el panel admin
+  const cant = chatContextoPlato.cantidad || 1;
+  const cantTxt = cant > 1 ? `${cant}x ` : '';
+  const extrasTxt = chatContextoPlato.extras && chatContextoPlato.extras.length > 0 
+    ? ` (+ ${chatContextoPlato.extras.map(e => e.nombre).join(', ')})` 
+    : '';
+  const totalTxt = chatContextoPlato.total ? `$${chatContextoPlato.total.toFixed(2)}` : `$${(chatContextoPlato.precio * cant).toFixed(2)}`;
+
+  const miClienteId = obtenerOcrearClienteId();
+  const miNombre = obtenerNombreClienteChat();
+  const historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+
+  const yaConsultadoReciente = historialChat.some(m => 
+    (m.clienteId || '').toLowerCase() === miClienteId.toLowerCase() && 
+    m.plato === chatContextoPlato.nombre && 
+    (Date.now() - (m.timestamp || 0)) < 8000
+  );
+
+  if (!yaConsultadoReciente) {
+    const nuevoMensaje = {
+      id: 'MSG-' + Date.now(),
+      clienteId: miClienteId,
+      clienteNombre: miNombre,
+      fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now(),
+      plato: chatContextoPlato.nombre,
+      categoria: chatContextoPlato.categoria || categoriaSeleccionada,
+      mensaje: `[Consulta de Plato]: Estoy interesado en ${cantTxt}${chatContextoPlato.nombre}${extrasTxt} (${totalTxt}). ¿Tienen disponibilidad y tiempo estimado?`,
+      emisor: 'cliente',
+      leido: false,
+      respondido: false
+    };
+
+    historialChat.push(nuevoMensaje);
+    localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialChat));
+    localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
+
+    if (canalChatCliente) {
+      canalChatCliente.postMessage({
+        tipo: 'NUEVO_MENSAJE_CLIENTE',
+        clienteId: miClienteId,
+        mensaje: nuevoMensaje
+      });
+    }
+
+    if (window.API && typeof API.enviarMensajeChat === 'function') {
+      API.enviarMensajeChat({
+        clienteId: miClienteId,
+        nombre: miNombre,
+        mensaje: `[Consulta]: ${chatContextoPlato.nombre} (${totalTxt})`,
+        plato: chatContextoPlato.nombre,
+        categoria: chatContextoPlato.categoria || categoriaSeleccionada
+      }).catch(e => console.warn(e));
+    }
+  }
 }
 
 function abrirModalChat(contextoDirecto = null) {

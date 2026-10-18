@@ -543,5 +543,6 @@
   * [`capturas/mejora_25_categoria_bebidas_variedad.png`](capturas/mejora_25_categoria_bebidas_variedad.png): Categoría de bebidas filtrada con refrescos en botella y lata.
   * [`capturas/mejora_26_desktop_catalogo_verde_completo.png`](capturas/mejora_26_desktop_catalogo_verde_completo.png): Catálogo completo en escritorio (1280px) con la nueva paleta verde.
   * [`capturas/mejora_27_modal_titulo_y_precio_en_imagen.png`](capturas/mejora_27_modal_titulo_y_precio_en_imagen.png): Título y precio integrados directamente sobre la foto dentro de la ventana modal, optimizando el espacio vertical para móviles.
-- **Commits en GitHub Pages:** `72bb590`, `21f2845`, `de4bcb5` y `9d124d5` en `origin/main`. Sitio activo en: `https://domicilio-chi.github.io/Domicilio/`.
+  * [`capturas/mejora_28_modal_empanadas_opciones_opcionales.png`](capturas/mejora_28_modal_empanadas_opciones_opcionales.png): Reemplazo de la etiqueta `+Gratis` por `Opcional` en todos los sabores y rellenos de empanadas (Queso, Guiso, Pollo, Cazón, Mechada y De Todo).
+- **Commits en GitHub Pages:** `72bb590`, `21f2845`, `de4bcb5`, `9d124d5` y `fa571b8` en `origin/main`. Sitio activo en: `https://domicilio-chi.github.io/Domicilio/`.
 

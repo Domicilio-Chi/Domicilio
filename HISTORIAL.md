@@ -651,3 +651,23 @@
 - **Captura Generada:**
   * `capturas/mejora_59_footer_limpio_solo_correo_sin_redundancias.png`: Muestra el pie de página simplificado y minimalista al final de los platos.
 - **Commits en GitHub Pages:** `5357b7a` en `origin/main`.
+
+
+---
+
+## 📸 HITO: CARGADOR INTERACTIVO DE FOTOS PARA PLATOS (MÓVIL, PC, DRAG & DROP Y GOOGLE DRIVE)
+
+### 1. Experiencia de Carga Adaptada por Dispositivo
+- **En Teléfono Móvil (`sm:hidden`):** Al tocar el recuadro interactivo de la foto (`📷 Tocar para Galería o Cámara`), se abre automáticamente la opción nativa del teléfono para tomar una foto directamente con la cámara del celular o seleccionar una imagen existente desde la galería de fotos.
+- **En Computadora / PC (`hidden sm:inline`):** Al hacer clic, abre el explorador de archivos de Windows/Mac/Linux (`📁 Clic para buscar o arrastra la foto aquí`), o se puede simplemente arrastrar y soltar cualquier imagen directamente sobre la caja (Drag & Drop con animación de resaltado verde).
+- **Compresión y Optimización Automática en Cliente (Canvas):** La imagen seleccionada se procesa de forma transparente en un lienzo HTML5 Canvas reduciendo sus dimensiones a un máximo de 800 píxeles y calidad 82%, garantizando que cargue en milisegundos sin consumir datos ni espacio excesivo.
+- **Previsualización Inmediata:** La miniatura del plato se actualiza en tiempo real en la tarjeta del modal antes de guardar.
+
+### 2. Soporte y Detección Automática de Google Drive
+- **Conversión de Enlaces Compartidos:** Si el administrador pega un enlace estándar de Google Drive (ej: `https://drive.google.com/file/d/ID/view?usp=sharing`), el sistema extrae automáticamente el ID del archivo y lo transforma en una URL directa de alta velocidad (`https://lh3.googleusercontent.com/d/ID`), eliminando la pantalla de previsualización de Google y mostrando la imagen de inmediato.
+- **Notificación Toast:** Se muestra el aviso `¡Enlace de Google Drive transformado a imagen directa!`.
+
+### 3. Evidencias Visuales y Commits
+- **Captura Generada:**
+  * `capturas/mejora_60_admin_cargador_fotos_con_preview.png`: Ventana modal de plato en `admin.html` demostrando la zona interactiva con preview real, textos responsivos y conversión automática de enlace Drive.
+- **Commits en GitHub Pages:** `de17c7e` en `origin/main`.

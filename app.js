@@ -1243,7 +1243,13 @@ function abrirModalChat(contextoDirecto = null) {
     
     // Insertar bienvenida contextual si no se ha añadido aún para esta combinación exacta
     const area = document.getElementById('chatMensajesArea');
-    const contextoKey = `${chatContextoPlato.id}-${chatContextoPlato.cantidad || 1}-${(chatContextoPlato.extras || []).map(e=>e.nombre).join('-')}`;
+    const contextoKey = `ctx-${chatContextoPlato.id}-${chatContextoPlato.cantidad || 1}-${(chatContextoPlato.extras || []).map(e=>e.nombre).join('-')}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    
+    // Registrar en mapa global de consultas para soportar múltiples platos y borrado selectivo
+    window.contextosPlatosChat = window.contextosPlatosChat || {};
+    window.contextosPlatosChat[contextoKey] = JSON.parse(JSON.stringify(chatContextoPlato));
+    chatContextoPlato._key = contextoKey;
+
     const yaExiste = area.querySelector(`[data-contexto-key="${contextoKey}"]`);
     if (!yaExiste) {
       const msgContexto = document.createElement('div');
@@ -1268,10 +1274,17 @@ function abrirModalChat(contextoDirecto = null) {
           </div>
           <p class="leading-relaxed">¡Hola! Veo que estás interesado en <strong>${cantStr}${chatContextoPlato.nombre}</strong>${extrasStr}. El monto total es de <strong>${totalStr}</strong>.</p>
           <p class="text-[11px] opacity-90 leading-normal">¿Deseas alguna indicación especial para cocina o prefieres agregarlo directo a tu comanda?</p>
-          <div class="pt-1 flex items-center gap-2">
-            <button onclick="agregarContextoDirectoAPedido()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+          <div class="pt-1 flex items-center gap-2 flex-wrap">
+            <!-- Botón Agregar a Pedido -->
+            <button onclick="agregarContextoDirectoAPedido('${contextoKey}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95" title="Agregar este plato a mi comanda">
               <i class="fa-solid fa-cart-plus text-[10px]"></i>
               <span>Agregar a mi Pedido</span>
+            </button>
+
+            <!-- Botón Papelera para Borrar solo esta consulta del chat -->
+            <button onclick="eliminarContextoDelChat('${contextoKey}')" class="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/70 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-white border border-rose-200/80 dark:border-rose-900/60 text-[11px] font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer active:scale-95" title="Eliminar solo este plato del chat">
+              <i class="fa-solid fa-trash-can text-[10px]"></i>
+              <span>Borrar</span>
             </button>
           </div>
         </div>
@@ -1286,19 +1299,23 @@ function abrirModalChat(contextoDirecto = null) {
   modal.classList.remove('hidden');
 }
 
-function agregarContextoDirectoAPedido() {
-  if (!chatContextoPlato) return;
+function agregarContextoDirectoAPedido(key = null) {
+  const contexto = (key && window.contextosPlatosChat && window.contextosPlatosChat[key]) 
+    ? window.contextosPlatosChat[key] 
+    : chatContextoPlato;
 
-  const cant = chatContextoPlato.cantidad || 1;
-  const extras = chatContextoPlato.extras || [];
+  if (!contexto) return;
+
+  const cant = contexto.cantidad || 1;
+  const extras = contexto.extras || [];
   const sumaExtras = extras.reduce((acc, e) => acc + (e.precio || 0), 0);
-  const totalItem = (chatContextoPlato.precio + sumaExtras) * cant;
+  const totalItem = (contexto.precio + sumaExtras) * cant;
 
   comanda.push({
     idUnico: Date.now().toString(),
-    platoId: chatContextoPlato.id,
-    nombre: chatContextoPlato.nombre,
-    precioBase: chatContextoPlato.precio,
+    platoId: contexto.id,
+    nombre: contexto.nombre,
+    precioBase: contexto.precio,
     extras: extras,
     notas: 'Agregado desde chat con el chef',
     cantidad: cant,
@@ -1309,7 +1326,33 @@ function agregarContextoDirectoAPedido() {
   actualizarBadgeComanda();
   cerrarModalChat();
   abrirModalComanda();
-  mostrarToast(`¡${chatContextoPlato.nombre} agregado al pedido! 🍲`);
+  mostrarToast(`¡${contexto.nombre} agregado al pedido! 🍲`);
+}
+
+function eliminarContextoDelChat(contextoKey) {
+  const area = document.getElementById('chatMensajesArea');
+  const msgEl = area ? area.querySelector(`[data-contexto-key="${contextoKey}"]`) : null;
+  if (msgEl) {
+    msgEl.classList.add('transition-all', 'duration-200', 'opacity-0', 'scale-95');
+    setTimeout(() => {
+      if (msgEl && msgEl.parentNode) {
+        msgEl.parentNode.removeChild(msgEl);
+      }
+      
+      // Si el banner superior correspondía a esta consulta, ocultarlo
+      if (chatContextoPlato && chatContextoPlato._key === contextoKey) {
+        chatContextoPlato = null;
+        const banner = document.getElementById('chatBannerContexto');
+        if (banner) banner.classList.add('hidden');
+      }
+
+      if (window.contextosPlatosChat && window.contextosPlatosChat[contextoKey]) {
+        delete window.contextosPlatosChat[contextoKey];
+      }
+    }, 200);
+
+    mostrarToast('Consulta eliminada del chat 🗑️');
+  }
 }
 
 function cerrarModalChat() {

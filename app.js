@@ -753,6 +753,8 @@ function abrirModalPlato(id) {
   const badgeCat = document.getElementById('modalCategoriaPlato');
   if (badgeCat) badgeCat.textContent = platoSeleccionadoModal.categoria;
   document.getElementById('modalFotoPlato').src = getRutaFoto(platoSeleccionadoModal.foto);
+  const badgePrecioBase = document.getElementById('modalPrecioBase');
+  if (badgePrecioBase) badgePrecioBase.textContent = `$${platoSeleccionadoModal.precio.toFixed(2)}`;
   const inputNotas = document.getElementById('inputNotasCocina');
   if (inputNotas) inputNotas.value = '';
 
@@ -842,6 +844,10 @@ function calcularTotalModal() {
   });
 
   const totalFinal = totalUnitario * cantidadModal;
+  const badgePrecioBase = document.getElementById('modalPrecioBase');
+  if (badgePrecioBase) {
+    badgePrecioBase.textContent = `$${totalFinal.toFixed(2)}`;
+  }
   document.getElementById('modalTotalCalculado').textContent = `$${totalFinal.toFixed(2)}`;
 }
 

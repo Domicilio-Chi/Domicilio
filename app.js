@@ -769,13 +769,13 @@ function abrirModalPlato(id) {
         </div>
         ${e.precio > 0 
           ? `<span class="font-bold text-emerald-600 dark:text-emerald-400">+$${e.precio.toFixed(2)}</span>` 
-          : `<span class="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/80 border border-emerald-300/60 dark:border-emerald-800 px-2.5 py-0.5 rounded-full">Opcional</span>`
+          : ''
         }
       </label>
     `).join('');
   } else {
     contenedorExtras.innerHTML = `
-      <p class="text-xs text-stone-400 italic">Este plato no tiene adicionales opcionales.</p>
+      <p class="text-xs text-stone-400 italic">Este plato no tiene adicionales disponibles.</p>
     `;
   }
 

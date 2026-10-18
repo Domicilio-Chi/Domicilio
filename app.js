@@ -73,7 +73,7 @@ const MENU_INICIAL = [
     icono: '🫓',
     descripcion: 'Arepitas asadas en budare doraditas y rellenas al gusto con carne mechada, pollo campesino o queso de mano hilado.',
     precio: 5.00,
-    foto: 'assets/imagenes/sopa_costilla_arepitas.jpg',
+    foto: 'https://images.unsplash.com/photo-1628294895950-9805252327bc?w=800&auto=format&fit=crop&q=80',
     extras: [
       { id: 'ext_arepa_mechada', nombre: 'Relleno: Carne Mechada jugosa', precio: 0.00 },
       { id: 'ext_arepa_pollo', nombre: 'Relleno: Pollo campesino desmechado', precio: 0.00 },

@@ -569,3 +569,20 @@
   * `capturas/mejora_51_chat_con_chef_extras_y_total.png`: Chat con chef detallando cantidad, extras (salsa + refresco) y monto total con botón directo para agregar.
   * `capturas/mejora_52_comanda_abierta_directamente_al_agregar.png`: Comanda abierta de inmediato con los platos agregados, papeleras rojas alineadas, datos de despacho y total a pagar.
 - **Commits en GitHub Pages:** `78359b7`, `2ac2b50` y `b2a933c` en `origin/main`.
+
+
+---
+
+## 🗑️ HITO: BOTÓN PAPELERA PARA BORRADO INDIVIDUAL DE CONSULTAS EN EL CHAT
+
+### 1. Interfaz y Experiencia de Usuario
+- **Botón `[ 🗑️ Borrar ]` en Cada Tarjeta de Consulta:** Se añadió un botón de papelera individual con fondo rojizo sutil (`bg-rose-50 dark:bg-rose-950/70`) y texto nítido justo al lado del botón `[ 🛒 Agregar a mi Pedido ]` en cada propuesta de plato enviada por el chef.
+- **Borrado Selectivo con Animación:** Al pulsar `[ 🗑️ Borrar ]`, la función `eliminarContextoDelChat(contextoKey)` aplica un desvanecimiento suave (`opacity-0 scale-95`) y retira la tarjeta del chat sin alterar los otros mensajes ni borrar el resto de la conversación.
+- **Toast de Confirmación:** Se muestra la notificación flotante `Consulta eliminada del chat 🗑️`.
+- **Soporte de Múltiples Consultas:** Cada tarjeta queda enlazada mediante su clave única `contextoKey`, de modo que agregar a la comanda o borrar una consulta no interfiere con las demás opciones abiertas.
+
+### 2. Evidencias Visuales y Commits
+- **Capturas Generadas:**
+  * `capturas/mejora_53_chat_con_botones_borrar_individual.png`: Muestra múltiples platos en el chat con sus botones `[Agregar a mi Pedido]` y `[🗑️ Borrar]`.
+  * `capturas/mejora_54_chat_despues_de_borrado_individual.png`: Muestra el chat tras eliminar una sola consulta, conservando las demás intactas con feedback visual.
+- **Commits en GitHub Pages:** `f6addc8` en `origin/main`.

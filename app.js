@@ -554,41 +554,35 @@ function renderizarPlatos() {
       onclick="abrirModalPlato('${p.id}')"
       class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group cursor-pointer select-none">
       
-      <!-- Contenedor Foto -->
-      <div class="relative h-48 sm:h-52 bg-stone-950 overflow-hidden">
+      <!-- Contenedor Foto con Título y Precio directamente SOBRE la imagen -->
+      <div class="relative h-52 sm:h-56 bg-stone-950 overflow-hidden">
         <img 
           src="${getRutaFoto(p.foto)}" 
           alt="${p.nombre}" 
           loading="lazy"
           onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80'"
           class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-        
-        <!-- Píldora de Categoría en esquina superior izquierda -->
-        <div class="absolute top-3 left-3 pointer-events-none">
-          <span class="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/10 shadow-sm flex items-center gap-1">
-            <span>${p.icono || '🍽️'}</span>
-            <span>${p.categoria}</span>
-          </span>
-        </div>
 
-        <!-- Píldora de Precio en borde inferior derecho de la imagen (Verde clarito/amigable, destacada) -->
-        <div class="absolute bottom-3 right-3 pointer-events-none">
-          <span class="bg-emerald-500 text-white font-black text-sm sm:text-base px-3.5 py-1 rounded-2xl shadow-lg border border-emerald-300/40 tracking-tight flex items-center gap-0.5">
-            $${p.precio.toFixed(2)}
-          </span>
+        <!-- Degradado inferior con Título y Precio sobre la Imagen (Sin categoría superior) -->
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-12 pb-3 px-3.5 sm:px-4 flex items-end justify-between gap-2.5 pointer-events-none">
+          <div class="flex-1 min-w-0 pr-1">
+            <h4 class="font-heading font-black text-sm sm:text-base text-white leading-snug drop-shadow-md break-words">
+              ${p.nombre}
+            </h4>
+          </div>
+          <div class="shrink-0 text-right">
+            <span class="bg-emerald-500 text-white font-black text-xs sm:text-sm px-3 py-1 rounded-2xl shadow-lg border border-emerald-300/40 tracking-tight inline-flex items-center">
+              $${p.precio.toFixed(2)}
+            </span>
+          </div>
         </div>
       </div>
 
-      <!-- Información del Plato (Sin cortes de texto, todo el bloque abre el menú del plato) -->
-      <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-        <div>
-          <h4 class="font-heading font-black text-base sm:text-lg text-stone-900 dark:text-white leading-snug break-words group-hover:text-emerald-600 transition">
-            ${p.nombre}
-          </h4>
-          <p class="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-2 leading-relaxed">
-            ${p.descripcion}
-          </p>
-        </div>
+      <!-- Descripción del Plato debajo de la imagen -->
+      <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-center">
+        <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+          ${p.descripcion}
+        </p>
       </div>
 
     </div>

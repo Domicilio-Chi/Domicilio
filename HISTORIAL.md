@@ -671,3 +671,27 @@
 - **Captura Generada:**
   * `capturas/mejora_60_admin_cargador_fotos_con_preview.png`: Ventana modal de plato en `admin.html` demostrando la zona interactiva con preview real, textos responsivos y conversión automática de enlace Drive.
 - **Commits en GitHub Pages:** `de17c7e` en `origin/main`.
+
+
+---
+
+## 🌅 HITO: SPLASH SIMPLIFICADO A PANTALLA COMPLETA (FOTO HORIZONTAL PARA PC Y VERTICAL PARA MÓVIL)
+
+### 1. Detección Inteligente y Cobertura Total de Pantalla
+- **En Computadora / PC (`md:block`):** Se reemplazó el contenedor pequeño de tarjeta y caja de texto por una **imagen panorámica horizontal 16:9** a pantalla completa (`fixed inset-0 w-full h-full object-cover object-center`), calculando automáticamente el tamaño y resolución del monitor sin deformarse ni dejar bordes negros.
+- **En Teléfono Celular (`md:hidden`):** Se mantiene la **imagen vertical 9:16** a pantalla completa adaptada a la orientación vertical del teléfono.
+- **Eliminación de Contenido Redundante:** Se eliminaron párrafos excesivos, menciones innecesarias de "delivery" y el botón redundante *"Ver Carta y Precios"*, logrando una bienvenida limpia, cinematográfica y minimalista que dura solo 2.5 segundos con su barra de progreso automática. Al hacer clic o tocar la pantalla, se salta inmediatamente al menú.
+
+### 2. Gestor de Portadas de Inicio en el Panel Administrador (`admin.html`)
+- **Nuevo Botón `[ 🖼️ Portadas ]`:** Ubicado en la barra superior junto a Categorías y Nuevo Plato.
+- **Ventana Modal `#modalConfigSplash`:**
+  - **Portada para Computadora:** Vista previa horizontal con botón para cargar imagen de PC o pegar enlace de Google Drive / ruta.
+  - **Portada para Teléfono Móvil:** Vista previa vertical con botón para tomar foto con cámara / galería o pegar enlace de Google Drive / ruta.
+  - **Botón `[ ↺ Restaurar Originales ]` y `[ 💾 Guardar Portadas ]`:** Persistencia inmediata en `localStorage` (`adomicilio_splash_desktop` y `adomicilio_splash_movil`), actualizando el catálogo público al instante.
+
+### 3. Evidencias Visuales y Commits
+- **Capturas Generadas:**
+  * `capturas/mejora_61_splash_desktop_horizontal_pantalla_completa.png`: Pantalla de bienvenida inmersiva a pantalla completa en PC con la nueva foto horizontal 16:9 de empanadas, tequeños y guasacaca.
+  * `capturas/mejora_62_splash_movil_vertical_pantalla_completa.png`: Pantalla de bienvenida inmersiva vertical en teléfono móvil.
+  * `capturas/mejora_63_admin_modal_configurar_portadas_splash.png`: Modal administrador para personalizar y subir las fotos de inicio tanto de PC como de móvil con preview instantáneo.
+- **Commits en GitHub Pages:** `8f75a98` y `9414320` en `origin/main`.

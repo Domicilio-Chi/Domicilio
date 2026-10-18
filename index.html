@@ -114,6 +114,28 @@
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 10 !important;
     }
+
+    /* Animación Leve de Resalte de Borde para el Botón de Chat con el Chef */
+    @keyframes bordeChefResalteLeve {
+      0%, 100% {
+        border-color: rgba(16, 185, 129, 0.35);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        transform: scale(1);
+      }
+      50% {
+        border-color: rgba(16, 185, 129, 0.95);
+        box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.35), inset 0 0 6px rgba(16, 185, 129, 0.15);
+        transform: scale(1.01);
+      }
+    }
+    .borde-animado-chef {
+      animation: bordeChefResalteLeve 2.4s ease-in-out infinite !important;
+      border-width: 1.5px !important;
+    }
+    .borde-animado-chef:hover {
+      border-color: #10b981 !important;
+      box-shadow: 0 0 16px 3px rgba(16, 185, 129, 0.45) !important;
+    }
   </style>
 
   <!-- Micro-script anti-FOUC para tema -->
@@ -457,7 +479,7 @@
         <button 
           type="button"
           onclick="consultarPlatoDesdeModal()" 
-          class="w-full bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 py-2.5 px-3.5 rounded-2xl text-xs font-bold flex items-center justify-center space-x-2 transition border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
+          class="w-full bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 py-2.5 px-3.5 rounded-2xl text-xs font-bold flex items-center justify-center space-x-2 transition border border-emerald-300 dark:border-emerald-700/80 borde-animado-chef shadow-xs">
           <i class="fa-solid fa-comments text-emerald-600 text-sm"></i>
           <span>¿Quieres algo especial? Chatea directo con el chef</span>
         </button>

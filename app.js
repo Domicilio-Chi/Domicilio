@@ -240,7 +240,7 @@ const MENU_INICIAL = [
 ];
 
 function cargarPlatosActivos() {
-  const versionActual = 'v3.3_opciones_rellenos_opcionales';
+  const versionActual = 'v3.4_sin_opcional_limpio';
   const versionGuardada = localStorage.getItem('adomicilio_menu_version');
   
   if (versionGuardada !== versionActual) {

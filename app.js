@@ -280,7 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
   actualizarEmailContactoFooter();
   cargarDatosEntregaGuardados();
   configurarCierreModales();
-  iniciarGuiaSecuencialCategorias();
 });
 
 // ==========================================
@@ -435,12 +434,8 @@ function actualizarIconoTema() {
 }
 
 // ==========================================
-// RENDERIZADO DE CATEGORÍAS Y GUÍA SECUENCIAL
+// RENDERIZADO DE CATEGORÍAS (BARRA HORIZONTAL RESPONSIVE ESTABLE)
 // ==========================================
-let timerGuiaCategorias = null;
-let indiceGuiaCategorias = 0;
-let guiaCategoriasActiva = true;
-
 function renderizarCategorias() {
   const contenedor = document.getElementById('contenedorCategorias');
   if (!contenedor) return;
@@ -460,9 +455,9 @@ function renderizarCategorias() {
       <button 
         onclick="seleccionarCategoria('${c.id}')"
         data-cat="${c.id}"
-        class="btn-categoria-pill flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 shadow-xs flex-shrink-0 cursor-pointer ${
+        class="btn-categoria-pill flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 shadow-xs flex-shrink-0 cursor-pointer ${
           activa 
-            ? 'cat-activa-permanente bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-105' 
+            ? 'cat-activa-permanente bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/40' 
             : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700/60 hover:bg-emerald-50 dark:hover:bg-stone-700'
         }">
         <i class="${c.icono} text-xs"></i>
@@ -475,48 +470,33 @@ function renderizarCategorias() {
   }).join('');
 }
 
-function iniciarGuiaSecuencialCategorias() {
-  if (timerGuiaCategorias) clearInterval(timerGuiaCategorias);
-
-  timerGuiaCategorias = setInterval(() => {
-    const botones = document.querySelectorAll('.btn-categoria-pill');
-    if (!botones || botones.length === 0) return;
-
-    botones.forEach(b => b.classList.remove('categoria-guia-suave'));
-
-    // Resaltar secuencialmente: uno tras otro con animación suave de onda
-    const idx = indiceGuiaCategorias % botones.length;
-    const btnActual = botones[idx];
-    if (btnActual && !btnActual.classList.contains('cat-activa-permanente')) {
-      btnActual.classList.add('categoria-guia-suave');
-      // En móvil, desplazar suavemente si el botón se encuentra fuera del ancho visible
-      if (window.innerWidth < 640 && btnActual.offsetLeft > (window.innerWidth - 80)) {
-        btnActual.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
-    }
-    indiceGuiaCategorias++;
-  }, 1800);
-}
-
-function detenerGuiaCategorias() {
-  const botones = document.querySelectorAll('.btn-categoria-pill');
-  botones.forEach(b => b.classList.remove('categoria-guia-suave'));
-}
-
 function seleccionarCategoria(catId) {
-  detenerGuiaCategorias();
   categoriaSeleccionada = catId;
   renderizarCategorias();
   renderizarPlatos();
 
   const tit = document.getElementById('tituloCategoriaActiva');
   const sub = document.getElementById('subtituloCategoria');
-  if (catId === 'Todos') {
-    tit.textContent = 'Todos los Platos';
-    sub.textContent = 'Explora nuestro menú disponible para despacho inmediato';
-  } else {
-    tit.textContent = catId;
-    sub.textContent = `Platos calientes y opciones disponibles en ${catId}`;
+  if (tit && sub) {
+    if (catId === 'Todos') {
+      tit.textContent = 'Todos los Platos';
+      sub.textContent = 'Explora nuestro menú disponible para despacho inmediato';
+    } else {
+      tit.textContent = catId;
+      sub.textContent = `Platos calientes y opciones disponibles en ${catId}`;
+    }
+  }
+
+  // Centrado horizontal suave ÚNICAMENTE dentro del contenedor de categorías (sin alterar el scroll de la ventana)
+  const contenedor = document.getElementById('contenedorCategorias');
+  if (contenedor) {
+    const btnActivo = contenedor.querySelector(`[data-cat="${catId}"]`);
+    if (btnActivo) {
+      const contenedorRect = contenedor.getBoundingClientRect();
+      const btnRect = btnActivo.getBoundingClientRect();
+      const scrollOffset = (btnRect.left - contenedorRect.left) - (contenedor.clientWidth / 2) + (btnRect.width / 2);
+      contenedor.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+    }
   }
 }
 

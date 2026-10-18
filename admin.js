@@ -691,7 +691,9 @@ function configurarCierreModalesAdmin() {
     { id: 'modalConfigDelivery', close: cerrarModalConfigDelivery },
     { id: 'modalConfigAPI', close: cerrarModalConfigAPI },
     { id: 'modalAdminChat', close: cerrarModalAdminChat },
-    { id: 'modalConfigGeneral', close: cerrarModalConfigGeneral }
+    { id: 'modalConfigGeneral', close: cerrarModalConfigGeneral },
+    { id: 'modalGestionCategorias', close: cerrarModalGestionCategorias },
+    { id: 'modalConfigSplash', close: cerrarModalConfigSplash }
   ];
 
   modales.forEach(m => {
@@ -1093,4 +1095,136 @@ function eliminarCategoriaAdmin(id) {
   guardarCategoriasAdmin(cats);
   renderizarListaCategoriasAdmin();
   mostrarToastAdmin(`Categoría eliminada 🗑️`);
+}
+
+// ==========================================
+// GESTIÓN DE PORTADAS DE INICIO (SPLASH)
+// ==========================================
+const RUTA_SPLASH_DESKTOP_DEFAULT = 'assets/imagenes/splash_desktop_horizontal.jpg';
+const RUTA_SPLASH_MOVIL_DEFAULT = 'assets/imagenes/splash_empanadas_frescas.jpg';
+
+function abrirModalConfigSplash() {
+  const deskGuardada = localStorage.getItem('adomicilio_splash_desktop') || RUTA_SPLASH_DESKTOP_DEFAULT;
+  const movilGuardada = localStorage.getItem('adomicilio_splash_movil') || RUTA_SPLASH_MOVIL_DEFAULT;
+
+  const inputDesk = document.getElementById('inputUrlSplashDesktop');
+  const inputMov = document.getElementById('inputUrlSplashMovil');
+  const prevDesk = document.getElementById('previewSplashDesktopImg');
+  const prevMov = document.getElementById('previewSplashMovilImg');
+
+  if (inputDesk) inputDesk.value = deskGuardada;
+  if (inputMov) inputMov.value = movilGuardada;
+  if (prevDesk) prevDesk.src = getRutaFoto(deskGuardada);
+  if (prevMov) prevMov.src = getRutaFoto(movilGuardada);
+
+  document.getElementById('modalConfigSplash').classList.remove('hidden');
+}
+
+function cerrarModalConfigSplash() {
+  document.getElementById('modalConfigSplash').classList.add('hidden');
+}
+
+function actualizarPreviewSplashDesdeInput(tipo) {
+  if (tipo === 'desktop') {
+    const input = document.getElementById('inputUrlSplashDesktop');
+    if (!input) return;
+    let val = parsearEnlaceGoogleDrive(input.value.trim());
+    input.value = val;
+    const img = document.getElementById('previewSplashDesktopImg');
+    if (img) img.src = getRutaFoto(val || RUTA_SPLASH_DESKTOP_DEFAULT);
+  } else {
+    const input = document.getElementById('inputUrlSplashMovil');
+    if (!input) return;
+    let val = parsearEnlaceGoogleDrive(input.value.trim());
+    input.value = val;
+    const img = document.getElementById('previewSplashMovilImg');
+    if (img) img.src = getRutaFoto(val || RUTA_SPLASH_MOVIL_DEFAULT);
+  }
+}
+
+function manejarSeleccionSplashDesktop(event) {
+  const archivo = event.target?.files?.[0];
+  if (!archivo || !archivo.type.startsWith('image/')) {
+    mostrarToastAdmin('Selecciona un archivo de imagen válido');
+    return;
+  }
+  comprimirYGuardarPortada(archivo, 1920, (dataUrl) => {
+    const input = document.getElementById('inputUrlSplashDesktop');
+    const img = document.getElementById('previewSplashDesktopImg');
+    if (input) input.value = dataUrl;
+    if (img) img.src = dataUrl;
+    mostrarToastAdmin('¡Foto de PC cargada y optimizada!');
+  });
+}
+
+function manejarSeleccionSplashMovil(event) {
+  const archivo = event.target?.files?.[0];
+  if (!archivo || !archivo.type.startsWith('image/')) {
+    mostrarToastAdmin('Selecciona un archivo de imagen válido');
+    return;
+  }
+  comprimirYGuardarPortada(archivo, 1280, (dataUrl) => {
+    const input = document.getElementById('inputUrlSplashMovil');
+    const img = document.getElementById('previewSplashMovilImg');
+    if (input) input.value = dataUrl;
+    if (img) img.src = dataUrl;
+    mostrarToastAdmin('¡Foto móvil cargada y optimizada!');
+  });
+}
+
+function comprimirYGuardarPortada(archivo, maxDim, callback) {
+  const lector = new FileReader();
+  lector.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      let ancho = img.width;
+      let alto = img.height;
+      if (ancho > maxDim || alto > maxDim) {
+        if (ancho > alto) {
+          alto = Math.round((alto * maxDim) / ancho);
+          ancho = maxDim;
+        } else {
+          ancho = Math.round((ancho * maxDim) / alto);
+          alto = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = ancho;
+      canvas.height = alto;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, ancho, alto);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      callback(dataUrl);
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function guardarConfigSplash() {
+  const urlDesk = document.getElementById('inputUrlSplashDesktop')?.value.trim() || RUTA_SPLASH_DESKTOP_DEFAULT;
+  const urlMov = document.getElementById('inputUrlSplashMovil')?.value.trim() || RUTA_SPLASH_MOVIL_DEFAULT;
+
+  localStorage.setItem('adomicilio_splash_desktop', urlDesk);
+  localStorage.setItem('adomicilio_splash_movil', urlMov);
+
+  mostrarToastAdmin('¡Portadas de bienvenida guardadas con éxito! 🖼️');
+  cerrarModalConfigSplash();
+}
+
+function restaurarSplashPredeterminado() {
+  localStorage.removeItem('adomicilio_splash_desktop');
+  localStorage.removeItem('adomicilio_splash_movil');
+
+  const inputDesk = document.getElementById('inputUrlSplashDesktop');
+  const inputMov = document.getElementById('inputUrlSplashMovil');
+  const prevDesk = document.getElementById('previewSplashDesktopImg');
+  const prevMov = document.getElementById('previewSplashMovilImg');
+
+  if (inputDesk) inputDesk.value = RUTA_SPLASH_DESKTOP_DEFAULT;
+  if (inputMov) inputMov.value = RUTA_SPLASH_MOVIL_DEFAULT;
+  if (prevDesk) prevDesk.src = getRutaFoto(RUTA_SPLASH_DESKTOP_DEFAULT);
+  if (prevMov) prevMov.src = getRutaFoto(RUTA_SPLASH_MOVIL_DEFAULT);
+
+  mostrarToastAdmin('Portadas restauradas a los valores originales');
 }

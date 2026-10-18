@@ -296,6 +296,18 @@ function iniciarSplashPresentacion() {
   const splash = document.getElementById('splashPresentacion');
   if (!splash) return;
 
+  // Cargar fotos personalizadas de portada si han sido configuradas
+  const fotoDeskCustom = localStorage.getItem('adomicilio_splash_desktop');
+  if (fotoDeskCustom) {
+    const imgDesk = document.getElementById('splashImgDesktop');
+    if (imgDesk) imgDesk.src = getRutaFoto(fotoDeskCustom);
+  }
+  const fotoMovilCustom = localStorage.getItem('adomicilio_splash_movil');
+  if (fotoMovilCustom) {
+    const imgMovil = document.getElementById('splashImgMovil');
+    if (imgMovil) imgMovil.src = getRutaFoto(fotoMovilCustom);
+  }
+
   setTimeout(() => {
     const barra = document.getElementById('barraProgresoSplash');
     if (barra) barra.style.width = '100%';

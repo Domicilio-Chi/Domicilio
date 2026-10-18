@@ -185,104 +185,52 @@
 <body class="bg-[#FAFAF9] dark:bg-[#0C0A09] text-stone-800 dark:text-stone-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
   <!-- ========================================== -->
-  <!-- SPLASH / PRESENTACIÓN INTRODUCTORIA TEMPORAL (2 PANELES: ESCRITORIO Y MÓVIL) -->
   <!-- ========================================== -->
-  <div id="splashPresentacion" class="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md transition-all duration-500 ease-out p-0 md:p-6" onclick="cerrarSplashInmediato()">
+  <!-- SPLASH / PRESENTACIÓN INMERSIVA A PANTALLA COMPLETA (MÓVIL Y ESCRITORIO) -->
+  <!-- ========================================== -->
+  <div id="splashPresentacion" class="fixed inset-0 z-[100] w-full h-full flex flex-col justify-end bg-stone-950 text-white select-none cursor-pointer transition-all duration-500 ease-out overflow-hidden" onclick="cerrarSplashInmediato()">
     
-    <!-- 1. PANEL PRINCIPAL PARA ESCRITORIO (Página Web en Computadora - Vista Panorámica) -->
-    <div id="panelSplashDesktop" onclick="event.stopPropagation()" class="hidden md:flex relative w-full max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-950 via-stone-900 to-[#0e1713] text-white p-7 lg:p-9 shadow-2xl border border-emerald-500/30 items-center gap-7">
-      <!-- Columna Izquierda: Información Culinaria y Promoción -->
-      <div class="flex-1 space-y-4 z-10">
-        <div class="flex items-center gap-2">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
-            <i class="fa-solid fa-fire text-amber-400"></i> Comida Caliente & Sabor Criollo
-          </span>
-          <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold">
-            🛵 Delivery Gratis (2+ unid)
-          </span>
-        </div>
-        
-        <h2 class="text-3xl lg:text-4xl font-black font-heading tracking-tight leading-tight text-white">
-          ¡El auténtico sabor venezolano directo a tu puerta!
-        </h2>
-        
-        <p class="text-xs sm:text-sm text-stone-300 font-medium leading-relaxed max-w-xl">
-          Empanadas doradas y crujientes, tequeños rellenos de queso con guasacaca, reconfortantes sopas criollas de costilla y cachapas recién asadas.
-        </p>
+    <!-- 1. Imagen Horizontal Panorámica para Computadora / Desktop (md y superior) -->
+    <img 
+      id="splashImgDesktop" 
+      src="assets/imagenes/splash_desktop_horizontal.jpg" 
+      alt="A Domicilio - Menú Criollo" 
+      onerror="this.src='assets/imagenes/empanadas_doradas.jpg'" 
+      class="hidden md:block absolute inset-0 w-full h-full object-cover object-center z-0">
 
-        <!-- Barra de Progreso y Botón de Entrada -->
-        <div class="pt-3 border-t border-emerald-500/20 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-stone-400 flex items-center gap-1.5 font-medium">
-              <i class="fa-solid fa-clock text-emerald-400"></i> Cargando menú...
-            </span>
-            <div class="w-28 h-1.5 bg-stone-800 rounded-full overflow-hidden border border-emerald-500/20">
-              <div id="barraProgresoSplash" class="h-full bg-gradient-to-r from-emerald-500 to-amber-400 rounded-full transition-all duration-[2400ms] ease-linear" style="width: 0%;"></div>
-            </div>
-          </div>
+    <!-- 2. Imagen Vertical Dedicada para Teléfono Móvil (< 768px) -->
+    <img 
+      id="splashImgMovil" 
+      src="assets/imagenes/splash_empanadas_frescas.jpg" 
+      alt="A Domicilio - Menú Criollo Móvil" 
+      onerror="this.src='assets/imagenes/empanadas_doradas.jpg'" 
+      class="block md:hidden absolute inset-0 w-full h-full object-cover object-center z-0">
 
-          <button onclick="cerrarSplashInmediato()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer group">
-            <span>Ver Carta y Precios</span>
-            <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-          </button>
-        </div>
-      </div>
+    <!-- Degradado Cinematográfico Inferior para Legibilidad Impecable -->
+    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-transparent z-10"></div>
 
-      <!-- Columna Derecha: Tarjeta Visual de Plato Estrella -->
-      <div class="w-72 lg:w-80 relative rounded-2xl overflow-hidden border border-emerald-500/30 shadow-xl shrink-0 group">
-        <img src="assets/imagenes/splash_empanadas_frescas.jpg" alt="Empanadas Criollas" onerror="this.src='assets/imagenes/empanadas_doradas.png'" class="w-full h-64 object-cover">
-        <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/20 to-transparent"></div>
-        <div class="absolute bottom-3 inset-x-3 flex items-center justify-between text-xs">
-          <div>
-            <h4 class="font-bold text-white text-sm">Empanadas Criollas</h4>
-            <span class="text-[11px] text-emerald-400 font-semibold">100% Recién Hechas</span>
-          </div>
-          <span class="px-2.5 py-1 rounded-full bg-emerald-600 font-black text-white text-xs shadow-md">
-            Desde $4.50
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. PANEL DEDICADO PARA TELÉFONO MÓVIL (PANTALLA COMPLETA INMERSIVA) -->
-    <div id="panelSplashMovil" class="flex md:hidden fixed inset-0 w-full h-full overflow-hidden text-white flex-col justify-end p-6 select-none cursor-pointer">
-      <!-- Imagen de Fondo a Pantalla Completa: Ajuste y Cobertura Total -->
-      <img src="assets/imagenes/splash_empanadas_frescas.jpg" alt="Empanadas Venezolanas Frescas" onerror="this.src='assets/imagenes/empanadas_doradas.png'" class="absolute inset-0 w-full h-full object-cover z-0">
-      
-      <!-- Degradado Cinematográfico Inferior para Legibilidad Impecable -->
-      <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/65 to-transparent z-10"></div>
-      
-      <!-- Insignia de Delivery Gratis Superior Derecha -->
-      <div class="absolute top-6 right-6 z-20">
-        <span class="px-3 py-1 rounded-full bg-emerald-600/90 text-white font-black text-xs shadow-lg backdrop-blur-xs flex items-center gap-1.5 border border-emerald-400/30">
-          <i class="fa-solid fa-motorcycle text-amber-300"></i> Envío Gratis (2+ unid)
+    <!-- Contenido Minimalista Inferior (Texto Breve + Barra de Carga Automática) -->
+    <div class="relative z-20 p-6 sm:p-8 md:p-12 lg:p-16 max-w-2xl space-y-2.5 pb-6 sm:pb-8 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div class="space-y-1">
+        <span class="text-emerald-400 font-bold text-xs uppercase tracking-widest flex items-center gap-1.5 drop-shadow-xs">
+          <i class="fa-solid fa-fire text-amber-400"></i> Recién Hecho & Sabor Criollo
         </span>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black font-heading leading-tight text-white drop-shadow-lg">
+          ¡Sabor Criollo Caliente!
+        </h2>
       </div>
+      <p class="text-xs sm:text-sm md:text-base text-stone-200 font-medium leading-relaxed drop-shadow-sm max-w-md">
+        Empanadas doradas, tequeños con queso derretido y comida tradicional recién hecha directo a tu puerta.
+      </p>
 
-      <!-- Bloque Inferior de Información y Barra de Carga -->
-      <div class="relative z-20 space-y-3 pb-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div class="space-y-1">
-          <span class="text-emerald-400 font-bold text-xs uppercase tracking-widest flex items-center gap-1.5">
-            <i class="fa-solid fa-fire text-amber-400"></i> Recién Hecho & Sabor Criollo
-          </span>
-          <h3 class="text-2xl sm:text-3xl font-black font-heading leading-tight text-white drop-shadow-md">
-            ¡Sabor Criollo Caliente!
-          </h3>
-        </div>
-        <p class="text-xs sm:text-sm text-stone-200 font-medium leading-relaxed drop-shadow-xs max-w-sm">
-          Empanadas doradas y crujientes, tequeños rellenos de queso con guasacaca y comida caliente lista para despachar.
-        </p>
-
-        <!-- Barra de Progreso y Temporizador Móvil -->
-        <div class="pt-2 border-t border-white/15 flex items-center justify-between text-xs text-stone-300">
-          <span class="flex items-center gap-1.5 font-medium"><i class="fa-solid fa-clock text-emerald-400"></i> Abriendo carta...</span>
-          <div class="w-28 h-1.5 bg-stone-800/80 rounded-full overflow-hidden border border-white/20">
-            <div id="barraProgresoSplashMovil" class="h-full bg-gradient-to-r from-emerald-500 to-amber-400 rounded-full transition-all duration-[2400ms] ease-linear" style="width: 0%;"></div>
-          </div>
+      <!-- Barra de Progreso y Temporizador (Sin botones innecesarios, cierre automático en 2.5s) -->
+      <div class="pt-2 border-t border-white/15 flex items-center justify-between text-xs text-stone-300 max-w-xs sm:max-w-sm">
+        <span class="flex items-center gap-1.5 font-medium"><i class="fa-solid fa-clock text-emerald-400"></i> Abriendo menú...</span>
+        <div class="w-28 sm:w-36 h-1.5 bg-stone-800/80 rounded-full overflow-hidden border border-white/20">
+          <div id="barraProgresoSplash" class="h-full bg-gradient-to-r from-emerald-500 to-amber-400 rounded-full transition-all duration-[2400ms] ease-linear" style="width: 0%;"></div>
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- ========================================== -->

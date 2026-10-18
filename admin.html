@@ -199,11 +199,16 @@
         </div>
       </div>
 
-      <!-- Acciones: Botón Gestionar Categorías y Botón Agregar Plato -->
+      <!-- Acciones: Botón Categorías, Botón Portadas Splash y Botón Agregar Plato -->
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <button onclick="abrirModalGestionCategorias()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm border border-stone-200 dark:border-stone-700/80 shadow-xs flex items-center justify-center space-x-2 transition cursor-pointer" title="Crear y organizar las categorías de tu menú">
           <i class="fa-solid fa-layer-group text-emerald-600 dark:text-emerald-400 text-sm"></i>
           <span>Categorías</span>
+        </button>
+
+        <button onclick="abrirModalConfigSplash()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm border border-stone-200 dark:border-stone-700/80 shadow-xs flex items-center justify-center space-x-2 transition cursor-pointer" title="Configurar fotos de portada para Computadora (Horizontal) y Celular (Vertical)">
+          <i class="fa-solid fa-image text-amber-500 text-sm"></i>
+          <span>Portadas</span>
         </button>
 
         <button onclick="abrirModalNuevoPlato()" class="flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/30 flex items-center justify-center space-x-2 transition cursor-pointer">
@@ -642,6 +647,125 @@
         <button onclick="cerrarModalGestionCategorias()" class="px-5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold hover:bg-stone-200 dark:hover:bg-stone-700 transition">
           Cerrar
         </button>
+  <!-- ========================================== -->
+  <!-- MODAL CONFIGURACIÓN DE PORTADAS (SPLASH MÓVIL Y PC) -->
+  <!-- ========================================== -->
+  <div id="modalConfigSplash" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 backdrop-blur-xs p-4 hidden">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl max-w-xl w-full p-5 sm:p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
+      
+      <!-- Cabecera del Modal -->
+      <div class="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-image text-base"></i>
+          </div>
+          <div>
+            <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white leading-tight">Portadas de Inicio (Splash)</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400 font-normal">Personaliza las imágenes de bienvenida a pantalla completa</p>
+          </div>
+        </div>
+        <button onclick="cerrarModalConfigSplash()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Sección 1: Portada Horizontal para Computadora (16:9) -->
+      <div class="space-y-2 p-3.5 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-stone-200 dark:border-stone-700/60">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-desktop text-emerald-500"></i> Portada para Computadora (Horizontal 16:9)
+          </span>
+          <span class="text-[10px] text-stone-400 font-medium">Recomendado: 1920x1080</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 items-center">
+          <!-- Vista Previa Horizontal -->
+          <div class="w-full sm:w-44 h-24 rounded-xl bg-stone-200 dark:bg-stone-700 overflow-hidden relative border border-stone-300 dark:border-stone-600 shrink-0">
+            <img id="previewSplashDesktopImg" src="assets/imagenes/splash_desktop_horizontal.jpg" alt="Preview Desktop" class="w-full h-full object-cover">
+          </div>
+
+          <!-- Acciones de carga -->
+          <div class="flex-1 w-full space-y-2">
+            <button 
+              type="button" 
+              onclick="document.getElementById('inputArchivoSplashDesktop').click()" 
+              class="w-full py-2 px-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-xs">
+              <i class="fa-solid fa-folder-open text-emerald-500"></i>
+              <span>Cargar Foto Horizontal (PC)</span>
+            </button>
+            <input type="file" id="inputArchivoSplashDesktop" accept="image/*" onchange="manejarSeleccionSplashDesktop(event)" class="hidden">
+            
+            <input 
+              type="text" 
+              id="inputUrlSplashDesktop" 
+              oninput="actualizarPreviewSplashDesdeInput('desktop')" 
+              placeholder="O pega enlace de Google Drive o ruta..." 
+              class="w-full px-3 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-[11px] outline-none focus:ring-1 focus:ring-emerald-500 text-stone-900 dark:text-white">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Portada Vertical para Teléfono Móvil (9:16) -->
+      <div class="space-y-2 p-3.5 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-stone-200 dark:border-stone-700/60">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-mobile-screen text-emerald-500"></i> Portada para Teléfono Móvil (Vertical 9:16)
+          </span>
+          <span class="text-[10px] text-stone-400 font-medium">Recomendado: 1080x1920</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 items-center">
+          <!-- Vista Previa Vertical -->
+          <div class="w-24 h-32 rounded-xl bg-stone-200 dark:bg-stone-700 overflow-hidden relative border border-stone-300 dark:border-stone-600 shrink-0">
+            <img id="previewSplashMovilImg" src="assets/imagenes/splash_empanadas_frescas.jpg" alt="Preview Móvil" class="w-full h-full object-cover">
+          </div>
+
+          <!-- Acciones de carga -->
+          <div class="flex-1 w-full space-y-2">
+            <button 
+              type="button" 
+              onclick="document.getElementById('inputArchivoSplashMovil').click()" 
+              class="w-full py-2 px-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:border-emerald-500 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-xs">
+              <i class="fa-solid fa-camera text-emerald-500"></i>
+              <span>Cargar Foto Vertical (Móvil)</span>
+            </button>
+            <input type="file" id="inputArchivoSplashMovil" accept="image/*" onchange="manejarSeleccionSplashMovil(event)" class="hidden">
+            
+            <input 
+              type="text" 
+              id="inputUrlSplashMovil" 
+              oninput="actualizarPreviewSplashDesdeInput('movil')" 
+              placeholder="O pega enlace de Google Drive o ruta..." 
+              class="w-full px-3 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-[11px] outline-none focus:ring-1 focus:ring-emerald-500 text-stone-900 dark:text-white">
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3">
+        <button 
+          type="button" 
+          onclick="restaurarSplashPredeterminado()" 
+          class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 text-xs font-bold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate-left text-xs"></i>
+          <span>Restaurar Originales</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="cerrarModalConfigSplash()" 
+            class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold hover:bg-stone-200 dark:hover:bg-stone-700 transition">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            onclick="guardarConfigSplash()" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
+            <span>Guardar Portadas</span>
+          </button>
+        </div>
       </div>
 
     </div>

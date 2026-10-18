@@ -1591,13 +1591,24 @@ if (canalChatCliente) {
   canalChatCliente.onmessage = (event) => {
     const data = event.data;
     if (data && data.tipo === 'RESPUESTA_ADMIN') {
-      const miClienteId = obtenerOcrearClienteId();
-      if (data.clienteId === miClienteId || data.clienteId === 'cli_general') {
+      const miClienteId = obtenerOcrearClienteId().toLowerCase();
+      const targetId = (data.clienteId || '').toLowerCase();
+      if (targetId === miClienteId || targetId === 'cli_general' || targetId === '') {
         recibirRespuestaAdminEnCliente(data.mensaje);
       }
     }
   };
 }
+
+// Oyente de almacenamiento local reactivo para sincronización inmediata entre pestañas
+window.addEventListener('storage', (e) => {
+  if (e.key === 'adomicilio_mensajes_chat' || e.key === 'adomicilio_ultimo_ping') {
+    cargarHistorialClienteEnChat();
+  }
+});
+
+// Sincronización continua de respaldo cada 1.2 segundos
+setInterval(cargarHistorialClienteEnChat, 1200);
 
 function recibirRespuestaAdminEnCliente(msgAdmin) {
   const area = document.getElementById('chatMensajesArea');
@@ -1642,13 +1653,18 @@ function cargarHistorialClienteEnChat() {
   const area = document.getElementById('chatMensajesArea');
   if (!area) return;
 
-  const miClienteId = obtenerOcrearClienteId();
+  const miClienteId = obtenerOcrearClienteId().toLowerCase();
   const historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
-  const misMensajes = historialChat.filter(m => (m.clienteId || 'cli_general') === miClienteId);
+  const misMensajes = historialChat.filter(m => {
+    const cId = (m.clienteId || 'cli_general').toLowerCase();
+    return cId === miClienteId || cId === 'cli_general';
+  });
 
+  let huboNuevos = false;
   misMensajes.forEach(m => {
     if (m.id && area.querySelector(`[data-msg-id="${m.id}"]`)) return;
 
+    huboNuevos = true;
     if (m.emisor === 'admin') {
       recibirRespuestaAdminEnCliente(m);
     } else {
@@ -1665,7 +1681,9 @@ function cargarHistorialClienteEnChat() {
     }
   });
 
-  area.scrollTop = area.scrollHeight;
+  if (huboNuevos) {
+    area.scrollTop = area.scrollHeight;
+  }
 }
 
 function enviarMensajeChat() {

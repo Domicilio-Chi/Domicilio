@@ -1183,6 +1183,7 @@ function responderAdminChat() {
 
   mensajes.push(nuevoMensajeAdmin);
   localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+  localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
 
   // 3. Notificar en tiempo real a las pestañas y al cliente específico
   if (canalChatAdmin) {

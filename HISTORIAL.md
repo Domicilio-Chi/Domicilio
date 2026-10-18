@@ -492,3 +492,55 @@
   * **Escritorio (1280px):** `tableVisible: true`, `listHidden: true`, `totalFilasTabla: 11`. Captura generada:
     - [`capturas/mejora_23_admin_tabla_desktop.png`](capturas/mejora_23_admin_tabla_desktop.png)
 - **Commits en GitHub Pages:** `df4b2bc`, `22b0e7d` y `0e97e27` en `origin/main`.
+
+---
+
+## 📝 Registro de Sesión 15 (17 de Octubre de 2026 - Noche / Transformación Paleta Verde Amigable, Precios Inferiores, Fotos Reales y Sistema de Bebidas)
+
+### Requerimientos del Usuario:
+1. **Transformación de Paleta Cromática:** La página tenía exceso de rojo; el cliente solicitó sustituir los tonos rojos por un verde claro, fresco y amigable (`emerald-500` / `emerald-600`).
+2. **Reubicación y Rediseño de Precios:** Mover el precio del borde superior al borde inferior de la imagen, con tamaño más visible y en tono verde clarito amigable.
+3. **Cero Recortes en Nombres de Platos:** Los títulos no deben truncarse con puntos suspensivos; deben ser legibles y completos.
+4. **Eliminación de Elementos Redundantes:** Retirar la barra inferior `"Toca para ver extras y pedir ➔"` y `"🔥 Recién hecho"`. Toda el área de la tarjeta debe abrir el menú/modal del plato al hacer clic o pulsar sobre cualquier sector (foto, título o descripción).
+5. **Paneles de Presentación Splash Dual:** Panel adaptado a PC (horizontal/panorámico) y panel adaptado a Smartphone (vertical).
+6. **Incorporación de Fotos Reales Proporcionadas por el Cliente:**
+   - Empanadas de maíz doradas reales.
+   - Tequeños venezolanos reales.
+   - Empanadas de trigo / pastelitos reales.
+   - Pizza artesanal real.
+   - Bebidas y refrescos en botella y lata.
+7. **Sistema de Rellenos para Empanadas:** Rellenos de carne mechada, carne molida, pollo, mojito/cazón y queso; además de ración de arepitas rellenas.
+8. **Arquitectura de Bebidas Frías:** Categoría propia de bebidas con marcas (Coca-Cola, Pepsi, Chinotto, Frescolita, Hit) y tamaños (lata 355ml, botellas 1L, 1.5L, 2L) y jugos naturales.
+9. **Unificación Terminológica:** Cambiar "Comanda" / "Carrito" por **"Pedido"** en toda la interfaz de usuario.
+
+---
+
+### Implementaciones Técnicas Realizadas:
+1. **Paleta Verde Esmeralda Amigable:**
+   - Se reemplazaron todas las clases `rose-*` por `emerald-*` en `src/index.html`, `src/app.js`, `src/admin.html` y `src/admin.js`.
+   - Botón de pedido, insignias activas de categorías, píldoras de precios, foco en inputs y modales ahora muestran un verde esmeralda coherente (`emerald-600` / `emerald-500`).
+2. **Nueva Estructura de la Tarjeta del Menú:**
+   - **Precio en Borde Inferior Derecho:** `absolute bottom-3 right-3` con diseño destacado: `bg-emerald-500 text-white font-black text-sm sm:text-base px-3.5 py-1 rounded-2xl shadow-lg border border-emerald-300/40`.
+   - **Insignia de Categoría:** En la esquina superior izquierda `absolute top-3 left-3` con fondo translúcido `bg-black/60 backdrop-blur-md`.
+   - **Títulos Sin Truncamiento:** `font-heading font-black text-base sm:text-lg leading-snug break-words`.
+   - **Tarjeta 100% Clickeable:** Todo el contenedor tiene `cursor-pointer` y `onclick="abrirModalPlato(id)"`.
+3. **Presentación Splash Dual:**
+   - `#panelSplashDesktop` (`hidden md:flex`): Banner panorámico para PC.
+   - `#panelSplashMovil` (`flex md:hidden`): Showcase vertical con fotos circulares flotantes para smartphones.
+4. **Catálogo con Fotos Reales y Bebidas:**
+   - Se copiaron y vincularon los 8 activos gráficos a `assets/imagenes/`.
+   - Menú inicial actualizado con versión `v3.2_fotos_reales_bebidas`.
+   - Modal de empanadas con selección de rellenos (`+Gratis`) y cross-selling de refrescos.
+5. **Terminología "Pedido":**
+   - Actualizado en la cabecera (`[🧾 Pedido (N)]`), en el modal (`Tu Pedido`), en el botón de agregar (`Agregar al Pedido`) y en el mensaje generado para WhatsApp (`👋 ¡HOLA A DOMICILIO! DESEO CONFIRMAR ESTE PEDIDO:`).
+
+---
+
+### Evidencias Visuales y Verificación Automatizada (Chrome CDP):
+- Se ejecutó suite de pruebas conectada al navegador Chrome vía CDP (`verificar_nuevas_mejoras_v32.js`):
+  * [`capturas/mejora_23_movil_precio_inferior_verde.png`](capturas/mejora_23_movil_precio_inferior_verde.png): Vista móvil (390px) con fotos reales, precios verdes en borde inferior y títulos sin corte.
+  * [`capturas/mejora_24_modal_empanadas_rellenos_verde.png`](capturas/mejora_24_modal_empanadas_rellenos_verde.png): Modal de plato con rellenos de empanadas, botón de compartir y total en verde.
+  * [`capturas/mejora_25_categoria_bebidas_variedad.png`](capturas/mejora_25_categoria_bebidas_variedad.png): Categoría de bebidas filtrada con refrescos en botella y lata.
+  * [`capturas/mejora_26_desktop_catalogo_verde_completo.png`](capturas/mejora_26_desktop_catalogo_verde_completo.png): Catálogo completo en escritorio (1280px) con la nueva paleta verde.
+- **Commits en GitHub Pages:** `72bb590` y `21f2845` en `origin/main`. Sitio activo en: `https://domicilio-chi.github.io/Domicilio/`.
+

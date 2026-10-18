@@ -897,19 +897,19 @@ function renderizarListaComanda() {
     return `
       <div class="flex items-center gap-2 group">
         <!-- Tarjeta del Ítem -->
-        <div class="flex-1 bg-stone-50 dark:bg-stone-800/80 p-3.5 rounded-2xl border border-stone-200 dark:border-stone-700/60 flex items-start justify-between gap-3 text-xs shadow-xs">
+        <div class="flex-1 min-w-0 bg-stone-50 dark:bg-stone-800/80 p-3 sm:p-3.5 rounded-2xl border border-stone-200 dark:border-stone-700/60 flex items-start justify-between gap-2.5 text-xs shadow-xs">
           <div class="flex-1 space-y-1 min-w-0">
             <div class="flex items-center space-x-2 font-black text-stone-900 dark:text-white">
               <span class="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] shrink-0 font-bold">${item.cantidad}x</span>
               <span class="truncate">${item.nombre}</span>
             </div>
             ${item.extras.length > 0 ? `
-              <div class="pl-7 text-[11px] text-stone-500 dark:text-stone-400 space-y-0.5">
+              <div class="pl-7 text-[11px] text-stone-500 dark:text-stone-400 space-y-0.5 break-words">
                 ${item.extras.map(e => `<div>+ ${e.nombre} ($${e.precio.toFixed(2)})</div>`).join('')}
               </div>
             ` : ''}
             ${item.notas ? `
-              <div class="pl-7 text-[10px] text-amber-600 dark:text-amber-400 italic">
+              <div class="pl-7 text-[10px] text-amber-600 dark:text-amber-400 italic break-words">
                 Nota: "${item.notas}"
               </div>
             ` : ''}

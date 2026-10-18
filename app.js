@@ -753,8 +753,8 @@ function abrirModalPlato(id) {
   const badgeCat = document.getElementById('modalCategoriaPlato');
   if (badgeCat) badgeCat.textContent = platoSeleccionadoModal.categoria;
   document.getElementById('modalFotoPlato').src = getRutaFoto(platoSeleccionadoModal.foto);
-  document.getElementById('modalPrecioBase').textContent = `$${platoSeleccionadoModal.precio.toFixed(2)}`;
-  document.getElementById('inputNotasCocina').value = '';
+  const inputNotas = document.getElementById('inputNotasCocina');
+  if (inputNotas) inputNotas.value = '';
 
   // Renderizar checkboxes de extras
   const contenedorExtras = document.getElementById('contenedorExtras');
@@ -859,7 +859,7 @@ function agregarPlatoAComanda() {
     sumaExtras += parseFloat(cb.dataset.precio || 0);
   });
 
-  const notas = document.getElementById('inputNotasCocina').value.trim();
+  const notas = document.getElementById('inputNotasCocina')?.value.trim() || '';
 
   comanda.push({
     idUnico: Date.now().toString(),

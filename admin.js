@@ -301,9 +301,16 @@ function filtrarPlatosAdmin() {
 }
 
 function actualizarMetricas() {
-  document.getElementById('metricaTotalPlatos').textContent = platosAdmin.length;
-  const activos = platosAdmin.filter(p => p.disponible).length;
-  document.getElementById('metricaPlatosActivos').textContent = activos;
+  const elTotal = document.getElementById('metricaTotalPlatos');
+  if (elTotal) elTotal.textContent = platosAdmin.length;
+
+  const elActivos = document.getElementById('metricaPlatosActivos');
+  if (elActivos) {
+    const activos = platosAdmin.filter(p => p.disponible).length;
+    elActivos.textContent = activos;
+  }
+
+  actualizarPresenciaComensales();
 
   const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
   
@@ -884,6 +891,60 @@ document.addEventListener('click', (e) => {
 }, { passive: true });
 
 // ==========================================
+// MOTOR DE PRESENCIA DE COMENSALES EN TIEMPO REAL
+// ==========================================
+const canalPresenciaAdmin = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('adomicilio_presencia_channel') : null;
+
+function actualizarPresenciaComensales() {
+  const ahora = Date.now();
+  const LIMITE_INACTIVIDAD_MS = 8000; // 8 segundos
+  let tabla = {};
+  let huboCambios = false;
+
+  try {
+    tabla = JSON.parse(localStorage.getItem('adomicilio_tabla_presencia') || '{}');
+  } catch (e) {
+    tabla = {};
+  }
+
+  const clientesActivos = [];
+
+  for (const [clienteId, info] of Object.entries(tabla)) {
+    const timestamp = typeof info === 'number' ? info : (info && info.timestamp ? info.timestamp : 0);
+    if (ahora - timestamp <= LIMITE_INACTIVIDAD_MS && timestamp > 0) {
+      clientesActivos.push(clienteId);
+    } else {
+      delete tabla[clienteId];
+      huboCambios = true;
+    }
+  }
+
+  if (huboCambios) {
+    try {
+      localStorage.setItem('adomicilio_tabla_presencia', JSON.stringify(tabla));
+    } catch (e) {}
+  }
+
+  const elContador = document.getElementById('metricaUsuariosConectados');
+  if (elContador) {
+    elContador.textContent = clientesActivos.length;
+  }
+  return clientesActivos.length;
+}
+
+if (canalPresenciaAdmin) {
+  canalPresenciaAdmin.onmessage = (event) => {
+    const data = event.data;
+    if (data && (data.tipo === 'LATIDO_PRESENCIA' || data.tipo === 'DESCONEXION_CLIENTE')) {
+      actualizarPresenciaComensales();
+    }
+  };
+}
+
+// Reloj de actualización periódica cada 2.5 segundos para purga y sincronización
+setInterval(actualizarPresenciaComensales, 2500);
+
+// ==========================================
 // BANDEJA MULTIUSUARIO DE CONSULTAS Y CHAT
 // ==========================================
 let clienteChatActivoId = null;
@@ -897,11 +958,17 @@ if (canalChatAdmin) {
       reproducirSonidoGota();
       renderizarAdminChat();
     }
+    if (data && (data.tipo === 'LATIDO_PRESENCIA' || data.tipo === 'DESCONEXION_CLIENTE')) {
+      actualizarPresenciaComensales();
+    }
   };
 }
 
 // Oyente de almacenamiento local para sincronización inmediata entre pestañas y navegadores
 window.addEventListener('storage', (e) => {
+  if (e.key === 'adomicilio_tabla_presencia') {
+    actualizarPresenciaComensales();
+  }
   if (e.key === 'adomicilio_mensajes_chat' || e.key === 'adomicilio_ultimo_ping') {
     actualizarMetricas();
     reproducirSonidoGota();

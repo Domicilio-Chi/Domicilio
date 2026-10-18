@@ -1610,6 +1610,81 @@ window.addEventListener('storage', (e) => {
 // Sincronización continua de respaldo cada 1.2 segundos
 setInterval(cargarHistorialClienteEnChat, 1200);
 
+// ==========================================
+// PRESENCIA DE COMENSAL EN VIVO (HEARTBEAT)
+// ==========================================
+const canalPresenciaCliente = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('adomicilio_presencia_channel') : null;
+
+function emitirLatidoPresencia() {
+  const clienteId = obtenerOcrearClienteId();
+  const timestamp = Date.now();
+
+  // 1. Guardar timestamp en tabla de presencia de localStorage
+  try {
+    const tabla = JSON.parse(localStorage.getItem('adomicilio_tabla_presencia') || '{}');
+    tabla[clienteId] = timestamp;
+    localStorage.setItem('adomicilio_tabla_presencia', JSON.stringify(tabla));
+  } catch (e) {
+    console.warn('Error al actualizar tabla de presencia', e);
+  }
+
+  // 2. Enviar evento BroadcastChannel
+  const eventoLatido = {
+    tipo: 'LATIDO_PRESENCIA',
+    clienteId: clienteId,
+    timestamp: timestamp
+  };
+
+  if (canalPresenciaCliente) {
+    try {
+      canalPresenciaCliente.postMessage(eventoLatido);
+    } catch (e) {}
+  }
+  if (canalChatCliente) {
+    try {
+      canalChatCliente.postMessage(eventoLatido);
+    } catch (e) {}
+  }
+}
+
+function desconectarPresenciaCliente() {
+  const clienteId = obtenerOcrearClienteId();
+
+  // 1. Limpiar registro del cliente en localStorage
+  try {
+    const tabla = JSON.parse(localStorage.getItem('adomicilio_tabla_presencia') || '{}');
+    if (tabla[clienteId] !== undefined) {
+      delete tabla[clienteId];
+      localStorage.setItem('adomicilio_tabla_presencia', JSON.stringify(tabla));
+    }
+  } catch (e) {}
+
+  // 2. Notificar desconexión inmediata vía BroadcastChannel
+  const eventoDesconexion = {
+    tipo: 'DESCONEXION_CLIENTE',
+    clienteId: clienteId
+  };
+
+  if (canalPresenciaCliente) {
+    try {
+      canalPresenciaCliente.postMessage(eventoDesconexion);
+    } catch (e) {}
+  }
+  if (canalChatCliente) {
+    try {
+      canalChatCliente.postMessage(eventoDesconexion);
+    } catch (e) {}
+  }
+}
+
+// Iniciar latido al cargar y emitir periódicamente cada 3.5 segundos
+emitirLatidoPresencia();
+setInterval(emitirLatidoPresencia, 3500);
+
+// Desconexión inmediata al cerrar o descargar la página
+window.addEventListener('beforeunload', desconectarPresenciaCliente);
+window.addEventListener('pagehide', desconectarPresenciaCliente);
+
 function recibirRespuestaAdminEnCliente(msgAdmin) {
   const area = document.getElementById('chatMensajesArea');
   if (!area) return;

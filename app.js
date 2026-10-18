@@ -924,29 +924,39 @@ function renderizarListaComanda() {
   contenedor.innerHTML = comanda.map((item, idx) => {
     granTotal += item.totalItem;
     return `
-      <div class="bg-stone-50 dark:bg-stone-800/80 p-3 rounded-2xl border border-stone-200 dark:border-stone-700/60 flex items-start justify-between gap-2 text-xs">
-        <div class="flex-1 space-y-1">
-          <div class="flex items-center space-x-1.5 font-black text-stone-900 dark:text-white">
-            <span class="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px]">${item.cantidad}x</span>
-            <span>${item.nombre}</span>
+      <div class="flex items-center gap-2 group">
+        <!-- Tarjeta del Ítem -->
+        <div class="flex-1 bg-stone-50 dark:bg-stone-800/80 p-3.5 rounded-2xl border border-stone-200 dark:border-stone-700/60 flex items-start justify-between gap-3 text-xs shadow-xs">
+          <div class="flex-1 space-y-1 min-w-0">
+            <div class="flex items-center space-x-2 font-black text-stone-900 dark:text-white">
+              <span class="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] shrink-0 font-bold">${item.cantidad}x</span>
+              <span class="truncate">${item.nombre}</span>
+            </div>
+            ${item.extras.length > 0 ? `
+              <div class="pl-7 text-[11px] text-stone-500 dark:text-stone-400 space-y-0.5">
+                ${item.extras.map(e => `<div>+ ${e.nombre} ($${e.precio.toFixed(2)})</div>`).join('')}
+              </div>
+            ` : ''}
+            ${item.notas ? `
+              <div class="pl-7 text-[10px] text-amber-600 dark:text-amber-400 italic">
+                Nota: "${item.notas}"
+              </div>
+            ` : ''}
           </div>
-          ${item.extras.length > 0 ? `
-            <div class="pl-6 text-[11px] text-stone-500 dark:text-stone-400 space-y-0.5">
-              ${item.extras.map(e => `<div>+ ${e.nombre} ($${e.precio.toFixed(2)})</div>`).join('')}
-            </div>
-          ` : ''}
-          ${item.notas ? `
-            <div class="pl-6 text-[10px] text-amber-600 dark:text-amber-400 italic">
-              Nota: "${item.notas}"
-            </div>
-          ` : ''}
+          
+          <!-- Precio del Ítem destacado -->
+          <div class="text-right shrink-0">
+            <span class="font-black text-sm sm:text-base text-emerald-600 dark:text-emerald-400">$${item.totalItem.toFixed(2)}</span>
+          </div>
         </div>
-        <div class="text-right flex flex-col items-end space-y-1">
-          <span class="font-black text-emerald-600 dark:text-emerald-400">$${item.totalItem.toFixed(2)}</span>
-          <button onclick="eliminarItemComanda(${idx})" class="text-stone-400 hover:text-red-500 transition text-[11px]" title="Quitar">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
-        </div>
+
+        <!-- Botón Papelera FUERA del recuadro, Grande y Cómodo para presionar en Móvil -->
+        <button 
+          onclick="eliminarItemComanda(${idx})" 
+          class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white border border-rose-200/80 dark:border-rose-900/50 flex items-center justify-center text-base sm:text-lg shadow-sm hover:shadow-md transition-all active:scale-90 shrink-0" 
+          title="Eliminar este plato del pedido">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
       </div>
     `;
   }).join('');

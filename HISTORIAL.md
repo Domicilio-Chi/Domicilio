@@ -695,3 +695,38 @@
   * `capturas/mejora_62_splash_movil_vertical_pantalla_completa.png`: Pantalla de bienvenida inmersiva vertical en teléfono móvil.
   * `capturas/mejora_63_admin_modal_configurar_portadas_splash.png`: Modal administrador para personalizar y subir las fotos de inicio tanto de PC como de móvil con preview instantáneo.
 - **Commits en GitHub Pages:** `8f75a98` y `9414320` en `origin/main`.
+
+
+---
+
+## 🎨 HITO: PERSONALIZACIÓN DE MARCA, TIPOGRAFÍA Y LOGOTIPO EN ADMINISTRADOR Y CATÁLOGO
+
+### 1. Interfaz y Modal `#modalConfigIdentidad` en `admin.html`
+- **Botón `[ 🎨 Marca ]` en Barra Principal:** Ubicado estratégicamente junto a Categorías, Portadas y Agregar Plato.
+- **Tarjeta de Previsualización en Tiempo Real:** Muestra al administrador una maqueta idéntica de la cabecera del restaurante actualizándose en vivo a medida que se escribe o se cambian opciones.
+- **Campo de Nombre del Restaurante:** Permite escribir cualquier denominación de negocio (ej. *"A Domicilio Gourmet"*, *"Empanadas Don Pedro"*).
+- **Campo de Eslogan / Frase:** Personalización del texto secundario de la cabecera.
+- **Selector Visual de Fuentes Tipográficas de Google Fonts:**
+  - *Outfit* (Moderna y geométrica - predeterminada)
+  - *Montserrat* (Elegante y premium)
+  - *Poppins* (Redondeada y amigable)
+  - *Playfair Display* (Gourmet y clásica)
+  - *Bebas Neue* (Impactante en mayúsculas)
+  - *Lobster* (Artesanal y cursiva)
+  - *Pacifico* (Casual caligráfica)
+  - *Plus Jakarta Sans* (Limpia y minimalista)
+- **Cargador Interactivo de Logotipo:**
+  - Selector de modalidad: *Ícono de Cubiertos (Predeterminado)* vs *Subir Mi Propio Logo (Imagen)*.
+  - Dropzone con soporte para drag & drop en PC, explorador de archivos y cámara/galería en móvil (PNG transparente, JPG o SVG).
+  - Campo alternativo con auto-conversión inteligente de enlaces de Google Drive.
+  - Optimización automática en cliente mediante `<canvas>` (máx 400x400) para carga ultrarrápida.
+- **Botones de Control:** `[ ↺ Restaurar Original ]`, `[ Cancelar ]` y `[ 💾 Guardar Identidad ]`.
+
+### 2. Sincronización Dinámica en el Catálogo Público (`index.html` y `app.js`)
+- **Motor `aplicarIdentidadMarcaCliente()`:** Lee las preferencias de marca en `localStorage` y actualiza inmediatamente el logo (conmutando entre imagen y cubiertos), el nombre del restaurante con su tipografía correspondiente y el eslogan.
+
+### 3. Evidencias Visuales y Commits
+- **Capturas Generadas:**
+  * `capturas/mejora_64_admin_modal_configurar_marca_y_logo.png`: Modal administrador demostrando la edición del nombre, selector de fuente Google Fonts y cargador interactivo de logo con preview en tiempo real.
+  * `capturas/mejora_65_catalogo_con_marca_fuente_y_logo_personalizado.png`: Cabecera pública del catálogo de comida mostrando el nuevo logo, nombre en fuente Montserrat y eslogan personalizado.
+- **Commits en GitHub Pages:** `7541fe7` en `origin/main`.

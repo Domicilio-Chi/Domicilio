@@ -95,6 +95,44 @@
       animation: chatIconoFluctua 1.8s infinite ease-in-out !important;
     }
 
+    /* Animación Vibrante Fluctuante Verde / Dorado para el Botón de Pedido */
+    @keyframes pedidoTitilanteGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 2px #059669, 0 0 14px rgba(16, 185, 129, 0.7);
+        border-color: #34d399;
+        transform: scale(1);
+      }
+      25% {
+        transform: scale(1.04) rotate(-1deg);
+      }
+      50% {
+        box-shadow: 0 0 0 3px #fbbf24, 0 0 18px rgba(251, 191, 36, 0.85);
+        border-color: #f59e0b;
+        transform: scale(1.07) rotate(1deg);
+      }
+      75% {
+        transform: scale(1.03) rotate(-0.5deg);
+      }
+    }
+    @keyframes pedidoIconoTitila {
+      0%, 100% {
+        color: #ffffff;
+        transform: scale(1);
+      }
+      50% {
+        color: #fef08a;
+        transform: scale(1.18);
+      }
+    }
+    .pedido-pulsante-titilante {
+      animation: pedidoTitilanteGlow 1.8s infinite ease-in-out !important;
+      background-color: #059669 !important;
+      border: 2px solid #34d399 !important;
+    }
+    .pedido-pulsante-titilante i {
+      animation: pedidoIconoTitila 1.8s infinite ease-in-out !important;
+    }
+
     /* Animación Suave y Elegante para Categorías (Efecto Onda Verde una a una) */
     @keyframes guiaOndaSuave {
       0%, 100% {
@@ -314,10 +352,10 @@
             <i class="fa-brands fa-whatsapp text-base sm:text-lg"></i>
           </a>
 
-          <!-- Botón Ver Pedido / Carrito con Badge -->
-          <button onclick="abrirModalComanda()" class="relative flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/30 transition">
-            <i class="fa-solid fa-receipt text-sm"></i>
-            <span class="hidden sm:inline">Pedido</span>
+          <!-- Botón Ver Pedido / Carrito con Titileo y Palabra PEDIDO en Negrita -->
+          <button id="btnVerPedidoHeader" onclick="abrirModalComanda()" class="pedido-pulsante-titilante relative flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-md transition cursor-pointer shrink-0" title="Ver mi Pedido">
+            <i class="fa-solid fa-receipt text-xs sm:text-sm"></i>
+            <span class="font-black text-xs sm:text-sm tracking-wider uppercase">PEDIDO</span>
             <span id="badgeCantidadComanda" class="w-5 h-5 rounded-full bg-amber-400 text-stone-900 text-xs font-black flex items-center justify-center shadow-xs">0</span>
           </button>
         </div>

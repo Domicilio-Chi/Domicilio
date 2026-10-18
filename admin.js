@@ -217,7 +217,7 @@ function renderizarTablaAdmin() {
           <button onclick="toggleDisponibilidad('${p.id}')" class="px-3 py-1 rounded-full font-bold text-[11px] transition ${
             p.disponible 
               ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200' 
-              : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200'
+              : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-200 border border-stone-300 dark:border-stone-700'
           }">
             <i class="fa-solid ${p.disponible ? 'fa-check' : 'fa-ban'} mr-1"></i>
             ${p.disponible ? 'Disponible Hoy' : 'Agotado'}
@@ -271,9 +271,9 @@ function renderizarTablaAdmin() {
             <button onclick="toggleDisponibilidad('${p.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition ${
               p.disponible 
                 ? 'bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200' 
-                : 'bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200'
+                : 'bg-stone-100/90 dark:bg-stone-800/80 border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
             }">
-              <i class="fa-solid ${p.disponible ? 'fa-circle-check text-emerald-600 dark:text-emerald-400' : 'fa-circle-xmark text-emerald-600 dark:text-emerald-400'} text-xs"></i>
+              <i class="fa-solid ${p.disponible ? 'fa-circle-check text-emerald-600 dark:text-emerald-400' : 'fa-circle-xmark text-stone-500 dark:text-stone-400'} text-xs"></i>
               <span>${p.disponible ? 'Disponible' : 'Agotado'}</span>
             </button>
 
@@ -323,6 +323,23 @@ function toggleDisponibilidad(id) {
   guardarEnStorage();
   renderizarTablaAdmin();
   mostrarToastAdmin(p.disponible ? `¡${p.nombre} activado para venta!` : `${p.nombre} marcado como agotado.`);
+
+  // Sincronización en tiempo real con Google Sheets ERP
+  try {
+    if (window.API && typeof API.actualizarPrecioStock === 'function') {
+      API.actualizarPrecioStock(p.id, p.precio, p.disponible).then(resp => {
+        if (resp && resp.exito) {
+          console.log(`✅ Disponibilidad de ${p.nombre} (${p.id}) sincronizada en Google Sheets:`, p.disponible);
+        } else {
+          console.warn(`⚠️ Respuesta al sincronizar disponibilidad:`, resp);
+        }
+      }).catch(err => {
+        console.warn('⚠️ Error de red al sincronizar disponibilidad en nube:', err.message);
+      });
+    }
+  } catch (err) {
+    console.warn('Error al invocar API.actualizarPrecioStock:', err);
+  }
 }
 
 // ==========================================

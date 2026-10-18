@@ -8,14 +8,19 @@ const ADOMICILIO_DEFAULT_API = 'https://script.google.com/macros/s/AKfycbyXnJXQE
 
 const API = {
   getURL: function() {
-    return localStorage.getItem('adomicilio_api_url') || ADOMICILIO_DEFAULT_API;
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('adomicilio_api_url') || ADOMICILIO_DEFAULT_API;
+    }
+    return ADOMICILIO_DEFAULT_API;
   },
 
   setURL: function(url) {
-    localStorage.setItem('adomicilio_api_url', url.trim());
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('adomicilio_api_url', url.trim());
+    }
   },
 
-  // 1. Obtener menú de platos desde Google Sheets
+  // 1. Obtener menú de platos desde Google Sheets (Stale-While-Revalidate resilient)
   obtenerMenu: async function() {
     const url = this.getURL();
     if (!url) {
@@ -24,19 +29,89 @@ const API = {
     }
 
     try {
-      const resp = await fetch(`${url}?accion=obtenerMenu`, { method: 'GET' });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(`${url}?accion=obtenerMenu`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) {
+        console.warn(`Respuesta de red no satisfactoria (${resp.status}) en obtenerMenu`);
+        return null;
+      }
+
       const data = await resp.json();
-      if (data && data.exito) {
+      if (data && data.exito && Array.isArray(data.platos)) {
         return data.platos;
       }
       return null;
     } catch (err) {
-      console.error('Error al conectar con Google Sheets:', err);
+      // Manejo silencioso y transparente: no bloquear la UI si no hay conexión
+      console.warn('Advertencia en API.obtenerMenu (operando en modo local resiliente):', err.name === 'AbortError' ? 'Tiempo de espera agotado (timeout 8.5s)' : err.message);
       return null;
     }
   },
 
-  // 2. Guardar o actualizar plato
+  // 2. Obtener parámetros globales de configuración (WhatsApp, Horarios, Políticas)
+  obtenerConfig: async function() {
+    const url = this.getURL();
+    if (!url) return null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(`${url}?accion=obtenerConfig`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) return null;
+
+      const data = await resp.json();
+      if (data && data.exito && data.config) {
+        return data.config;
+      }
+      return null;
+    } catch (err) {
+      console.warn('Advertencia en API.obtenerConfig:', err.name === 'AbortError' ? 'Timeout' : err.message);
+      return null;
+    }
+  },
+
+  // 3. Obtener listado de comandas registradas en Google Sheets
+  obtenerComandas: async function() {
+    const url = this.getURL();
+    if (!url) return [];
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(`${url}?accion=obtenerComandas`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) return [];
+
+      const data = await resp.json();
+      if (data && data.exito && Array.isArray(data.comandas)) {
+        return data.comandas;
+      }
+      return [];
+    } catch (err) {
+      console.warn('Advertencia en API.obtenerComandas:', err.name === 'AbortError' ? 'Timeout' : err.message);
+      return [];
+    }
+  },
+
+  // 4. Guardar o actualizar plato
   guardarPlato: async function(plato) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
@@ -53,7 +128,7 @@ const API = {
     }
   },
 
-  // 3. Actualizar precio o disponibilidad rápida
+  // 5. Actualizar precio o disponibilidad rápida en tiempo real
   actualizarPrecioStock: async function(id, precio, disponible) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
@@ -70,7 +145,7 @@ const API = {
     }
   },
 
-  // 4. Eliminar plato del menú
+  // 6. Eliminar plato del menú
   eliminarPlato: async function(id) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
@@ -87,7 +162,7 @@ const API = {
     }
   },
 
-  // 5. Registrar comanda en la hoja de cálculo
+  // 7. Registrar comanda en la hoja de cálculo
   registrarComanda: async function(datosComanda) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
@@ -104,7 +179,7 @@ const API = {
     }
   },
 
-  // 6. Subir foto a Google Drive
+  // 8. Subir foto a Google Drive
   subirFotoDrive: async function(imagenBase64, nombreArchivo) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
@@ -121,7 +196,7 @@ const API = {
     }
   },
 
-  // 7. Enviar mensaje de chat web a Google Sheets
+  // 9. Enviar mensaje de chat web a Google Sheets
   enviarMensajeChat: async function(mensajeObj) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
@@ -138,3 +213,11 @@ const API = {
     }
   }
 };
+
+// Exportar globalmente para entornos web y Node
+if (typeof window !== 'undefined') {
+  window.API = API;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = API;
+}

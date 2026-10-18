@@ -247,13 +247,15 @@ const MENU_INICIAL = [
 ];
 
 function cargarPlatosActivos() {
-  const versionActual = 'v3.4_sin_opcional_limpio';
+  const versionActual = 'v3.5_sync_en_vivo';
   const versionGuardada = localStorage.getItem('adomicilio_menu_version');
   
   if (versionGuardada !== versionActual) {
-    localStorage.setItem('adomicilio_platos_custom', JSON.stringify(MENU_INICIAL));
+    const custom = localStorage.getItem('adomicilio_platos_custom');
+    if (!custom) {
+      localStorage.setItem('adomicilio_platos_custom', JSON.stringify(MENU_INICIAL));
+    }
     localStorage.setItem('adomicilio_menu_version', versionActual);
-    return [...MENU_INICIAL];
   }
 
   const custom = localStorage.getItem('adomicilio_platos_custom');
@@ -288,6 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
   aplicarIdentidadMarcaCliente();
   cargarDatosEntregaGuardados();
   configurarCierreModales();
+
+  // Sincronización asíncrona en segundo plano (Stale-While-Revalidate)
+  sincronizarMenuEnVivo();
 });
 
 // ==========================================
@@ -508,19 +513,37 @@ const CATEGORIAS_BASE_CATALOGO = [
 ];
 
 function obtenerCategoriasCliente() {
+  let base = [...CATEGORIAS_BASE_CATALOGO];
   const guardadas = localStorage.getItem('adomicilio_categorias');
   if (guardadas) {
     try {
       const parsed = JSON.parse(guardadas);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return [
+        base = [
           { id: 'Todos', nombre: 'Todos', nombreMovil: 'Todos', icono: 'fa-solid fa-border-all' },
           ...parsed
         ];
       }
     } catch(e) {}
   }
-  return CATEGORIAS_BASE_CATALOGO;
+
+  // Sincronizar dinámicamente si hay categorías presentes en platos traídos de la nube
+  if (Array.isArray(platos) && platos.length > 0) {
+    const idsExistentes = new Set(base.map(c => c.id.toLowerCase()));
+    platos.forEach(p => {
+      if (p.categoria && !idsExistentes.has(p.categoria.toLowerCase())) {
+        idsExistentes.add(p.categoria.toLowerCase());
+        base.push({
+          id: p.categoria,
+          nombre: p.categoria,
+          nombreMovil: p.categoria,
+          icono: 'fa-solid fa-utensils'
+        });
+      }
+    });
+  }
+
+  return base;
 }
 
 function renderizarCategorias() {
@@ -596,10 +619,12 @@ function renderizarPlatos() {
   }
 
   estadoVacio.classList.add('hidden');
-  grid.innerHTML = filtrados.map(p => `
+  grid.innerHTML = filtrados.map(p => {
+    const disponible = p.disponible !== false;
+    return `
     <div 
       onclick="abrirModalPlato('${p.id}')"
-      class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group cursor-pointer select-none">
+      class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group cursor-pointer select-none ${!disponible ? 'opacity-80' : ''}">
       
       <!-- Contenedor Foto con Título y Precio directamente SOBRE la imagen -->
       <div class="relative h-52 sm:h-56 bg-stone-950 overflow-hidden">
@@ -608,7 +633,14 @@ function renderizarPlatos() {
           alt="${p.nombre}" 
           loading="lazy"
           onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80'"
-          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${!disponible ? 'grayscale-[40%]' : ''}">
+
+        ${!disponible ? `
+        <div class="absolute top-3 left-3 bg-red-600/95 backdrop-blur-xs text-white text-[10px] sm:text-[11px] font-black px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 border border-red-400/40">
+          <i class="fa-solid fa-ban text-[10px]"></i>
+          <span>Agotado Hoy</span>
+        </div>
+        ` : ''}
 
         <!-- Degradado inferior con Título y Precio sobre la Imagen (Sin categoría superior) -->
         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-12 pb-3 px-3.5 sm:px-4 flex items-end justify-between gap-2.5 pointer-events-none">
@@ -618,7 +650,7 @@ function renderizarPlatos() {
             </h4>
           </div>
           <div class="shrink-0 text-right">
-            <span class="bg-emerald-500 text-white font-black text-xs sm:text-sm px-3 py-1 rounded-2xl shadow-lg border border-emerald-300/40 tracking-tight inline-flex items-center">
+            <span class="${disponible ? 'bg-emerald-500 text-white border-emerald-300/40' : 'bg-stone-600 text-stone-200 border-stone-500/40'} font-black text-xs sm:text-sm px-3 py-1 rounded-2xl shadow-lg border tracking-tight inline-flex items-center">
               $${p.precio.toFixed(2)}
             </span>
           </div>
@@ -633,7 +665,7 @@ function renderizarPlatos() {
       </div>
 
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // ==========================================
@@ -786,6 +818,11 @@ function aplicarSugerenciaBusqueda(query) {
 function abrirModalPlato(id) {
   platoSeleccionadoModal = platos.find(p => p.id === id);
   if (!platoSeleccionadoModal) return;
+
+  if (platoSeleccionadoModal.disponible === false) {
+    mostrarToast('Este platillo se encuentra agotado por el día de hoy 🚫');
+    return;
+  }
 
   cantidadModal = 1;
   document.getElementById('modalCantidad').textContent = '1';
@@ -1581,3 +1618,102 @@ function mostrarToast(mensaje) {
     toast.classList.add('hidden');
   }, 2800);
 }
+
+// ==========================================
+// SINCRONIZACIÓN EN VIVO CLOUD (STALE-WHILE-REVALIDATE)
+// ==========================================
+async function sincronizarMenuEnVivo() {
+  if (!window.API || typeof API.obtenerMenu !== 'function') return;
+
+  try {
+    const [resultadoMenu, resultadoConfig] = await Promise.allSettled([
+      API.obtenerMenu(),
+      typeof API.obtenerConfig === 'function' ? API.obtenerConfig() : Promise.resolve(null)
+    ]);
+
+    // 1. Sincronizar Configuración Global de la Nube si existe
+    if (resultadoConfig.status === 'fulfilled' && resultadoConfig.value) {
+      const configNube = resultadoConfig.value;
+
+      if (configNube.WHATSAPP_COCINA) {
+        localStorage.setItem('adomicilio_whatsapp_pedidos', configNube.WHATSAPP_COCINA);
+        const configWA = JSON.parse(localStorage.getItem('adomicilio_config_whatsapp') || '{}');
+        configWA.telCocina = configNube.WHATSAPP_COCINA;
+        if (configNube.WHATSAPP_SOPORTE) configWA.telSoporte = configNube.WHATSAPP_SOPORTE;
+        localStorage.setItem('adomicilio_config_whatsapp', JSON.stringify(configWA));
+
+        const btnWA = document.getElementById('btnWhatsAppDirecto');
+        if (btnWA) {
+          btnWA.href = `https://wa.me/${configNube.WHATSAPP_COCINA}?text=Hola%20A%20Domicilio!%20Quisiera%20hacer%20un%20pedido%20de%20comida`;
+        }
+      }
+
+      if (configNube.EMAIL_CONTACTO) {
+        localStorage.setItem('adomicilio_email_contacto', configNube.EMAIL_CONTACTO);
+        if (typeof actualizarEmailContactoFooter === 'function') {
+          actualizarEmailContactoFooter();
+        }
+      }
+
+      if (configNube.NOMBRE_NEGOCIO && !localStorage.getItem('adomicilio_nombre_marca')) {
+        localStorage.setItem('adomicilio_nombre_marca', configNube.NOMBRE_NEGOCIO);
+        if (typeof aplicarIdentidadMarcaCliente === 'function') {
+          aplicarIdentidadMarcaCliente();
+        }
+      }
+    }
+
+    // 2. Sincronizar Menú de Platos desde Google Sheets
+    if (resultadoMenu.status === 'fulfilled' && Array.isArray(resultadoMenu.value) && resultadoMenu.value.length > 0) {
+      const platosNube = resultadoMenu.value;
+
+      const platosNormalizados = platosNube.map(p => ({
+        id: String(p.id),
+        nombre: String(p.nombre || ''),
+        categoria: String(p.categoria || 'General'),
+        descripcion: String(p.descripcion || ''),
+        precio: parseFloat(p.precio) || 0,
+        disponible: p.disponible !== false,
+        foto: p.foto || '',
+        extras: Array.isArray(p.extras) ? p.extras : []
+      }));
+
+      // Comparar firma estructural con el estado actual
+      const firmaActual = JSON.stringify(platos.map(p => ({
+        id: p.id,
+        nombre: p.nombre,
+        categoria: p.categoria,
+        precio: p.precio,
+        disponible: p.disponible !== false,
+        foto: p.foto,
+        extrasCount: (p.extras || []).length
+      })));
+
+      const firmaNube = JSON.stringify(platosNormalizados.map(p => ({
+        id: p.id,
+        nombre: p.nombre,
+        categoria: p.categoria,
+        precio: p.precio,
+        disponible: p.disponible !== false,
+        foto: p.foto,
+        extrasCount: (p.extras || []).length
+      })));
+
+      if (firmaActual !== firmaNube) {
+        console.log('🔄 Sincronización en vivo: Se detectaron cambios en el ERP Google Sheets. Actualizando menú...');
+        platos = platosNormalizados;
+        localStorage.setItem('adomicilio_platos_custom', JSON.stringify(platosNormalizados));
+
+        renderizarCategorias();
+        renderizarPlatos();
+
+        mostrarToast('¡Menú actualizado en vivo con cocina! 🟢');
+      } else {
+        console.log('✅ Menú local en sincronía con Google Sheets ERP.');
+      }
+    }
+  } catch (err) {
+    console.warn('Sincronización en segundo plano operando en modo offline/resiliente:', err);
+  }
+}
+

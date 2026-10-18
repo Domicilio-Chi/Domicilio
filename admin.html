@@ -296,9 +296,50 @@
           <textarea id="editDescripcion" rows="2" placeholder="Describe los ingredientes, forma de preparación o acompañantes..." class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40"></textarea>
         </div>
 
-        <div>
-          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block mb-1">Ruta o URL de la Foto</label>
-          <input type="text" id="editFoto" placeholder="Ej: ../assets/imagenes/empanadas_doradas.jpg o enlace Drive" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40">
+        <!-- ZONA DE CARGA INTERACTIVA DE FOTO (DRAG & DROP, GALERÍA O CÁMARA) -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-stone-700 dark:text-stone-300 block">Foto del Plato</label>
+          
+          <div 
+            id="dropzoneFotoAdmin" 
+            onclick="document.getElementById('inputArchivoFotoPlato').click()" 
+            class="border-2 border-dashed border-stone-300 dark:border-stone-700 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl p-3 text-center cursor-pointer transition bg-stone-50/50 dark:bg-stone-800/40 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 group">
+            
+            <input 
+              type="file" 
+              id="inputArchivoFotoPlato" 
+              accept="image/*" 
+              onchange="manejarSeleccionFotoPlato(event)" 
+              class="hidden">
+
+            <div class="flex items-center justify-center gap-3">
+              <!-- Miniatura de Previsualización -->
+              <div id="previewFotoContenedor" class="w-14 h-14 rounded-xl bg-stone-200 dark:bg-stone-700 overflow-hidden flex items-center justify-center shrink-0 border border-stone-300 dark:border-stone-600">
+                <img id="previewFotoImg" src="" alt="Vista previa" class="w-full h-full object-cover hidden">
+                <i id="previewFotoIcono" class="fa-solid fa-camera text-stone-400 group-hover:text-emerald-500 text-lg transition"></i>
+              </div>
+
+              <!-- Texto explicativo para Móvil y PC -->
+              <div class="text-left">
+                <p class="text-xs font-bold text-stone-800 dark:text-stone-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+                  <span class="inline sm:hidden">📷 Tocar para Galería o Cámara</span>
+                  <span class="hidden sm:inline">📁 Clic para buscar o arrastra la foto aquí</span>
+                </p>
+                <p class="text-[11px] text-stone-400">JPG, PNG o WEBP (se optimiza automáticamente)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opción alternativa: Enlace directo o de Google Drive -->
+          <div class="space-y-1">
+            <span class="text-[11px] text-stone-400 block">O si prefieres, escribe la ruta o pega un enlace de Google Drive:</span>
+            <input 
+              type="text" 
+              id="editFoto" 
+              oninput="actualizarPreviewDesdeInput()" 
+              placeholder="Ej: assets/imagenes/empanadas_doradas.jpg o enlace de Google Drive" 
+              class="w-full px-3 py-1.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500/40 text-stone-900 dark:text-white">
+          </div>
         </div>
 
         <!-- SECCIÓN MODULAR DE ADICIONALES Y SALSAS -->

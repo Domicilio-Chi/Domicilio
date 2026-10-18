@@ -6,7 +6,14 @@
 // Helper para normalizar rutas de imágenes en local y GitHub Pages
 function getRutaFoto(ruta) {
   if (!ruta) return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800';
-  if (ruta.startsWith('http://') || ruta.startsWith('https://')) return ruta;
+  if (ruta.startsWith('http://') || ruta.startsWith('https://') || ruta.startsWith('data:') || ruta.startsWith('blob:')) {
+    // Si es enlace de Google Drive, asegurar formato directo
+    const matchDrive = ruta.match(/drive\.google\.com\/(?:file\/d\/|(?:open|uc)\?(?:.*&)?id=)([a-zA-Z0-9_-]+)/);
+    if (matchDrive && matchDrive[1]) {
+      return `https://lh3.googleusercontent.com/d/${matchDrive[1]}`;
+    }
+    return ruta;
+  }
   return ruta.replace(/^\.\.\//, '');
 }
 

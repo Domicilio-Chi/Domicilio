@@ -6,7 +6,7 @@
 // Helper para normalizar rutas de imágenes en local y GitHub Pages
 function getRutaFoto(ruta) {
   if (!ruta) return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100';
-  if (ruta.startsWith('http://') || ruta.startsWith('https://')) return ruta;
+  if (ruta.startsWith('http://') || ruta.startsWith('https://') || ruta.startsWith('data:') || ruta.startsWith('blob:')) return ruta;
   return ruta.replace(/^\.\.\//, '');
 }
 
@@ -145,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
   actualizarIconoTemaAdmin();
   configurarCierreModalesAdmin();
   actualizarSelectsCategoriasAdmin();
+  configurarDragAndDropFotoAdmin();
 });
 
 function guardarEnStorage() {
@@ -326,6 +327,140 @@ function toggleDisponibilidad(id) {
 // ==========================================
 // MODAL AGREGAR / EDITAR PLATO Y EXTRAS
 // ==========================================
+function mostrarPreviewFoto(url) {
+  const img = document.getElementById('previewFotoImg');
+  const icono = document.getElementById('previewFotoIcono');
+  if (!img || !icono) return;
+
+  if (url && typeof url === 'string' && url.trim() !== '') {
+    img.src = getRutaFoto(url.trim());
+    img.classList.remove('hidden');
+    icono.classList.add('hidden');
+  } else {
+    img.src = '';
+    img.classList.add('hidden');
+    icono.classList.remove('hidden');
+  }
+}
+
+function parsearEnlaceGoogleDrive(enlace) {
+  if (!enlace || typeof enlace !== 'string') return enlace;
+  const url = enlace.trim();
+  // Formato 1: drive.google.com/file/d/FILE_ID/view...
+  const matchFileD = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (matchFileD && matchFileD[1]) {
+    return `https://lh3.googleusercontent.com/d/${matchFileD[1]}`;
+  }
+  // Formato 2: drive.google.com/open?id=FILE_ID o uc?id=FILE_ID
+  const matchId = url.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)/);
+  if (matchId && matchId[1]) {
+    return `https://lh3.googleusercontent.com/d/${matchId[1]}`;
+  }
+  return url;
+}
+
+function actualizarPreviewDesdeInput() {
+  const input = document.getElementById('editFoto');
+  if (!input) return;
+  let valor = input.value.trim();
+  
+  // Si pegó un enlace de Google Drive, auto-convertirlo al formato de imagen directa
+  const enlaceDirecto = parsearEnlaceGoogleDrive(valor);
+  if (enlaceDirecto !== valor) {
+    input.value = enlaceDirecto;
+    valor = enlaceDirecto;
+    mostrarToastAdmin('¡Enlace de Google Drive transformado a imagen directa!');
+  }
+  
+  mostrarPreviewFoto(valor);
+}
+
+function manejarSeleccionFotoPlato(event) {
+  const archivo = event.target?.files?.[0];
+  if (archivo) {
+    procesarArchivoFoto(archivo);
+  }
+}
+
+function procesarArchivoFoto(archivo) {
+  if (!archivo || !archivo.type.startsWith('image/')) {
+    mostrarToastAdmin('Por favor selecciona un archivo de imagen válido (JPG, PNG o WEBP).');
+    return;
+  }
+
+  mostrarToastAdmin('Optimizando foto para carga ultrarrápida...');
+
+  const lector = new FileReader();
+  lector.onload = function(e) {
+    const imgOriginal = new Image();
+    imgOriginal.onload = function() {
+      // Redimensionar proporcionalmente a máx 800px para que pese muy poco y cargue al instante
+      const maxDim = 800;
+      let ancho = imgOriginal.width;
+      let alto = imgOriginal.height;
+
+      if (ancho > maxDim || alto > maxDim) {
+        if (ancho > alto) {
+          alto = Math.round((alto * maxDim) / ancho);
+          ancho = maxDim;
+        } else {
+          ancho = Math.round((ancho * maxDim) / alto);
+          alto = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = ancho;
+      canvas.height = alto;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgOriginal, 0, 0, ancho, alto);
+
+      // Comprimir a JPEG con calidad 82%
+      const fotoDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+      const inputFoto = document.getElementById('editFoto');
+      if (inputFoto) {
+        inputFoto.value = fotoDataUrl;
+      }
+      mostrarPreviewFoto(fotoDataUrl);
+      mostrarToastAdmin('¡Foto cargada y lista para guardar!');
+    };
+    imgOriginal.onerror = function() {
+      mostrarToastAdmin('No se pudo procesar la imagen seleccionada.');
+    };
+    imgOriginal.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function configurarDragAndDropFotoAdmin() {
+  const dropzone = document.getElementById('dropzoneFotoAdmin');
+  if (!dropzone) return;
+
+  ['dragenter', 'dragover'].forEach(evento => {
+    dropzone.addEventListener(evento, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(evento => {
+    dropzone.addEventListener(evento, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const archivos = e.dataTransfer?.files;
+    if (archivos && archivos.length > 0) {
+      procesarArchivoFoto(archivos[0]);
+    }
+  }, false);
+}
+
 function abrirModalNuevoPlato() {
   actualizarSelectsCategoriasAdmin();
   document.getElementById('modalEditarTitulo').textContent = 'Agregar Nuevo Plato';
@@ -336,6 +471,7 @@ function abrirModalNuevoPlato() {
   document.getElementById('editPrecio').value = '';
   document.getElementById('editDescripcion').value = '';
   document.getElementById('editFoto').value = '';
+  mostrarPreviewFoto('');
   
   // Limpiar y poner 2 extras por defecto
   const contenedor = document.getElementById('contenedorListaExtrasAdmin');
@@ -360,6 +496,7 @@ function editarPlato(id) {
   document.getElementById('editPrecio').value = p.precio;
   document.getElementById('editDescripcion').value = p.descripcion;
   document.getElementById('editFoto').value = p.foto;
+  mostrarPreviewFoto(p.foto);
 
   // Cargar lista de extras del plato
   const contenedor = document.getElementById('contenedorListaExtrasAdmin');

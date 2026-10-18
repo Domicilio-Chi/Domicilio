@@ -546,3 +546,26 @@
   * [`capturas/mejora_28_modal_empanadas_opciones_opcionales.png`](capturas/mejora_28_modal_empanadas_opciones_opcionales.png): Reemplazo de la etiqueta `+Gratis` por `Opcional` en todos los sabores y rellenos de empanadas (Queso, Guiso, Pollo, Cazón, Mechada y De Todo).
 - **Commits en GitHub Pages:** `72bb590`, `21f2845`, `de4bcb5`, `9d124d5` y `fa571b8` en `origin/main`. Sitio activo en: `https://domicilio-chi.github.io/Domicilio/`.
 
+
+
+---
+
+## 🍽️ HITO: FLUJO INTELIGENTE DE CHAT CON CHEF (EXTRAS Y TOTALES) Y APERTURA DIRECTA DE COMANDA
+
+### 1. Contexto Conversacional Completo en el Chat con el Chef
+- **Captura Dinámica de Opciones:** Se actualizó `consultarPlatoDesdeModal()` en `src/app.js` para extraer la cantidad seleccionada (`cantidadModal`), los extras marcados con sus nombres y precios (`checkboxes:checked`), y el monto total calculado (`#modalTotalCalculado`).
+- **Banner Superior y Burbuja de Bienvenida Personalizada:** Al pulsar `[¿Quieres algo especial? Chatea directo con el chef]`, el chat abre con un banner claro que resume el producto y sus extras. El mensaje inicial del chef saluda mencionando exactamente lo que el cliente tiene en mente: cantidad (ej. 5x), extras solicitados (ej. Doble ración de guasacaca y Refresco en lata fría) y el total exacto ($35.00), junto a un botón interactivo dentro del chat: `[ 🛒 Agregar a mi Pedido ]`.
+
+### 2. Apertura Inmediata del Pedido (Comanda) al Agregar Plato
+- **Eliminación de Pasos Innecesarios:** Al pulsar `[Agregar al Pedido]` (desde la ficha del plato o dentro del chat), la aplicación abre inmediatamente la ventana modal de la Comanda (`#modalComanda`) sin requerir que el usuario regrese manualmente al inicio ni busque el botón arriba.
+- **Visualización Integral del Pedido:** Muestra la lista de ítems pedidos con sus extras detallados, el botón de papelera roja destacado `[🗑️]`, la tarjeta de datos de entrega del cliente con botón `[Editar ✏️]`, y el botón unificado `[💬 Enviar Pedido a Cocina  $XX.XX]`.
+- **Navegación Flexible:** Si el cliente desea seguir pidiendo, simplemente presiona la `[X]` en la esquina superior del modal para volver al menú y agregar más platos.
+
+### 3. Ajuste de Flexbox y Visibilidad Total de la Papelera en Móvil
+- **Soporte Responsivo con `min-w-0` y `break-words`:** Se corrigió el desbordamiento horizontal en pantallas angostas (390px) añadiendo `min-w-0` a la tarjeta del ítem dentro del contenedor flex, asegurando que el botón de papelera `[🗑️]` (40x40px) y el precio permanezcan siempre 100% visibles y cómodos para presionar.
+
+### 4. Evidencias Visuales y Commits
+- **Capturas Generadas:**
+  * `capturas/mejora_51_chat_con_chef_extras_y_total.png`: Chat con chef detallando cantidad, extras (salsa + refresco) y monto total con botón directo para agregar.
+  * `capturas/mejora_52_comanda_abierta_directamente_al_agregar.png`: Comanda abierta de inmediato con los platos agregados, papeleras rojas alineadas, datos de despacho y total a pagar.
+- **Commits en GitHub Pages:** `78359b7`, `2ac2b50` y `b2a933c` en `origin/main`.

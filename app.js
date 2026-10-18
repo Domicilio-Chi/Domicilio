@@ -1411,6 +1411,7 @@ function abrirModalChat(contextoDirecto = null) {
     if (banner) banner.classList.add('hidden');
   }
 
+  cargarHistorialClienteEnChat();
   modal.classList.remove('hidden');
 }
 
@@ -1512,19 +1513,176 @@ function enviarChipChat(texto) {
   }
 }
 
+// ==========================================
+// EFECTO DE SONIDO: GOTA DE AGUA (WATER DROP BLOOP)
+// ==========================================
+let audioCtxGotaApp = null;
+
+function reproducirSonidoGota() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!audioCtxGotaApp) {
+      audioCtxGotaApp = new AudioContextClass();
+    }
+    if (audioCtxGotaApp.state === 'suspended') {
+      audioCtxGotaApp.resume();
+    }
+
+    const t = audioCtxGotaApp.currentTime;
+    const osc = audioCtxGotaApp.createOscillator();
+    const gain = audioCtxGotaApp.createGain();
+
+    osc.type = 'sine';
+    // Barrido acústico de gota de agua ("bloop" cristalino)
+    osc.frequency.setValueAtTime(540, t);
+    osc.frequency.exponentialRampToValueAtTime(1420, t + 0.038);
+    osc.frequency.exponentialRampToValueAtTime(1150, t + 0.11);
+
+    // Envolvente de volumen (ataque suave y caída rápida)
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.24, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+
+    osc.connect(gain);
+    gain.connect(audioCtxGotaApp.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.14);
+  } catch (e) {
+    // Silencio seguro
+  }
+}
+
+// Disparar sonido de gota en todas las interacciones táctiles y clics
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, a, input[type="checkbox"], input[type="radio"], [role="button"], .cursor-pointer, .tarjeta-plato');
+  if (el) {
+    reproducirSonidoGota();
+  }
+}, { passive: true });
+
+// ==========================================
+// SESIÓN DE COMENSAL Y COMUNICACIÓN CHAT
+// ==========================================
+function obtenerOcrearClienteId() {
+  let id = localStorage.getItem('adomicilio_cliente_id');
+  if (!id) {
+    id = 'cli_' + Math.random().toString(36).substring(2, 8);
+    localStorage.setItem('adomicilio_cliente_id', id);
+  }
+  return id;
+}
+
+function obtenerNombreClienteChat() {
+  const comandaCliente = JSON.parse(localStorage.getItem('adomicilio_cliente_datos') || '{}');
+  if (comandaCliente.nombre && comandaCliente.nombre.trim()) {
+    return comandaCliente.nombre.trim();
+  }
+  const id = obtenerOcrearClienteId();
+  return `Comensal #${id.substring(4, 9).toUpperCase()}`;
+}
+
+const canalChatCliente = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('adomicilio_chat_channel') : null;
+
+if (canalChatCliente) {
+  canalChatCliente.onmessage = (event) => {
+    const data = event.data;
+    if (data && data.tipo === 'RESPUESTA_ADMIN') {
+      const miClienteId = obtenerOcrearClienteId();
+      if (data.clienteId === miClienteId || data.clienteId === 'cli_general') {
+        recibirRespuestaAdminEnCliente(data.mensaje);
+      }
+    }
+  };
+}
+
+function recibirRespuestaAdminEnCliente(msgAdmin) {
+  const area = document.getElementById('chatMensajesArea');
+  if (!area) return;
+
+  // Evitar duplicados
+  if (msgAdmin.id && area.querySelector(`[data-msg-id="${msgAdmin.id}"]`)) return;
+
+  const msgRespuesta = document.createElement('div');
+  if (msgAdmin.id) msgRespuesta.setAttribute('data-msg-id', msgAdmin.id);
+  msgRespuesta.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
+  msgRespuesta.innerHTML = `
+    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0 shadow-xs">
+      <i class="fa-solid fa-utensils"></i>
+    </div>
+    <div class="bg-white dark:bg-stone-800 border border-emerald-300 dark:border-emerald-800/80 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-xs shadow-xs text-stone-800 dark:text-stone-200 space-y-1.5">
+      <div class="flex items-center justify-between text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mb-0.5">
+        <span class="flex items-center gap-1">
+          <i class="fa-solid fa-circle-check text-[10px]"></i>
+          <span>👨‍🍳 Chef / Cocina A Domicilio</span>
+        </span>
+        <span class="text-stone-400 font-normal">${msgAdmin.fecha || ''}</span>
+      </div>
+      <p class="leading-relaxed whitespace-pre-wrap">${msgAdmin.mensaje}</p>
+      <button onclick="confirmarPorWhatsAppDesdeChat()" class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs transition mt-1">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>Confirmar por WhatsApp</span>
+      </button>
+    </div>
+  `;
+  area.appendChild(msgRespuesta);
+  area.scrollTop = area.scrollHeight;
+  reproducirSonidoGota();
+
+  const modal = document.getElementById('modalChat');
+  if (modal && modal.classList.contains('hidden')) {
+    mostrarToast('👨‍🍳 ¡El Chef te ha respondido en el chat!');
+  }
+}
+
+function cargarHistorialClienteEnChat() {
+  const area = document.getElementById('chatMensajesArea');
+  if (!area) return;
+
+  const miClienteId = obtenerOcrearClienteId();
+  const historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  const misMensajes = historialChat.filter(m => (m.clienteId || 'cli_general') === miClienteId);
+
+  misMensajes.forEach(m => {
+    if (m.id && area.querySelector(`[data-msg-id="${m.id}"]`)) return;
+
+    if (m.emisor === 'admin') {
+      recibirRespuestaAdminEnCliente(m);
+    } else {
+      const msgUser = document.createElement('div');
+      if (m.id) msgUser.setAttribute('data-msg-id', m.id);
+      msgUser.className = 'flex items-start justify-end space-x-2 animate-in fade-in duration-200';
+      msgUser.innerHTML = `
+        <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
+          ${m.plato ? `<div class="text-[10px] opacity-80 font-bold mb-0.5">🍽️ Sobre: ${m.plato}</div>` : ''}
+          ${m.mensaje}
+        </div>
+      `;
+      area.appendChild(msgUser);
+    }
+  });
+
+  area.scrollTop = area.scrollHeight;
+}
+
 function enviarMensajeChat() {
   const input = document.getElementById('chatInputTexto');
   const texto = input.value.trim();
   if (!texto) return;
 
   const area = document.getElementById('chatMensajesArea');
+  const miClienteId = obtenerOcrearClienteId();
+  const miNombre = obtenerNombreClienteChat();
   
-  // Si hay contexto de plato, formatear el texto
+  // Contexto de plato
   const platoEtiqueta = chatContextoPlato ? chatContextoPlato.nombre : null;
   const categoriaEtiqueta = chatContextoPlato ? chatContextoPlato.categoria : categoriaSeleccionada;
+  const msgId = 'MSG-' + Date.now();
 
-  // Mensaje del Comensal
+  // Mensaje en pantalla del Comensal
   const msgUser = document.createElement('div');
+  msgUser.setAttribute('data-msg-id', msgId);
   msgUser.className = 'flex items-start justify-end space-x-2 animate-in fade-in duration-200';
   msgUser.innerHTML = `
     <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
@@ -1535,63 +1693,46 @@ function enviarMensajeChat() {
   area.appendChild(msgUser);
   input.value = '';
   area.scrollTop = area.scrollHeight;
+  reproducirSonidoGota();
 
-  // Guardar en historial local de chat
+  // Guardar en historial con ID único de este comensal
   const historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
   const nuevoMensaje = {
-    id: 'MSG-' + Date.now(),
+    id: msgId,
+    clienteId: miClienteId,
+    clienteNombre: miNombre,
     fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    cliente: 'Comensal en Línea',
+    timestamp: Date.now(),
     plato: platoEtiqueta,
     categoria: categoriaEtiqueta,
     mensaje: texto,
-    emisor: 'cliente'
+    emisor: 'cliente',
+    leido: false,
+    respondido: false
   };
+
   historialChat.push(nuevoMensaje);
   localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialChat));
+
+  // Notificar al panel Admin en tiempo real
+  if (canalChatCliente) {
+    canalChatCliente.postMessage({
+      tipo: 'NUEVO_MENSAJE_CLIENTE',
+      clienteId: miClienteId,
+      mensaje: nuevoMensaje
+    });
+  }
 
   // Enviar a Google Sheets ERP si la API está configurada
   if (window.API && typeof API.enviarMensajeChat === 'function') {
     API.enviarMensajeChat({
-      clienteId: localStorage.getItem('adomicilio_cliente_id') || 'cliente_' + Date.now(),
-      nombre: 'Comensal en Línea',
+      clienteId: miClienteId,
+      nombre: miNombre,
       mensaje: platoEtiqueta ? `[Consulta: ${platoEtiqueta}] ${texto}` : texto,
       plato: platoEtiqueta,
       categoria: categoriaEtiqueta
     }).catch(e => console.warn('Error enviando mensaje a Sheets:', e));
   }
-
-  // Respuesta inteligente del Chef / Cocina
-  setTimeout(() => {
-    const msgRespuesta = document.createElement('div');
-    msgRespuesta.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
-    
-    let respuestaTexto = '¡Mensaje recibido! Nuestro equipo de cocina está en línea y activo. ¿Deseas que preparemos tu orden ya mismo?';
-    if (chatContextoPlato) {
-      const cant = chatContextoPlato.cantidad || 1;
-      const cantStr = cant > 1 ? `${cant}x ` : '';
-      const extrasStr = chatContextoPlato.extras && chatContextoPlato.extras.length > 0 
-        ? ` con ${chatContextoPlato.extras.map(e => e.nombre).join(', ')}` 
-        : '';
-      const totalStr = chatContextoPlato.total ? ` ($${chatContextoPlato.total.toFixed(2)})` : '';
-      respuestaTexto = `¡Recibido! Sobre **${cantStr}${chatContextoPlato.nombre}${extrasStr}**${totalStr}: sale caliente y recién hecho en unos 15 a 20 minutos. ¡Puedes agregarlo directo a tu pedido o confirmar con nosotros por WhatsApp! 🛵💨`;
-    }
-
-    msgRespuesta.innerHTML = `
-      <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0">
-        <i class="fa-solid fa-utensils"></i>
-      </div>
-      <div class="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/60 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs shadow-xs text-stone-800 dark:text-stone-200 space-y-1.5">
-        <p class="leading-relaxed">${respuestaTexto}</p>
-        <button onclick="confirmarPorWhatsAppDesdeChat('${platoEtiqueta || ''}')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition mt-1">
-          <i class="fa-brands fa-whatsapp"></i>
-          <span>Confirmar por WhatsApp</span>
-        </button>
-      </div>
-    `;
-    area.appendChild(msgRespuesta);
-    area.scrollTop = area.scrollHeight;
-  }, 900);
 }
 
 function confirmarPorWhatsAppDesdeChat(platoNombre) {

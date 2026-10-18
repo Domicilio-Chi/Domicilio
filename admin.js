@@ -306,13 +306,48 @@ function actualizarMetricas() {
   document.getElementById('metricaPlatosActivos').textContent = activos;
 
   const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  
+  // Reconciliación automática de mensajes previos que ya fueron respondidos
+  const tieneRespuestaAdmin = mensajes.some(m => m.emisor === 'admin');
+  if (tieneRespuestaAdmin) {
+    let corregido = false;
+    mensajes.forEach(m => {
+      if (m.emisor === 'cliente' && m.leido === undefined) {
+        m.leido = true;
+        m.respondido = true;
+        corregido = true;
+      }
+    });
+    if (corregido) {
+      localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+    }
+  }
+
+  const pendientes = mensajes.filter(m => m.emisor === 'cliente' && !m.leido && !m.respondido).length;
   const elMensajes = document.getElementById('metricaMensajes');
-  if (elMensajes) elMensajes.textContent = mensajes.length;
+  if (elMensajes) {
+    elMensajes.textContent = pendientes;
+    if (pendientes > 0) {
+      elMensajes.className = "text-xl sm:text-2xl font-black font-heading text-rose-600 dark:text-rose-400";
+    } else {
+      elMensajes.className = "text-xl sm:text-2xl font-black font-heading text-stone-900 dark:text-white";
+    }
+  }
 
   const badgeChat = document.getElementById('badgeAdminChat');
   if (badgeChat) {
-    if (mensajes.length > 0) badgeChat.classList.remove('hidden');
+    if (pendientes > 0) badgeChat.classList.remove('hidden');
     else badgeChat.classList.add('hidden');
+  }
+
+  const badgeModalTotal = document.getElementById('adminBadgePendientesTotal');
+  if (badgeModalTotal) {
+    if (pendientes > 0) {
+      badgeModalTotal.textContent = `${pendientes} pendiente${pendientes > 1 ? 's' : ''}`;
+      badgeModalTotal.classList.remove('hidden');
+    } else {
+      badgeModalTotal.classList.add('hidden');
+    }
   }
 }
 
@@ -796,8 +831,79 @@ function mostrarToastAdmin(texto) {
 }
 
 // ==========================================
-// CONSULTAS Y CHAT DE CLIENTES EN ADMIN
+// EFECTO DE SONIDO: GOTA DE AGUA (WATER DROP BLOOP)
 // ==========================================
+let audioCtxGotaAdmin = null;
+
+function reproducirSonidoGota() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!audioCtxGotaAdmin) {
+      audioCtxGotaAdmin = new AudioContextClass();
+    }
+    if (audioCtxGotaAdmin.state === 'suspended') {
+      audioCtxGotaAdmin.resume();
+    }
+
+    const t = audioCtxGotaAdmin.currentTime;
+    const osc = audioCtxGotaAdmin.createOscillator();
+    const gain = audioCtxGotaAdmin.createGain();
+
+    osc.type = 'sine';
+    // Barrido acústico de gota de agua ("bloop" cristalino)
+    osc.frequency.setValueAtTime(540, t);
+    osc.frequency.exponentialRampToValueAtTime(1420, t + 0.038);
+    osc.frequency.exponentialRampToValueAtTime(1150, t + 0.11);
+
+    // Envolvente de volumen (ataque suave y caída exponencial)
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.24, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+
+    osc.connect(gain);
+    gain.connect(audioCtxGotaAdmin.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.14);
+  } catch (e) {
+    // Silencio seguro
+  }
+}
+
+// Disparar sonido de gota en todas las interacciones táctiles y clics
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, a, input[type="checkbox"], input[type="radio"], [role="button"], .cursor-pointer');
+  if (el) {
+    reproducirSonidoGota();
+  }
+}, { passive: true });
+
+// ==========================================
+// BANDEJA MULTIUSUARIO DE CONSULTAS Y CHAT
+// ==========================================
+let clienteChatActivoId = null;
+const canalChatAdmin = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('adomicilio_chat_channel') : null;
+
+if (canalChatAdmin) {
+  canalChatAdmin.onmessage = (event) => {
+    const data = event.data;
+    if (data && (data.tipo === 'NUEVO_MENSAJE_CLIENTE' || data.tipo === 'ACTUALIZAR_CHAT')) {
+      actualizarMetricas();
+      reproducirSonidoGota();
+      renderizarAdminChat();
+    }
+  };
+}
+
+// Oyente de almacenamiento local para sincronización entre pestañas
+window.addEventListener('storage', (e) => {
+  if (e.key === 'adomicilio_mensajes_chat') {
+    actualizarMetricas();
+    renderizarAdminChat();
+  }
+});
+
 function abrirModalAdminChat() {
   renderizarAdminChat();
   document.getElementById('modalAdminChat').classList.remove('hidden');
@@ -807,76 +913,338 @@ function cerrarModalAdminChat() {
   document.getElementById('modalAdminChat').classList.add('hidden');
 }
 
-function renderizarAdminChat() {
-  const listaContenedor = document.getElementById('adminChatListaMensajes');
-  if (!listaContenedor) return;
-
+function obtenerConversacionesAgrupadas() {
   const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
-  
-  if (mensajes.length === 0) {
+  const mapaClientes = {};
+
+  mensajes.forEach((m, idx) => {
+    // Normalizar ID de cliente (compatible con mensajes anteriores sin clienteId)
+    const cId = m.clienteId || 'cli_general';
+    if (!mapaClientes[cId]) {
+      mapaClientes[cId] = {
+        clienteId: cId,
+        nombre: m.clienteNombre || m.cliente || (cId === 'cli_general' ? 'Comensal General' : `Comensal #${cId.substring(4, 9)}`),
+        plato: m.plato || null,
+        categoria: m.categoria || null,
+        mensajes: [],
+        pendientes: 0,
+        ultimoTimestamp: m.timestamp || (Date.now() - (mensajes.length - idx) * 1000)
+      };
+    }
+
+    if (m.plato) mapaClientes[cId].plato = m.plato;
+    if (m.clienteNombre && !mapaClientes[cId].nombre.includes('Comensal #')) {
+      mapaClientes[cId].nombre = m.clienteNombre;
+    }
+
+    mapaClientes[cId].mensajes.push(m);
+
+    // Contar pendientes: mensaje enviado por cliente que aún no está leído ni respondido
+    if (m.emisor === 'cliente' && !m.leido && !m.respondido) {
+      mapaClientes[cId].pendientes++;
+    }
+
+    if (m.timestamp && m.timestamp > mapaClientes[cId].ultimoTimestamp) {
+      mapaClientes[cId].ultimoTimestamp = m.timestamp;
+    }
+  });
+
+  // Convertir a lista y ordenar por actividad más reciente
+  return Object.values(mapaClientes).sort((a, b) => b.ultimoTimestamp - a.ultimoTimestamp);
+}
+
+function renderizarAdminChat() {
+  const listaContenedor = document.getElementById('adminListaClientesContenedor');
+  const chatArea = document.getElementById('adminChatListaMensajes');
+  const totalClientesSpan = document.getElementById('adminTotalClientesActivos');
+  const inputResp = document.getElementById('adminInputRespuesta');
+  const btnResp = document.getElementById('adminBtnEnviarRespuesta');
+
+  if (!listaContenedor || !chatArea) return;
+
+  const conversaciones = obtenerConversacionesAgrupadas();
+  if (totalClientesSpan) totalClientesSpan.textContent = conversaciones.length;
+
+  // 1. RENDERIZAR LISTA LATERAL DE CLIENTES
+  if (conversaciones.length === 0) {
     listaContenedor.innerHTML = `
-      <div class="text-center py-12 text-stone-400">
-        <i class="fa-solid fa-comments text-3xl mb-2 text-stone-300 dark:text-stone-700"></i>
-        <p class="text-xs font-bold">No hay consultas de comensales registradas aún.</p>
-        <p class="text-[11px] text-stone-400 mt-1">Cuando un cliente pregunte sobre una cachapa, sopa o plato, aparecerá aquí con el nombre del plato.</p>
+      <div class="text-center py-10 px-3 text-stone-400">
+        <i class="fa-solid fa-inbox text-2xl mb-2 text-stone-300 dark:text-stone-700"></i>
+        <p class="text-xs font-bold">No hay consultas aún</p>
+        <p class="text-[11px] text-stone-400 mt-1">Cuando un comensal pregunte sobre un plato, su chat aparecerá aquí en tiempo real.</p>
       </div>
     `;
+  } else {
+    listaContenedor.innerHTML = conversaciones.map(c => {
+      const esActivo = c.clienteId === clienteChatActivoId;
+      const ultimoMsg = c.mensajes.length > 0 ? c.mensajes[c.mensajes.length - 1] : null;
+      const textoUltimo = ultimoMsg ? (ultimoMsg.mensaje.length > 40 ? ultimoMsg.mensaje.substring(0, 40) + '...' : ultimoMsg.mensaje) : 'Sin mensajes';
+      const horaUltimo = ultimoMsg ? (ultimoMsg.fecha || '') : '';
+
+      return `
+        <div onclick="seleccionarClienteChat('${c.clienteId}')" class="p-3 rounded-2xl cursor-pointer transition-all border ${esActivo ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 shadow-xs' : 'bg-white dark:bg-stone-900/80 border-stone-200/80 dark:border-stone-800/80 hover:bg-stone-100/70 dark:hover:bg-stone-800/60'}">
+          <div class="flex items-start justify-between gap-1.5 mb-1">
+            <div class="flex items-center space-x-2 min-w-0">
+              <div class="w-7 h-7 rounded-full ${esActivo ? 'bg-emerald-600 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'} flex items-center justify-center text-xs font-black flex-shrink-0">
+                <i class="fa-solid fa-user text-[11px]"></i>
+              </div>
+              <span class="font-bold text-xs truncate ${esActivo ? 'text-emerald-950 dark:text-emerald-100' : 'text-stone-900 dark:text-white'}">
+                ${c.nombre}
+              </span>
+            </div>
+            <div class="flex items-center space-x-1.5 flex-shrink-0">
+              <span class="text-[10px] text-stone-400">${horaUltimo}</span>
+              ${c.pendientes > 0 ? `
+                <span class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white font-black text-[10px] animate-pulse">
+                  ${c.pendientes}
+                </span>
+              ` : ''}
+            </div>
+          </div>
+
+          ${c.plato ? `
+            <div class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 truncate mb-1">
+              🍽️ ${c.plato}
+            </div>
+          ` : ''}
+
+          <p class="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+            ${textoUltimo}
+          </p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 2. RENDERIZAR CONVERSACIÓN DEL CLIENTE ACTIVO
+  const clienteActivo = conversaciones.find(c => c.clienteId === clienteChatActivoId);
+
+  // Elementos del encabezado activo
+  const nombreActivo = document.getElementById('adminNombreClienteActivo');
+  const detalleActivo = document.getElementById('adminDetalleClienteActivo');
+  const tagPlato = document.getElementById('adminTagClientePlato');
+  const accionesActivo = document.getElementById('adminAccionesClienteActivo');
+
+  if (clienteActivo) {
+    // Marcar como leídos los mensajes de este cliente activo
+    let huboCambios = false;
+    const todosMensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+    todosMensajes.forEach(m => {
+      const cId = m.clienteId || 'cli_general';
+      if (cId === clienteActivo.clienteId && !m.leido) {
+        m.leido = true;
+        huboCambios = true;
+      }
+    });
+
+    if (huboCambios) {
+      localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(todosMensajes));
+      actualizarMetricas();
+    }
+
+    if (nombreActivo) nombreActivo.textContent = clienteActivo.nombre;
+    if (detalleActivo) detalleActivo.textContent = `ID: ${clienteActivo.clienteId} • ${clienteActivo.mensajes.length} mensajes`;
+    if (tagPlato) {
+      if (clienteActivo.plato) {
+        tagPlato.textContent = `🍽️ ${clienteActivo.plato}`;
+        tagPlato.classList.remove('hidden');
+      } else {
+        tagPlato.classList.add('hidden');
+      }
+    }
+    if (accionesActivo) accionesActivo.classList.remove('hidden');
+
+    // Habilitar barra de respuesta
+    if (inputResp) {
+      inputResp.disabled = false;
+      inputResp.placeholder = `Escribe tu respuesta a ${clienteActivo.nombre}...`;
+      inputResp.focus();
+    }
+    if (btnResp) {
+      btnResp.disabled = false;
+      btnResp.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Renderizar burbujas de chat
+    chatArea.innerHTML = clienteActivo.mensajes.map(m => {
+      const esAdmin = m.emisor === 'admin';
+      return `
+        <div class="flex flex-col ${esAdmin ? 'items-end' : 'items-start'} space-y-1 animate-in fade-in duration-200">
+          <div class="flex items-center space-x-1.5 text-[10px] text-stone-400 ${esAdmin ? 'justify-end' : 'justify-start'}">
+            <span class="font-bold ${esAdmin ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-700 dark:text-stone-300'}">
+              ${esAdmin ? '👨‍🍳 Tú (Chef / Cocina)' : (m.clienteNombre || m.cliente || 'Comensal')}
+            </span>
+            <span>•</span>
+            <span>${m.fecha || ''}</span>
+            ${esAdmin ? '<i class="fa-solid fa-check-double text-emerald-600 text-[10px]"></i>' : ''}
+          </div>
+
+          <div class="p-3 rounded-2xl max-w-[85%] text-xs shadow-xs ${esAdmin ? 'bg-emerald-600 text-white rounded-tr-none' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700/80 text-stone-800 dark:text-stone-200 rounded-tl-none'}">
+            ${m.plato && !esAdmin ? `
+              <div class="text-[10px] font-bold pb-1 mb-1 border-b ${esAdmin ? 'border-white/20' : 'border-stone-200 dark:border-stone-700 text-emerald-600 dark:text-emerald-400'} flex items-center gap-1">
+                <i class="fa-solid fa-utensils text-[9px]"></i>
+                <span>Consulta sobre: ${m.plato}</span>
+              </div>
+            ` : ''}
+            <p class="leading-relaxed whitespace-pre-wrap">${m.mensaje}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+  } else {
+    // Ningún cliente seleccionado
+    if (nombreActivo) nombreActivo.textContent = 'Selecciona un comensal';
+    if (detalleActivo) detalleActivo.textContent = 'Haz clic en la lista para ver su conversación';
+    if (tagPlato) tagPlato.classList.add('hidden');
+    if (accionesActivo) accionesActivo.classList.add('hidden');
+
+    if (inputResp) {
+      inputResp.disabled = true;
+      inputResp.placeholder = 'Selecciona un comensal para responder...';
+      inputResp.value = '';
+    }
+    if (btnResp) {
+      btnResp.disabled = true;
+      btnResp.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    chatArea.innerHTML = `
+      <div class="text-center py-16 text-stone-400">
+        <i class="fa-solid fa-comments text-4xl mb-3 text-stone-300 dark:text-stone-700"></i>
+        <p class="text-xs font-bold text-stone-700 dark:text-stone-300">Selecciona un comensal de la lista</p>
+        <p class="text-[11px] text-stone-400 mt-1 max-w-xs mx-auto">Podrás responderle a cada cliente de manera 100% individual y personalizada sin mezclar chats.</p>
+      </div>
+    `;
+  }
+}
+
+function seleccionarClienteChat(clienteId) {
+  clienteChatActivoId = clienteId;
+
+  // En móvil: ocultar lista de comensales y mostrar chat activo
+  if (window.innerWidth < 768) {
+    const panelLista = document.getElementById('adminPanelListaClientes');
+    const panelChat = document.getElementById('adminPanelChatActivo');
+    if (panelLista) panelLista.classList.add('hidden');
+    if (panelChat) panelChat.classList.remove('hidden');
+  }
+
+  renderizarAdminChat();
+}
+
+function volverAListaClientesMobile() {
+  clienteChatActivoId = null;
+  const panelLista = document.getElementById('adminPanelListaClientes');
+  const panelChat = document.getElementById('adminPanelChatActivo');
+  if (panelLista) panelLista.classList.remove('hidden');
+  if (panelChat) panelChat.classList.add('hidden');
+  renderizarAdminChat();
+}
+
+function responderAdminChat() {
+  if (!clienteChatActivoId) {
+    mostrarToastAdmin('Selecciona primero un comensal para responder');
     return;
   }
 
-  listaContenedor.innerHTML = mensajes.slice().reverse().map((m, idxRev) => {
-    const idxOriginal = mensajes.length - 1 - idxRev;
-    const esAdmin = m.emisor === 'admin';
-    return `
-      <div class="p-3.5 rounded-2xl ${esAdmin ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60' : 'bg-white dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700/70'} shadow-xs space-y-2">
-        <div class="flex items-center justify-between text-xs">
-          <span class="font-bold ${esAdmin ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-900 dark:text-white'} flex items-center gap-1.5">
-            <i class="fa-solid ${esAdmin ? 'fa-utensils text-emerald-600' : 'fa-user-circle text-stone-500'}"></i>
-            ${m.cliente || (esAdmin ? 'Cocina A Domicilio' : 'Comensal')}
-          </span>
-          <div class="flex items-center space-x-2">
-            <span class="text-[10px] text-stone-400">${m.fecha || ''}</span>
-            <button onclick="eliminarMensajeChatAdmin('${m.id || ''}', ${idxOriginal})" class="w-6 h-6 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 flex items-center justify-center transition cursor-pointer" title="Eliminar esta consulta">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-          </div>
-        </div>
+  const input = document.getElementById('adminInputRespuesta');
+  const texto = input ? input.value.trim() : '';
+  if (!texto) return;
 
-        ${m.plato ? `
-          <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold">
-            <i class="fa-solid fa-utensils text-[10px]"></i>
-            <span>Consultó sobre: ${m.plato} (${m.categoria || 'Menú'})</span>
-          </div>
-        ` : ''}
+  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  
+  // 1. Marcar los mensajes previos de este cliente como respondidos y leídos
+  mensajes.forEach(m => {
+    const cId = m.clienteId || 'cli_general';
+    if (cId === clienteChatActivoId) {
+      m.leido = true;
+      m.respondido = true;
+    }
+  });
 
-        <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed bg-stone-50 dark:bg-stone-900/60 p-2.5 rounded-xl border border-stone-100 dark:border-stone-800">
-          "${m.mensaje}"
-        </p>
+  // 2. Agregar la respuesta del Chef dirigida específicamente a este cliente
+  const nuevoMensajeAdmin = {
+    id: 'MSG-' + Date.now(),
+    clienteId: clienteChatActivoId,
+    clienteNombre: 'Cocina A Domicilio (Chef)',
+    mensaje: texto,
+    emisor: 'admin',
+    fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    timestamp: Date.now()
+  };
 
-        ${!esAdmin ? `
-          <div class="flex items-center justify-end space-x-2 pt-1">
-            <button onclick="responderPorWhatsAppAdmin('${m.plato || ''}', '${encodeURIComponent(m.mensaje)}')" class="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center space-x-1.5 transition cursor-pointer">
-              <i class="fa-brands fa-whatsapp text-xs"></i>
-              <span>Responder en WhatsApp</span>
-            </button>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }).join('');
-}
-
-function eliminarMensajeChatAdmin(idMensaje, idxOriginal) {
-  let mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
-  if (idMensaje) {
-    mensajes = mensajes.filter(m => m.id !== idMensaje);
-  } else if (typeof idxOriginal === 'number' && idxOriginal >= 0 && idxOriginal < mensajes.length) {
-    mensajes.splice(idxOriginal, 1);
-  }
+  mensajes.push(nuevoMensajeAdmin);
   localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+
+  // 3. Notificar en tiempo real a las pestañas y al cliente específico
+  if (canalChatAdmin) {
+    canalChatAdmin.postMessage({
+      tipo: 'RESPUESTA_ADMIN',
+      clienteId: clienteChatActivoId,
+      mensaje: nuevoMensajeAdmin
+    });
+  }
+
+  // Notificar a Google Sheets ERP si está configurado
+  if (window.API && typeof API.enviarMensajeChat === 'function') {
+    API.enviarMensajeChat({
+      clienteId: clienteChatActivoId,
+      nombre: 'Cocina A Domicilio',
+      mensaje: `[Respuesta Cocina]: ${texto}`,
+      emisor: 'admin'
+    }).catch(e => console.warn(e));
+  }
+
+  input.value = '';
+  reproducirSonidoGota();
   renderizarAdminChat();
   actualizarMetricas();
-  mostrarToastAdmin('Consulta eliminada del registro');
+  mostrarToastAdmin('Respuesta enviada al comensal ✓');
+}
+
+function marcarTodosLeidosAdmin() {
+  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  if (mensajes.length === 0) {
+    mostrarToastAdmin('No hay mensajes registrados');
+    return;
+  }
+
+  mensajes.forEach(m => {
+    m.leido = true;
+  });
+
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+  actualizarMetricas();
+  renderizarAdminChat();
+  reproducirSonidoGota();
+  mostrarToastAdmin('Todos los mensajes marcados como leídos ✓');
+}
+
+function eliminarConversacionClienteActivo() {
+  if (!clienteChatActivoId) return;
+
+  if (!confirm('¿Deseas eliminar la conversación con este comensal?')) return;
+
+  let mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  mensajes = mensajes.filter(m => (m.clienteId || 'cli_general') !== clienteChatActivoId);
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+
+  clienteChatActivoId = null;
+  renderizarAdminChat();
+  actualizarMetricas();
+  mostrarToastAdmin('Conversación eliminada');
+}
+
+function abrirWAClienteActivo() {
+  if (!clienteChatActivoId) return;
+  const conversaciones = obtenerConversacionesAgrupadas();
+  const clienteActivo = conversaciones.find(c => c.clienteId === clienteChatActivoId);
+  const plato = clienteActivo ? clienteActivo.plato : '';
+  const texto = `¡Hola! Te escribe el chef de A Domicilio con respecto a tu consulta sobre ${plato ? `*${plato}*` : 'nuestro menú'}. ¡Estamos a tu orden!`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
 function confirmarVaciarTodoChatAdmin() {
@@ -885,49 +1253,14 @@ function confirmarVaciarTodoChatAdmin() {
     mostrarToastAdmin('No hay consultas registradas para vaciar');
     return;
   }
-  if (!confirm('¿Deseas vaciar todas las consultas del chat de clientes? Esta acción eliminará el historial del panel.')) {
+  if (!confirm('¿Deseas vaciar todas las consultas del chat de clientes? Esta acción eliminará todo el historial.')) {
     return;
   }
   localStorage.removeItem('adomicilio_mensajes_chat');
+  clienteChatActivoId = null;
   renderizarAdminChat();
   actualizarMetricas();
   mostrarToastAdmin('Historial de chat vaciado con éxito');
-}
-
-function responderAdminChat() {
-  const input = document.getElementById('adminInputRespuesta');
-  const texto = input.value.trim();
-  if (!texto) return;
-
-  const mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
-  mensajes.push({
-    id: 'MSG-' + Date.now(),
-    fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    cliente: 'Cocina A Domicilio (Chef)',
-    mensaje: texto,
-    emisor: 'admin'
-  });
-  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
-
-  if (window.API && typeof API.enviarMensajeChat === 'function') {
-    API.enviarMensajeChat({
-      clienteId: 'admin',
-      nombre: 'Cocina A Domicilio',
-      mensaje: `[Respuesta Cocina]: ${texto}`,
-      emisor: 'admin'
-    }).catch(e => console.warn(e));
-  }
-
-  input.value = '';
-  renderizarAdminChat();
-  actualizarMetricas();
-  mostrarToastAdmin('Respuesta enviada al chat');
-}
-
-function responderPorWhatsAppAdmin(platoNombre, msgEncoded) {
-  const msg = decodeURIComponent(msgEncoded);
-  const texto = `¡Hola! Te escribe el chef de A Domicilio con respecto a tu consulta sobre *${platoNombre || 'nuestro menú'}*: "${msg}". Estamos listos para preparártelo.`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
 // ==========================================

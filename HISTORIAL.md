@@ -613,3 +613,26 @@
   * `capturas/mejora_55_boton_chat_chef_resalte_dual_verde_blanco.png`: Botón del chef en la ficha del plato con el resalte dual de borde verde y aura blanca.
   * `capturas/mejora_56_admin_gestion_sabores_y_checks_extras.png`: Panel administrador en `admin.html` demostrando la edición completa de checks, textos, precios y papeleras por plato.
 - **Commits en GitHub Pages:** `2c53db7` en `origin/main`.
+
+
+---
+
+## 🏷️ HITO: GESTOR DE CATEGORÍAS DEL MENÚ EN ADMINISTRADOR Y CATÁLOGO
+
+### 1. Interfaz y Funcionalidad en `admin.html`
+- **Botón `[ 🏷️ Categorías ]` en Barra Principal:** Ubicado junto a `[ + Agregar Nuevo Plato ]` para acceso rápido y centralizado.
+- **Ventana Modal `#modalGestionCategorias`:**
+  - Formulario para crear nuevas categorías (ej: "Postres Criollos", "Combos", "Parrillas") con asignación automática inteligente de iconos de FontAwesome según el nombre.
+  - Lista de categorías activas con métrica en vivo de platos asociados a cada una.
+  - Botón de papelera roja `[🗑️]` por categoría para eliminar secciones que no se utilicen.
+- **Sincronización en Selectores de Platos:** Al crear o editar un plato, el selector `<select id="editCategoria">` se actualiza dinámicamente con todas las categorías activas.
+
+### 2. Sincronización en Catálogo de Clientes (`index.html`)
+- **Barra de Píldoras Dinámica:** `obtenerCategoriasCliente()` en `app.js` lee las categorías desde almacenamiento local y las proyecta en la barra superior del menú.
+- **Filtrado Fluido e Inmediato:** Al hacer clic en cualquier categoría nueva, los platos asignados a esa categoría se muestran de forma instantánea.
+
+### 3. Evidencias Visuales y Commits
+- **Capturas Generadas:**
+  * `capturas/mejora_57_admin_boton_y_modal_gestor_categorias.png`: Ventana modal del Gestor de Categorías en el panel de administración.
+  * `capturas/mejora_58_catalogo_nueva_categoria_postres_activa.png`: Barra de categorías del cliente mostrando la nueva categoría creada desde admin (ej. Postres).
+- **Commits en GitHub Pages:** `44fc151` en `origin/main`.

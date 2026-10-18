@@ -28,10 +28,10 @@
 
   <!-- FontAwesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Inter & Outfit -->
+  <!-- Google Fonts Colección Gastronómica & Marca -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lobster&family=Montserrat:wght@400;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Pacifico&family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -245,15 +245,18 @@
         <!-- BLOQUE 1: LOGO Y BADGES -->
         <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 order-1">
           <a href="#" class="flex items-center space-x-2 group">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-              <i class="fa-solid fa-utensils text-lg"></i>
+            <div id="contenedorLogoCliente" class="relative">
+              <div id="logoIconoCliente" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-utensils text-lg"></i>
+              </div>
+              <img id="logoImagenCliente" src="" alt="Logo" class="hidden w-10 h-10 rounded-2xl object-contain bg-white dark:bg-stone-850 p-1 border border-stone-200 dark:border-stone-700 shadow-md group-hover:scale-105 transition-transform">
             </div>
             <div>
-              <span class="text-xl sm:text-2xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1">
-                A Domicilio
-                <span class="text-xs px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">Fast</span>
+              <span id="nombreMarcaCliente" class="text-xl sm:text-2xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1 transition-all">
+                <span id="textoNombreMarcaCliente">A Domicilio</span>
+                <span class="text-xs px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider font-sans">Fast</span>
               </span>
-              <p class="text-[11px] text-stone-500 dark:text-stone-400 -mt-1 font-medium hidden sm:block">Sabor criollo & comida caliente en tu puerta</p>
+              <p id="esloganMarcaCliente" class="text-[11px] text-stone-500 dark:text-stone-400 -mt-1 font-medium hidden sm:block">Sabor criollo & comida caliente en tu puerta</p>
             </div>
           </a>
           

@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   configurarCierreModalesAdmin();
   actualizarSelectsCategoriasAdmin();
   configurarDragAndDropFotoAdmin();
+  aplicarIdentidadEnAdmin();
 });
 
 function guardarEnStorage() {
@@ -693,7 +694,8 @@ function configurarCierreModalesAdmin() {
     { id: 'modalAdminChat', close: cerrarModalAdminChat },
     { id: 'modalConfigGeneral', close: cerrarModalConfigGeneral },
     { id: 'modalGestionCategorias', close: cerrarModalGestionCategorias },
-    { id: 'modalConfigSplash', close: cerrarModalConfigSplash }
+    { id: 'modalConfigSplash', close: cerrarModalConfigSplash },
+    { id: 'modalConfigIdentidad', close: cerrarModalConfigIdentidad }
   ];
 
   modales.forEach(m => {
@@ -1227,4 +1229,233 @@ function restaurarSplashPredeterminado() {
   if (prevMov) prevMov.src = getRutaFoto(RUTA_SPLASH_MOVIL_DEFAULT);
 
   mostrarToastAdmin('Portadas restauradas a los valores originales');
+}
+
+// ==========================================
+// GESTIÓN DE IDENTIDAD DE MARCA, FUENTE Y LOGO
+// ==========================================
+const NOMBRE_MARCA_DEFAULT = 'A Domicilio';
+const ESLOGAN_MARCA_DEFAULT = 'Sabor criollo & comida caliente en tu puerta';
+const FUENTE_MARCA_DEFAULT = 'Outfit';
+
+function aplicarIdentidadEnAdmin() {
+  const nombre = localStorage.getItem('adomicilio_nombre_marca') || NOMBRE_MARCA_DEFAULT;
+  const eslogan = localStorage.getItem('adomicilio_eslogan_marca') || ESLOGAN_MARCA_DEFAULT;
+  const fuente = localStorage.getItem('adomicilio_fuente_marca') || FUENTE_MARCA_DEFAULT;
+  const tipoLogo = localStorage.getItem('adomicilio_tipo_logo') || 'icono';
+  const logoUrl = localStorage.getItem('adomicilio_logo_url') || '';
+
+  const elTextoNombre = document.getElementById('textoNombreMarcaAdmin');
+  if (elTextoNombre) elTextoNombre.textContent = nombre;
+
+  const elContenedorNombre = document.getElementById('nombreMarcaAdmin');
+  if (elContenedorNombre) {
+    elContenedorNombre.style.fontFamily = `'${fuente}', sans-serif`;
+  }
+
+  const elEslogan = document.getElementById('esloganMarcaAdmin');
+  if (elEslogan) elEslogan.textContent = eslogan;
+
+  const elIcono = document.getElementById('logoIconoAdmin');
+  const elImg = document.getElementById('logoImagenAdmin');
+
+  if (tipoLogo === 'imagen' && logoUrl && logoUrl.trim() !== '') {
+    if (elImg) {
+      elImg.src = getRutaFoto(logoUrl.trim());
+      elImg.classList.remove('hidden');
+    }
+    if (elIcono) elIcono.classList.add('hidden');
+  } else {
+    if (elImg) elImg.classList.add('hidden');
+    if (elIcono) elIcono.classList.remove('hidden');
+  }
+}
+
+function abrirModalConfigIdentidad() {
+  const nombre = localStorage.getItem('adomicilio_nombre_marca') || NOMBRE_MARCA_DEFAULT;
+  const eslogan = localStorage.getItem('adomicilio_eslogan_marca') || ESLOGAN_MARCA_DEFAULT;
+  const fuente = localStorage.getItem('adomicilio_fuente_marca') || FUENTE_MARCA_DEFAULT;
+  const tipoLogo = localStorage.getItem('adomicilio_tipo_logo') || 'icono';
+  const logoUrl = localStorage.getItem('adomicilio_logo_url') || '';
+
+  const inNombre = document.getElementById('inputNombreMarca');
+  const inEslogan = document.getElementById('inputEsloganMarca');
+  const selFuente = document.getElementById('selectFuenteMarca');
+  const inUrl = document.getElementById('inputUrlLogoAdmin');
+
+  if (inNombre) inNombre.value = nombre;
+  if (inEslogan) inEslogan.value = eslogan;
+  if (selFuente) selFuente.value = fuente;
+  if (inUrl) inUrl.value = logoUrl;
+
+  const rIcono = document.getElementById('radioLogoIcono');
+  const rImagen = document.getElementById('radioLogoImagen');
+  if (tipoLogo === 'imagen') {
+    if (rImagen) rImagen.checked = true;
+    cambiarTipoLogoEnModal('imagen');
+  } else {
+    if (rIcono) rIcono.checked = true;
+    cambiarTipoLogoEnModal('icono');
+  }
+
+  actualizarPreviewIdentidadEnModal();
+  document.getElementById('modalConfigIdentidad').classList.remove('hidden');
+}
+
+function cerrarModalConfigIdentidad() {
+  document.getElementById('modalConfigIdentidad').classList.add('hidden');
+}
+
+function cambiarTipoLogoEnModal(tipo) {
+  const zonaCarga = document.getElementById('zonaCargaLogoAdmin');
+  if (zonaCarga) {
+    if (tipo === 'imagen') {
+      zonaCarga.classList.remove('hidden');
+    } else {
+      zonaCarga.classList.add('hidden');
+    }
+  }
+  actualizarPreviewIdentidadEnModal();
+}
+
+function actualizarPreviewIdentidadEnModal() {
+  const nombre = document.getElementById('inputNombreMarca')?.value.trim() || NOMBRE_MARCA_DEFAULT;
+  const eslogan = document.getElementById('inputEsloganMarca')?.value.trim() || ESLOGAN_MARCA_DEFAULT;
+  const fuente = document.getElementById('selectFuenteMarca')?.value || FUENTE_MARCA_DEFAULT;
+  const esImagen = document.getElementById('radioLogoImagen')?.checked;
+  const logoUrl = document.getElementById('inputUrlLogoAdmin')?.value.trim();
+
+  // Vista previa texto
+  const demoNombre = document.getElementById('demoModalNombre');
+  const demoEslogan = document.getElementById('demoModalEslogan');
+  if (demoNombre) {
+    demoNombre.textContent = nombre;
+    demoNombre.style.fontFamily = `'${fuente}', sans-serif`;
+  }
+  if (demoEslogan) demoEslogan.textContent = eslogan;
+
+  // Vista previa logo
+  const demoIcono = document.getElementById('demoModalLogoIcono');
+  const demoImg = document.getElementById('demoModalLogoImg');
+  const miniImg = document.getElementById('miniaturaLogoModal');
+  const miniIcono = document.getElementById('miniaturaLogoIcono');
+
+  if (esImagen && logoUrl) {
+    const rutaNorm = getRutaFoto(logoUrl);
+    if (demoImg) {
+      demoImg.src = rutaNorm;
+      demoImg.classList.remove('hidden');
+    }
+    if (demoIcono) demoIcono.classList.add('hidden');
+    if (miniImg) {
+      miniImg.src = rutaNorm;
+      miniImg.classList.remove('hidden');
+    }
+    if (miniIcono) miniIcono.classList.add('hidden');
+  } else {
+    if (demoImg) demoImg.classList.add('hidden');
+    if (demoIcono) demoIcono.classList.remove('hidden');
+    if (miniImg) miniImg.classList.add('hidden');
+    if (miniIcono) miniIcono.classList.remove('hidden');
+  }
+}
+
+function actualizarPreviewLogoDesdeInput() {
+  const input = document.getElementById('inputUrlLogoAdmin');
+  if (!input) return;
+  const directUrl = parsearEnlaceGoogleDrive(input.value.trim());
+  if (directUrl !== input.value.trim()) {
+    input.value = directUrl;
+    mostrarToastAdmin('¡Enlace de Google Drive transformado para el logo!');
+  }
+  actualizarPreviewIdentidadEnModal();
+}
+
+function manejarSeleccionLogoAdmin(event) {
+  const archivo = event.target?.files?.[0];
+  if (!archivo || !archivo.type.startsWith('image/')) {
+    mostrarToastAdmin('Selecciona un archivo de imagen válido para el logo');
+    return;
+  }
+
+  mostrarToastAdmin('Optimizando logo para carga ultrarrápida...');
+  const lector = new FileReader();
+  lector.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // Redimensionar proporcionalmente a máx 400px conservando transparencia PNG
+      const maxDim = 400;
+      let ancho = img.width;
+      let alto = img.height;
+      if (ancho > maxDim || alto > maxDim) {
+        if (ancho > alto) {
+          alto = Math.round((alto * maxDim) / ancho);
+          ancho = maxDim;
+        } else {
+          ancho = Math.round((ancho * maxDim) / alto);
+          alto = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = ancho;
+      canvas.height = alto;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, ancho, alto);
+
+      // Si es PNG, conservar PNG con transparencia, si no JPEG
+      const formato = archivo.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const dataUrl = canvas.toDataURL(formato, 0.90);
+
+      const inputUrl = document.getElementById('inputUrlLogoAdmin');
+      if (inputUrl) inputUrl.value = dataUrl;
+      actualizarPreviewIdentidadEnModal();
+      mostrarToastAdmin('¡Logo cargado exitosamente!');
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function guardarConfigIdentidad() {
+  const nombre = document.getElementById('inputNombreMarca')?.value.trim() || NOMBRE_MARCA_DEFAULT;
+  const eslogan = document.getElementById('inputEsloganMarca')?.value.trim() || ESLOGAN_MARCA_DEFAULT;
+  const fuente = document.getElementById('selectFuenteMarca')?.value || FUENTE_MARCA_DEFAULT;
+  const tipoLogo = document.getElementById('radioLogoImagen')?.checked ? 'imagen' : 'icono';
+  const logoUrl = document.getElementById('inputUrlLogoAdmin')?.value.trim() || '';
+
+  localStorage.setItem('adomicilio_nombre_marca', nombre);
+  localStorage.setItem('adomicilio_eslogan_marca', eslogan);
+  localStorage.setItem('adomicilio_fuente_marca', fuente);
+  localStorage.setItem('adomicilio_tipo_logo', tipoLogo);
+  localStorage.setItem('adomicilio_logo_url', logoUrl);
+
+  aplicarIdentidadEnAdmin();
+  mostrarToastAdmin('¡Identidad de marca guardada con éxito! 🎨');
+  cerrarModalConfigIdentidad();
+}
+
+function restaurarIdentidadPredeterminada() {
+  localStorage.removeItem('adomicilio_nombre_marca');
+  localStorage.removeItem('adomicilio_eslogan_marca');
+  localStorage.removeItem('adomicilio_fuente_marca');
+  localStorage.removeItem('adomicilio_tipo_logo');
+  localStorage.removeItem('adomicilio_logo_url');
+
+  const inNombre = document.getElementById('inputNombreMarca');
+  const inEslogan = document.getElementById('inputEsloganMarca');
+  const selFuente = document.getElementById('selectFuenteMarca');
+  const inUrl = document.getElementById('inputUrlLogoAdmin');
+
+  if (inNombre) inNombre.value = NOMBRE_MARCA_DEFAULT;
+  if (inEslogan) inEslogan.value = ESLOGAN_MARCA_DEFAULT;
+  if (selFuente) selFuente.value = FUENTE_MARCA_DEFAULT;
+  if (inUrl) inUrl.value = '';
+
+  const rIcono = document.getElementById('radioLogoIcono');
+  if (rIcono) rIcono.checked = true;
+  cambiarTipoLogoEnModal('icono');
+
+  actualizarPreviewIdentidadEnModal();
+  aplicarIdentidadEnAdmin();
+  mostrarToastAdmin('Identidad restaurada a los valores predeterminados');
 }

@@ -28,10 +28,10 @@
 
   <!-- FontAwesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Inter & Outfit -->
+  <!-- Google Fonts Colección Gastronómica & Marca -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lobster&family=Montserrat:wght@400;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Pacifico&family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -72,15 +72,18 @@
       
       <!-- Logo y Título de Panel -->
       <div class="flex items-center space-x-2 shrink-0">
-        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
-          <i class="fa-solid fa-utensils text-sm sm:text-lg"></i>
+        <div id="contenedorLogoAdmin" class="relative">
+          <div id="logoIconoAdmin" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
+            <i class="fa-solid fa-utensils text-sm sm:text-lg"></i>
+          </div>
+          <img id="logoImagenAdmin" src="" alt="Logo" class="hidden w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl object-contain bg-white dark:bg-stone-850 p-0.5 border border-stone-200 dark:border-stone-700 shadow-md shrink-0">
         </div>
         <div>
-          <h1 class="text-xs sm:text-xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1">
-            <span>A Domicilio</span>
-            <span class="text-[8px] sm:text-[10px] px-1 sm:px-2 py-0.2 sm:py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase tracking-wider">Admin</span>
+          <h1 id="nombreMarcaAdmin" class="text-xs sm:text-xl font-black font-heading tracking-tight text-stone-900 dark:text-white flex items-center gap-1 transition-all">
+            <span id="textoNombreMarcaAdmin">A Domicilio</span>
+            <span class="text-[8px] sm:text-[10px] px-1 sm:px-2 py-0.2 sm:py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase tracking-wider font-sans">Admin</span>
           </h1>
-          <p class="text-[9px] sm:text-[11px] text-stone-500 dark:text-stone-400 -mt-0.5 font-medium truncate max-w-[90px] sm:max-w-none hidden xs:block">
+          <p id="esloganMarcaAdmin" class="text-[9px] sm:text-[11px] text-stone-500 dark:text-stone-400 -mt-0.5 font-medium truncate max-w-[90px] sm:max-w-none hidden xs:block">
             Gestión Carta
           </p>
         </div>
@@ -209,6 +212,11 @@
         <button onclick="abrirModalConfigSplash()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm border border-stone-200 dark:border-stone-700/80 shadow-xs flex items-center justify-center space-x-2 transition cursor-pointer" title="Configurar fotos de portada para Computadora (Horizontal) y Celular (Vertical)">
           <i class="fa-solid fa-image text-amber-500 text-sm"></i>
           <span>Portadas</span>
+        </button>
+
+        <button onclick="abrirModalConfigIdentidad()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm border border-stone-200 dark:border-stone-700/80 shadow-xs flex items-center justify-center space-x-2 transition cursor-pointer" title="Personalizar Nombre, Fuente Tipográfica y Logo">
+          <i class="fa-solid fa-palette text-purple-500 text-sm"></i>
+          <span>Marca</span>
         </button>
 
         <button onclick="abrirModalNuevoPlato()" class="flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/30 flex items-center justify-center space-x-2 transition cursor-pointer">
@@ -769,6 +777,170 @@
             class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition flex items-center gap-1.5 cursor-pointer">
             <i class="fa-solid fa-floppy-disk text-xs"></i>
             <span>Guardar Portadas</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL CONFIGURACIÓN DE IDENTIDAD, FUENTE Y LOGO -->
+  <!-- ========================================== -->
+  <div id="modalConfigIdentidad" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/70 backdrop-blur-xs p-4 hidden">
+    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl max-w-xl w-full p-5 sm:p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
+      
+      <!-- Cabecera del Modal -->
+      <div class="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <i class="fa-solid fa-palette text-base"></i>
+          </div>
+          <div>
+            <h3 class="font-black font-heading text-lg text-stone-900 dark:text-white leading-tight">Identidad de Marca & Logo</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400 font-normal">Personaliza el nombre, tipografía y logo del restaurante</p>
+          </div>
+        </div>
+        <button onclick="cerrarModalConfigIdentidad()" class="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- TARJETA EN VIVO: PREVISUALIZACIÓN DE LA CABECERA -->
+      <div class="p-3.5 bg-stone-100/80 dark:bg-stone-800/60 rounded-2xl border border-stone-200 dark:border-stone-700/60 space-y-1.5">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Vista Previa de la Cabecera</span>
+        <div class="flex items-center space-x-3 p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700/80 shadow-2xs">
+          <!-- Logo Preview -->
+          <div id="demoModalLogoContenedor" class="w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center bg-gradient-to-tr from-emerald-600 to-amber-500 text-white shadow-md shrink-0">
+            <i id="demoModalLogoIcono" class="fa-solid fa-utensils text-xl"></i>
+            <img id="demoModalLogoImg" src="" alt="Logo" class="hidden w-full h-full object-contain p-1">
+          </div>
+          <div class="min-w-0">
+            <h4 id="demoModalNombre" class="text-xl sm:text-2xl font-black tracking-tight text-stone-900 dark:text-white truncate">
+              A Domicilio
+            </h4>
+            <p id="demoModalEslogan" class="text-xs text-stone-500 dark:text-stone-400 truncate font-medium">
+              Sabor criollo & comida caliente en tu puerta
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de Configuración -->
+      <div class="space-y-4 text-xs">
+        
+        <!-- 1. Nombre del Restaurante -->
+        <div class="space-y-1">
+          <label class="font-bold text-stone-800 dark:text-stone-200 block">Nombre del Restaurante / Negocio *</label>
+          <input 
+            type="text" 
+            id="inputNombreMarca" 
+            placeholder="Ej: A Domicilio, Empanadas Don Pedro, Sabor Zuliano..." 
+            oninput="actualizarPreviewIdentidadEnModal()"
+            class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-purple-500/40 text-stone-900 dark:text-white">
+        </div>
+
+        <!-- 2. Eslogan o Subtítulo -->
+        <div class="space-y-1">
+          <label class="font-bold text-stone-800 dark:text-stone-200 block">Eslogan o Frase Breve</label>
+          <input 
+            type="text" 
+            id="inputEsloganMarca" 
+            placeholder="Ej: Sabor criollo & comida caliente en tu puerta" 
+            oninput="actualizarPreviewIdentidadEnModal()"
+            class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-purple-500/40 text-stone-900 dark:text-white">
+        </div>
+
+        <!-- 3. Selector de Fuente Tipográfica -->
+        <div class="space-y-1">
+          <label class="font-bold text-stone-800 dark:text-stone-200 block">Fuente Tipográfica del Nombre</label>
+          <select 
+            id="selectFuenteMarca" 
+            onchange="actualizarPreviewIdentidadEnModal()"
+            class="w-full px-3 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-purple-500/40 text-stone-900 dark:text-white cursor-pointer">
+            <option value="Outfit" style="font-family: 'Outfit', sans-serif;">Outfit (Moderna & Geométrica - Predeterminada)</option>
+            <option value="Montserrat" style="font-family: 'Montserrat', sans-serif;">Montserrat (Elegante & Premium)</option>
+            <option value="Poppins" style="font-family: 'Poppins', sans-serif;">Poppins (Redondeada & Amigable)</option>
+            <option value="Playfair Display" style="font-family: 'Playfair Display', serif;">Playfair Display (Gourmet & Clásica)</option>
+            <option value="Bebas Neue" style="font-family: 'Bebas Neue', sans-serif;">Bebas Neue (Impacto & Mayúsculas)</option>
+            <option value="Lobster" style="font-family: 'Lobster', cursive;">Lobster (Artesanal & Cursiva)</option>
+            <option value="Pacifico" style="font-family: 'Pacifico', cursive;">Pacifico (Casual & Caligrafía)</option>
+            <option value="Plus Jakarta Sans" style="font-family: 'Plus Jakarta Sans', sans-serif;">Plus Jakarta Sans (Limpia & Minimalista)</option>
+          </select>
+        </div>
+
+        <!-- 4. Logotipo: Imagen o Isotipo -->
+        <div class="space-y-2 p-3.5 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-stone-200 dark:border-stone-700/60">
+          <label class="font-bold text-stone-800 dark:text-stone-200 block">Logotipo del Restaurante</label>
+          
+          <!-- Selector tipo de logo: Ícono o Imagen -->
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-stone-700 dark:text-stone-300">
+              <input type="radio" name="radioTipoLogo" id="radioLogoIcono" value="icono" onchange="cambiarTipoLogoEnModal('icono')" class="accent-purple-600">
+              <span>Ícono de Cubiertos (Predeterminado)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-stone-700 dark:text-stone-300">
+              <input type="radio" name="radioTipoLogo" id="radioLogoImagen" value="imagen" onchange="cambiarTipoLogoEnModal('imagen')" class="accent-purple-600">
+              <span>Subir Mi Propio Logo (Imagen)</span>
+            </label>
+          </div>
+
+          <!-- Zona de Carga de Logo (visible si tipo = imagen) -->
+          <div id="zonaCargaLogoAdmin" class="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-700/60">
+            <div 
+              onclick="document.getElementById('inputArchivoLogoAdmin').click()" 
+              class="border-2 border-dashed border-stone-300 dark:border-stone-700 hover:border-purple-500 dark:hover:border-purple-500 rounded-2xl p-3 text-center cursor-pointer transition bg-white dark:bg-stone-900 group">
+              <input type="file" id="inputArchivoLogoAdmin" accept="image/*" onchange="manejarSeleccionLogoAdmin(event)" class="hidden">
+              <div class="flex items-center justify-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center overflow-hidden shrink-0">
+                  <img id="miniaturaLogoModal" src="" alt="Miniatura" class="hidden w-full h-full object-contain p-0.5">
+                  <i id="miniaturaLogoIcono" class="fa-solid fa-cloud-arrow-up text-stone-400 group-hover:text-purple-500 text-lg transition"></i>
+                </div>
+                <div class="text-left">
+                  <p class="font-bold text-stone-800 dark:text-stone-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition text-xs">
+                    <span class="inline sm:hidden">📷 Tocar para Galería o Cámara</span>
+                    <span class="hidden sm:inline">📁 Clic para buscar o arrastra tu logo aquí</span>
+                  </p>
+                  <p class="text-[11px] text-stone-400">PNG transparente, JPG o SVG (Recomendado: 400x400)</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Opción alternativa URL o Drive -->
+            <input 
+              type="text" 
+              id="inputUrlLogoAdmin" 
+              oninput="actualizarPreviewLogoDesdeInput()" 
+              placeholder="O pega enlace de Google Drive o URL directa de tu logo..." 
+              class="w-full px-3 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl text-[11px] outline-none focus:ring-1 focus:ring-purple-500 text-stone-900 dark:text-white">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3">
+        <button 
+          type="button" 
+          onclick="restaurarIdentidadPredeterminada()" 
+          class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-rotate-left text-xs"></i>
+          <span>Restaurar Original</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="cerrarModalConfigIdentidad()" 
+            class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold hover:bg-stone-200 dark:hover:bg-stone-700 transition cursor-pointer">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            onclick="guardarConfigIdentidad()" 
+            class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-600/30 transition flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
+            <span>Guardar Identidad</span>
           </button>
         </div>
       </div>

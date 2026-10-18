@@ -285,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
   actualizarIconoTema();
   actualizarBannersDelivery();
   actualizarEmailContactoFooter();
+  aplicarIdentidadMarcaCliente();
   cargarDatosEntregaGuardados();
   configurarCierreModales();
 });
@@ -339,6 +340,46 @@ function actualizarEmailContactoFooter() {
   const txtSpan = document.getElementById('textoEmailContacto');
   if (aLink) aLink.href = `mailto:${email}`;
   if (txtSpan) txtSpan.textContent = email;
+}
+
+// ==========================================
+// IDENTIDAD DE MARCA, FUENTE Y LOGOTIPO
+// ==========================================
+function aplicarIdentidadMarcaCliente() {
+  const nombre = localStorage.getItem('adomicilio_nombre_marca') || 'A Domicilio';
+  const eslogan = localStorage.getItem('adomicilio_eslogan_marca') || 'Sabor criollo & comida caliente en tu puerta';
+  const fuente = localStorage.getItem('adomicilio_fuente_marca') || 'Outfit';
+  const tipoLogo = localStorage.getItem('adomicilio_tipo_logo') || 'icono';
+  const logoUrl = localStorage.getItem('adomicilio_logo_url') || '';
+
+  // 1. Actualizar Nombre
+  const elNombre = document.getElementById('textoNombreMarcaCliente');
+  if (elNombre) elNombre.textContent = nombre;
+
+  // 2. Actualizar Tipografía
+  const elContenedorNombre = document.getElementById('nombreMarcaCliente');
+  if (elContenedorNombre) {
+    elContenedorNombre.style.fontFamily = `'${fuente}', sans-serif`;
+  }
+
+  // 3. Actualizar Eslogan
+  const elEslogan = document.getElementById('esloganMarcaCliente');
+  if (elEslogan) elEslogan.textContent = eslogan;
+
+  // 4. Actualizar Logo (Imagen vs Ícono)
+  const elIcono = document.getElementById('logoIconoCliente');
+  const elImg = document.getElementById('logoImagenCliente');
+
+  if (tipoLogo === 'imagen' && logoUrl && logoUrl.trim() !== '') {
+    if (elImg) {
+      elImg.src = getRutaFoto(logoUrl.trim());
+      elImg.classList.remove('hidden');
+    }
+    if (elIcono) elIcono.classList.add('hidden');
+  } else {
+    if (elImg) elImg.classList.add('hidden');
+    if (elIcono) elIcono.classList.remove('hidden');
+  }
 }
 
 // ==========================================

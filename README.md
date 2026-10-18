@@ -313,6 +313,15 @@ El proyecto cuenta con scripts de prueba que se conectan al navegador en el puer
   ```powershell
   node C:\Users\x\Desktop\WebViewComida\test_buscador_chat_categorias.js
   ```
+* **Verificación de Precios Inferiores, Fotos Reales y Sistema de Bebidas:**
+  ```powershell
+  node C:\Users\x\Desktop\WebViewComida\verificar_nuevas_mejoras_v32.js
+  ```
+* **Verificación de Título y Precio sobre la Imagen en Modal con Rellenos Opcionales:**
+  ```powershell
+  node C:\Users\x\Desktop\WebViewComida\test_modal_titulo_en_imagen.js
+  node C:\Users\x\Desktop\WebViewComida\verificar_opciones_rellenos_opcionales.js
+  ```
 * **Capturas generadas:** Se guardan en [`capturas/`](file:///c:/Users/x/Desktop/WebViewComida/capturas/) y en el directorio de artefactos para revisión visual inmediata.
 
 ---

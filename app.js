@@ -438,18 +438,36 @@ function actualizarIconoTema() {
 // ==========================================
 // RENDERIZADO DE CATEGORÍAS (BARRA HORIZONTAL RESPONSIVE ESTABLE)
 // ==========================================
+const CATEGORIAS_BASE_CATALOGO = [
+  { id: 'Todos', nombre: 'Todos', nombreMovil: 'Todos', icono: 'fa-solid fa-border-all' },
+  { id: 'Desayunos', nombre: 'Desayuno Criollo', nombreMovil: 'Desayunos', icono: 'fa-solid fa-sun' },
+  { id: 'Almuerzos', nombre: 'Sopas & Almuerzos', nombreMovil: 'Sopas', icono: 'fa-solid fa-bowl-food' },
+  { id: 'Cachapas', nombre: 'Cachapas', nombreMovil: 'Cachapas', icono: 'fa-solid fa-wheat-awn' },
+  { id: 'Comida Rápida', nombre: 'Rápida & Parrilla', nombreMovil: 'Rápida', icono: 'fa-solid fa-burger' },
+  { id: 'Bebidas', nombre: 'Bebidas Frías', nombreMovil: 'Bebidas', icono: 'fa-solid fa-bottle-water' }
+];
+
+function obtenerCategoriasCliente() {
+  const guardadas = localStorage.getItem('adomicilio_categorias');
+  if (guardadas) {
+    try {
+      const parsed = JSON.parse(guardadas);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return [
+          { id: 'Todos', nombre: 'Todos', nombreMovil: 'Todos', icono: 'fa-solid fa-border-all' },
+          ...parsed
+        ];
+      }
+    } catch(e) {}
+  }
+  return CATEGORIAS_BASE_CATALOGO;
+}
+
 function renderizarCategorias() {
   const contenedor = document.getElementById('contenedorCategorias');
   if (!contenedor) return;
 
-  const categorias = [
-    { id: 'Todos', nombre: 'Todos', nombreMovil: 'Todos', icono: 'fa-solid fa-border-all' },
-    { id: 'Desayunos', nombre: 'Desayuno Criollo', nombreMovil: 'Desayunos', icono: 'fa-solid fa-sun' },
-    { id: 'Almuerzos', nombre: 'Sopas & Almuerzos', nombreMovil: 'Sopas', icono: 'fa-solid fa-bowl-food' },
-    { id: 'Cachapas', nombre: 'Cachapas', nombreMovil: 'Cachapas', icono: 'fa-solid fa-wheat-awn' },
-    { id: 'Comida Rápida', nombre: 'Rápida & Parrilla', nombreMovil: 'Rápida', icono: 'fa-solid fa-burger' },
-    { id: 'Bebidas', nombre: 'Bebidas Frías', nombreMovil: 'Bebidas', icono: 'fa-solid fa-bottle-water' }
-  ];
+  const categorias = obtenerCategoriasCliente();
 
   contenedor.innerHTML = categorias.map(c => {
     const activa = c.id === categoriaSeleccionada;
@@ -501,7 +519,7 @@ function renderizarPlatos() {
 
   let filtrados = platos;
   if (categoriaSeleccionada !== 'Todos') {
-    filtrados = filtrados.filter(p => p.categoria === categoriaSeleccionada);
+    filtrados = filtrados.filter(p => p.categoria && p.categoria.toLowerCase() === categoriaSeleccionada.toLowerCase());
   }
   if (termino) {
     filtrados = filtrados.filter(p => 

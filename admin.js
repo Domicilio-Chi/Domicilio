@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   actualizarMetricas();
   actualizarIconoTemaAdmin();
   configurarCierreModalesAdmin();
+  actualizarSelectsCategoriasAdmin();
 });
 
 function guardarEnStorage() {
@@ -326,10 +327,12 @@ function toggleDisponibilidad(id) {
 // MODAL AGREGAR / EDITAR PLATO Y EXTRAS
 // ==========================================
 function abrirModalNuevoPlato() {
+  actualizarSelectsCategoriasAdmin();
   document.getElementById('modalEditarTitulo').textContent = 'Agregar Nuevo Plato';
   document.getElementById('editPlatoId').value = '';
   document.getElementById('editNombre').value = '';
-  document.getElementById('editCategoria').value = 'Desayunos';
+  const primerCat = obtenerCategoriasAdmin()[0];
+  document.getElementById('editCategoria').value = primerCat ? primerCat.id : 'Desayunos';
   document.getElementById('editPrecio').value = '';
   document.getElementById('editDescripcion').value = '';
   document.getElementById('editFoto').value = '';
@@ -349,6 +352,7 @@ function editarPlato(id) {
   const p = platosAdmin.find(x => x.id === id);
   if (!p) return;
 
+  actualizarSelectsCategoriasAdmin();
   document.getElementById('modalEditarTitulo').textContent = 'Editar Plato y Salsas';
   document.getElementById('editPlatoId').value = p.id;
   document.getElementById('editNombre').value = p.nombre;
@@ -805,4 +809,151 @@ function guardarConfigGeneral() {
 
   cerrarModalConfigGeneral();
   mostrarToastAdmin(`Ajustes guardados correctamente`);
+}
+
+// ==========================================
+// GESTIÓN DINÁMICA DE CATEGORÍAS
+// ==========================================
+const CATEGORIAS_DEFAULT = [
+  { id: 'Desayunos', nombre: 'Desayuno Criollo', nombreMovil: 'Desayunos', icono: 'fa-solid fa-sun' },
+  { id: 'Almuerzos', nombre: 'Sopas & Almuerzos', nombreMovil: 'Sopas', icono: 'fa-solid fa-bowl-food' },
+  { id: 'Cachapas', nombre: 'Cachapas Tradicionales', nombreMovil: 'Cachapas', icono: 'fa-solid fa-wheat-awn' },
+  { id: 'Comida Rápida', nombre: 'Rápida & Parrilla', nombreMovil: 'Rápida', icono: 'fa-solid fa-burger' },
+  { id: 'Bebidas', nombre: 'Bebidas Frías', nombreMovil: 'Bebidas', icono: 'fa-solid fa-bottle-water' }
+];
+
+function obtenerCategoriasAdmin() {
+  const guardadas = localStorage.getItem('adomicilio_categorias');
+  if (guardadas) {
+    try {
+      const parsed = JSON.parse(guardadas);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch(e) {}
+  }
+  return CATEGORIAS_DEFAULT;
+}
+
+function guardarCategoriasAdmin(lista) {
+  localStorage.setItem('adomicilio_categorias', JSON.stringify(lista));
+  actualizarSelectsCategoriasAdmin();
+}
+
+function actualizarSelectsCategoriasAdmin() {
+  const selectEdit = document.getElementById('editCategoria');
+  const selectCfg = document.getElementById('cfgCategoriaPredeterminada');
+  const cats = obtenerCategoriasAdmin();
+
+  if (selectEdit) {
+    const valActual = selectEdit.value;
+    selectEdit.innerHTML = cats.map(c => `
+      <option value="${c.id}">${c.nombre} (${c.id})</option>
+    `).join('');
+    if (valActual && cats.some(c => c.id === valActual)) {
+      selectEdit.value = valActual;
+    }
+  }
+
+  if (selectCfg) {
+    const valCfg = selectCfg.value;
+    selectCfg.innerHTML = `<option value="Todos">Todos los Platos (Por defecto)</option>` + cats.map(c => `
+      <option value="${c.id}">${c.nombre}</option>
+    `).join('');
+    if (valCfg) selectCfg.value = valCfg;
+  }
+}
+
+function abrirModalGestionCategorias() {
+  renderizarListaCategoriasAdmin();
+  document.getElementById('modalGestionCategorias').classList.remove('hidden');
+}
+
+function cerrarModalGestionCategorias() {
+  document.getElementById('modalGestionCategorias').classList.add('hidden');
+}
+
+function renderizarListaCategoriasAdmin() {
+  const contenedor = document.getElementById('listaCategoriasAdmin');
+  if (!contenedor) return;
+
+  const cats = obtenerCategoriasAdmin();
+  contenedor.innerHTML = cats.map((c) => {
+    const platosEnCat = platosAdmin.filter(p => p.categoria.toLowerCase() === c.id.toLowerCase() || p.categoria.toLowerCase() === c.nombre.toLowerCase()).length;
+    return `
+      <div class="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-800/80 rounded-2xl border border-stone-200 dark:border-stone-700/60 text-xs">
+        <div class="flex items-center space-x-3 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <i class="${c.icono || 'fa-solid fa-utensils'}"></i>
+          </div>
+          <div class="min-w-0">
+            <h5 class="font-bold text-stone-900 dark:text-white truncate">${c.nombre}</h5>
+            <span class="text-[10px] text-stone-400">${c.id} • ${platosEnCat} plato${platosEnCat === 1 ? '' : 's'}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button 
+            type="button" 
+            onclick="eliminarCategoriaAdmin('${c.id}')" 
+            class="w-7 h-7 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white transition flex items-center justify-center cursor-pointer shadow-2xs" 
+            title="Eliminar categoría">
+            <i class="fa-solid fa-trash-can text-xs"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function crearNuevaCategoriaAdmin() {
+  const input = document.getElementById('nuevaCategoriaNombre');
+  const nombre = input ? input.value.trim() : '';
+  if (!nombre) {
+    alert('Por favor escribe un nombre para la categoría');
+    return;
+  }
+
+  const cats = obtenerCategoriasAdmin();
+  const id = nombre;
+  if (cats.some(c => c.id.toLowerCase() === id.toLowerCase())) {
+    alert('Ya existe una categoría con ese nombre');
+    return;
+  }
+
+  let icono = 'fa-solid fa-utensils';
+  const nMin = nombre.toLowerCase();
+  if (nMin.includes('postre') || nMin.includes('dulce') || nMin.includes('torta')) icono = 'fa-solid fa-cake-candles';
+  else if (nMin.includes('bebida') || nMin.includes('jugo') || nMin.includes('refresco')) icono = 'fa-solid fa-bottle-water';
+  else if (nMin.includes('parrilla') || nMin.includes('carne') || nMin.includes('pollo')) icono = 'fa-solid fa-drumstick-bite';
+  else if (nMin.includes('pizza')) icono = 'fa-solid fa-pizza-slice';
+  else if (nMin.includes('combo')) icono = 'fa-solid fa-box-open';
+  else if (nMin.includes('sopa') || nMin.includes('hervido')) icono = 'fa-solid fa-bowl-food';
+  else if (nMin.includes('desayuno') || nMin.includes('empanada')) icono = 'fa-solid fa-sun';
+
+  cats.push({
+    id: id,
+    nombre: nombre,
+    nombreMovil: nombre.length > 10 ? nombre.substring(0, 10) + '...' : nombre,
+    icono: icono
+  });
+
+  guardarCategoriasAdmin(cats);
+  renderizarListaCategoriasAdmin();
+  input.value = '';
+  mostrarToastAdmin(`Categoría "${nombre}" creada con éxito 🎉`);
+}
+
+function eliminarCategoriaAdmin(id) {
+  const platosEnCat = platosAdmin.filter(p => p.categoria.toLowerCase() === id.toLowerCase());
+  if (platosEnCat.length > 0) {
+    if (!confirm(`La categoría "${id}" tiene ${platosEnCat.length} plato(s) asociado(s). Si la eliminas, esos platos seguirán existiendo en "Todos los platos". ¿Deseas continuar?`)) {
+      return;
+    }
+  } else {
+    if (!confirm(`¿Eliminar la categoría "${id}"?`)) return;
+  }
+
+  let cats = obtenerCategoriasAdmin();
+  cats = cats.filter(c => c.id.toLowerCase() !== id.toLowerCase());
+  guardarCategoriasAdmin(cats);
+  renderizarListaCategoriasAdmin();
+  mostrarToastAdmin(`Categoría eliminada 🗑️`);
 }

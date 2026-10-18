@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "libro_calculo": {
+    "nombre_sugerido": "A Domicilio - ERP Gastronomico y Comandas",
+    "propietario": "elchichote@gmail.com",
+    "version": "1.0.0"
+  },
+  "pestanas": [
+    {
+      "nombre": "Menu_Platillos",
+      "descripcion": "Catálogo de platos de comida, precios, ingredientes y adicionales.",
+      "columnas": [
+        "ID_Plato",
+        "Nombre",
+        "Categoria",
+        "Descripcion",
+        "Precio_USD",
+        "Disponibilidad",
+        "URL_Foto",
+        "Extras_JSON",
+        "Fecha_Actualizacion"
+      ]
+    },
+    {
+      "nombre": "Pedidos_Comanda",
+      "descripcion": "Historial de comandas despachadas por WhatsApp o web para cocina.",
+      "columnas": [
+        "ID_Comanda",
+        "Fecha_Hora",
+        "Cliente_Nombre",
+        "Cliente_Telefono",
+        "Direccion_Entrega",
+        "Detalle_Platos",
+        "Extras_Seleccionados",
+        "Notas_Cocina",
+        "Total_USD",
+        "Estado_Pedido"
+      ]
+    },
+    {
+      "nombre": "Clientes_Comensales",
+      "descripcion": "Directorio de clientes registrados, teléfonos y verificación de correo.",
+      "columnas": [
+        "Cedula",
+        "Nombre_Completo",
+        "Correo_Electronico",
+        "Telefono_WhatsApp",
+        "Ciudad",
+        "Direccion_Habitual",
+        "Estado_Verificacion",
+        "Fecha_Registro"
+      ]
+    },
+    {
+      "nombre": "Mensajes_Chat",
+      "descripcion": "Conversaciones en tiempo real entre comensales y el restaurante.",
+      "columnas": [
+        "ID_Mensaje",
+        "Timestamp",
+        "ID_Sesion_Cliente",
+        "Nombre_Cliente",
+        "Emisor",
+        "Mensaje",
+        "Leido"
+      ]
+    },
+    {
+      "nombre": "Configuracion",
+      "descripcion": "Variables de negocio, teléfonos de despacho y parámetros de la tienda.",
+      "columnas": [
+        "Clave",
+        "Valor",
+        "Descripcion",
+        "Fecha_Modificacion"
+      ],
+      "valores_iniciales": [
+        {
+          "Clave": "NOMBRE_NEGOCIO",
+          "Valor": "A Domicilio",
+          "Descripcion": "Nombre comercial mostrado en la app y encabezados"
+        },
+        {
+          "Clave": "WHATSAPP_COCINA",
+          "Valor": "584120000000",
+          "Descripcion": "Número que recibe las comandas directas de comida"
+        },
+        {
+          "Clave": "WHATSAPP_SOPORTE",
+          "Valor": "584140000000",
+          "Descripcion": "Número secundario para atención de comensales"
+        },
+        {
+          "Clave": "HORARIO_ATENCION",
+          "Valor": "Lunes a Domingo 07:00 AM - 10:00 PM",
+          "Descripcion": "Horario de recepción y despacho de pedidos"
+        },
+        {
+          "Clave": "COSTO_DELIVERY_BASE",
+          "Valor": "2.00",
+          "Descripcion": "Tarifa base de envío motorizado en USD"
+        }
+      ]
+    }
+  ]
+}

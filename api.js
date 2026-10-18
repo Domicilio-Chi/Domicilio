@@ -211,6 +211,125 @@ const API = {
     } catch (err) {
       return { exito: false, error: err.message };
     }
+  },
+
+  // 10. Sincronizar bandeja global de chat para el Administrador (todos los comensales)
+  sincronizarChatGlobal: async function(desdeTimestamp = 0) {
+    const url = this.getURL();
+    if (!url) return null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(`${url}?accion=sincronizarChatGlobal&desdeTimestamp=${desdeTimestamp}`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      return (data && data.exito && Array.isArray(data.mensajes)) ? data.mensajes : null;
+    } catch (err) {
+      return null;
+    }
+  },
+
+  // 11. Obtener historial de chat de un comensal específico (para el móvil)
+  obtenerHistorialChat: async function(clienteId, desdeTimestamp = 0) {
+    const url = this.getURL();
+    if (!url || !clienteId) return null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(`${url}?accion=obtenerHistorialChat&clienteId=${encodeURIComponent(clienteId)}&desdeTimestamp=${desdeTimestamp}`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      return (data && data.exito && Array.isArray(data.mensajes)) ? data.mensajes : null;
+    } catch (err) {
+      return null;
+    }
+  },
+
+  // 12. Enviar latido de presencia de comensal en vivo a la nube (CacheService)
+  registrarLatidoPresencia: async function(clienteId, nombre = 'Comensal', dispositivo = 'web') {
+    const url = this.getURL();
+    if (!url || !clienteId) return;
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ accion: 'registrarLatidoPresencia', clienteId, nombre, dispositivo })
+      });
+    } catch (err) {
+      // Latido silencioso resiliente
+    }
+  },
+
+  // 13. Obtener comensales conectados en vivo en la nube (para el panel Admin)
+  obtenerPresenciaActiva: async function() {
+    const url = this.getURL();
+    if (!url) return null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const resp = await fetch(`${url}?accion=obtenerPresenciaActiva`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      return (data && data.exito) ? data : null;
+    } catch (err) {
+      return null;
+    }
+  },
+
+  // 14. Enviar respuesta oficial del Chef hacia el comensal
+  responderMensajeAdmin: async function(clienteId, mensaje) {
+    const url = this.getURL();
+    if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
+
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ accion: 'responderMensajeAdmin', clienteId, mensaje })
+      });
+      return await resp.json();
+    } catch (err) {
+      return { exito: false, error: err.message };
+    }
+  },
+
+  // 15. Marcar mensajes de un comensal como leídos en la nube
+  marcarMensajesLeidos: async function(clienteId) {
+    const url = this.getURL();
+    if (!url) return { exito: false };
+
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ accion: 'marcarMensajesLeidos', clienteId })
+      });
+      return await resp.json();
+    } catch (err) {
+      return { exito: false, error: err.message };
+    }
   }
 };
 

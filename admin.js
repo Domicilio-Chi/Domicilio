@@ -897,7 +897,7 @@ const canalPresenciaAdmin = (typeof BroadcastChannel !== 'undefined') ? new Broa
 
 function actualizarPresenciaComensales() {
   const ahora = Date.now();
-  const LIMITE_INACTIVIDAD_MS = 8000; // 8 segundos
+  const LIMITE_INACTIVIDAD_MS = 35000; // 35 segundos para admitir clientes remotos móviles
   let tabla = {};
   let huboCambios = false;
 
@@ -941,10 +941,120 @@ if (canalPresenciaAdmin) {
   };
 }
 
+// Sincronización de presencia en la nube para comensales en dispositivos remotos
+let ultimoSyncPresenciaNube = 0;
+let sincronizandoPresenciaNube = false;
+
+async function sincronizarPresenciaNubeAdmin() {
+  if (sincronizandoPresenciaNube || !window.API || typeof API.obtenerPresenciaActiva !== 'function') return;
+  const ahora = Date.now();
+  if (ahora - ultimoSyncPresenciaNube < 8000) return;
+  ultimoSyncPresenciaNube = ahora;
+  sincronizandoPresenciaNube = true;
+
+  try {
+    const data = await API.obtenerPresenciaActiva();
+    if (data && data.exito && Array.isArray(data.comensales)) {
+      let tabla = {};
+      try {
+        tabla = JSON.parse(localStorage.getItem('adomicilio_tabla_presencia') || '{}');
+      } catch (e) {
+        tabla = {};
+      }
+
+      data.comensales.forEach(c => {
+        if (!c.clienteId) return;
+        const tsActual = tabla[c.clienteId] ? (typeof tabla[c.clienteId] === 'number' ? tabla[c.clienteId] : (tabla[c.clienteId].timestamp || 0)) : 0;
+        if (!tabla[c.clienteId] || (c.ts && c.ts > tsActual)) {
+          tabla[c.clienteId] = {
+            timestamp: c.ts || Date.now(),
+            nombre: c.nombre || 'Comensal',
+            dispositivo: c.dispositivo || 'Móvil'
+          };
+        }
+      });
+
+      localStorage.setItem('adomicilio_tabla_presencia', JSON.stringify(tabla));
+      actualizarPresenciaComensales();
+    }
+  } catch (e) {
+    // Silencioso
+  } finally {
+    sincronizandoPresenciaNube = false;
+  }
+}
+
+// Sincronización de la bandeja global de chat en la nube
+let ultimoSyncChatGlobal = 0;
+let sincronizandoChatGlobal = false;
+
+async function sincronizarChatGlobalAdmin() {
+  if (sincronizandoChatGlobal || !window.API || typeof API.sincronizarChatGlobal !== 'function') return;
+  const ahora = Date.now();
+  const modalChat = document.getElementById('modalAdminChat');
+  const chatAbierto = modalChat && !modalChat.classList.contains('hidden');
+  const intervaloMin = chatAbierto ? 3000 : 9000;
+
+  if (ahora - ultimoSyncChatGlobal < intervaloMin) return;
+  ultimoSyncChatGlobal = ahora;
+  sincronizandoChatGlobal = true;
+
+  try {
+    const mensajesRemotos = await API.sincronizarChatGlobal();
+    if (mensajesRemotos && Array.isArray(mensajesRemotos)) {
+      const mensajesLocales = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+      const mapaIds = new Set(mensajesLocales.map(m => m.id));
+      let huboNuevos = false;
+
+      mensajesRemotos.forEach(remoto => {
+        if (!mapaIds.has(remoto.id)) {
+          mensajesLocales.push({
+            id: remoto.id,
+            clienteId: remoto.clienteId || 'cli_general',
+            clienteNombre: remoto.clienteNombre || 'Comensal',
+            fecha: remoto.fecha || new Date(remoto.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: remoto.timestamp || Date.now(),
+            plato: remoto.plato || '',
+            mensaje: remoto.mensaje,
+            emisor: remoto.emisor,
+            leido: remoto.leido,
+            respondido: remoto.leido
+          });
+          mapaIds.add(remoto.id);
+          huboNuevos = true;
+        } else {
+          // Reconciliar estado leído/respondido
+          const local = mensajesLocales.find(m => m.id === remoto.id);
+          if (local && remoto.leido && !local.leido) {
+            local.leido = true;
+            local.respondido = true;
+            huboNuevos = true;
+          }
+        }
+      });
+
+      if (huboNuevos) {
+        localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajesLocales));
+        localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
+        actualizarMetricas();
+        if (chatAbierto) {
+          renderizarAdminChat();
+        }
+      }
+    }
+  } catch (e) {
+    // Silencioso
+  } finally {
+    sincronizandoChatGlobal = false;
+  }
+}
+
 // Reloj de sincronización continua cada 1.2 segundos para métricas, mensajes pendientes y presencia
 setInterval(() => {
   actualizarMetricas();
   actualizarPresenciaComensales();
+  sincronizarPresenciaNubeAdmin();
+  sincronizarChatGlobalAdmin();
   const modalChat = document.getElementById('modalAdminChat');
   if (modalChat && !modalChat.classList.contains('hidden')) {
     renderizarAdminChat();
@@ -1119,6 +1229,9 @@ function renderizarAdminChat() {
     if (huboCambios) {
       localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(todosMensajes));
       actualizarMetricas();
+      if (window.API && typeof API.marcarMensajesLeidos === 'function') {
+        API.marcarMensajesLeidos(clienteActivo.clienteId).catch(() => {});
+      }
     }
 
     if (nombreActivo) nombreActivo.textContent = clienteActivo.nombre;
@@ -1268,8 +1381,13 @@ function responderAdminChat() {
     });
   }
 
-  // Notificar a Google Sheets ERP si está configurado
-  if (window.API && typeof API.enviarMensajeChat === 'function') {
+  // Notificar a Google Sheets ERP y registrar respuesta oficial en la nube
+  if (window.API && typeof API.responderMensajeAdmin === 'function') {
+    API.responderMensajeAdmin(clienteChatActivoId, texto).catch(e => console.warn(e));
+    if (typeof API.marcarMensajesLeidos === 'function') {
+      API.marcarMensajesLeidos(clienteChatActivoId).catch(() => {});
+    }
+  } else if (window.API && typeof API.enviarMensajeChat === 'function') {
     API.enviarMensajeChat({
       clienteId: clienteChatActivoId,
       nombre: 'Cocina A Domicilio',

@@ -1622,11 +1622,16 @@ document.addEventListener('click', (e) => {
 // SESIÓN DE COMENSAL Y COMUNICACIÓN CHAT
 // ==========================================
 function obtenerOcrearClienteId() {
-  // 1. Usar sessionStorage para que pestañas abiertas en la misma PC sean comensales 100% independientes
   let id = sessionStorage.getItem('adomicilio_cliente_id');
+  if (!id) {
+    id = localStorage.getItem('adomicilio_cliente_id_persistente');
+  }
   if (!id) {
     const numRandom = Math.floor(1000 + Math.random() * 9000);
     id = 'CLI-' + numRandom;
+    sessionStorage.setItem('adomicilio_cliente_id', id);
+    localStorage.setItem('adomicilio_cliente_id_persistente', id);
+  } else {
     sessionStorage.setItem('adomicilio_cliente_id', id);
   }
   return id;
@@ -1663,8 +1668,11 @@ window.addEventListener('storage', (e) => {
   }
 });
 
-// Sincronización continua de respaldo cada 1.2 segundos
-setInterval(cargarHistorialClienteEnChat, 1200);
+// Sincronización continua de respaldo cada 1.2 segundos y consulta a la nube
+setInterval(() => {
+  cargarHistorialClienteEnChat();
+  sincronizarChatClienteDesdeNube();
+}, 1200);
 
 // ==========================================
 // PRESENCIA DE COMENSAL EN VIVO (HEARTBEAT)
@@ -1700,6 +1708,71 @@ function emitirLatidoPresencia() {
     try {
       canalChatCliente.postMessage(eventoLatido);
     } catch (e) {}
+  }
+
+  // 3. Emitir latido de presencia a la nube cada 14-15 segundos (para móviles y navegadores remotos)
+  const ahora = Date.now();
+  if (window.API && typeof API.registrarLatidoPresencia === 'function') {
+    if (!window._ultimoLatidoNube || ahora - window._ultimoLatidoNube >= 14000) {
+      window._ultimoLatidoNube = ahora;
+      const nombre = obtenerNombreClienteChat();
+      const esMovil = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      API.registrarLatidoPresencia(clienteId, nombre, esMovil ? 'Móvil' : 'PC');
+    }
+  }
+}
+
+// Sincronización periódica de respuestas del Chef desde la nube hacia el teléfono móvil
+let ultimoSyncChatClienteNube = 0;
+let sincronizandoChatClienteNube = false;
+
+async function sincronizarChatClienteDesdeNube() {
+  if (sincronizandoChatClienteNube || !window.API || typeof API.obtenerHistorialChat !== 'function') return;
+  const modalChat = document.getElementById('modalChat');
+  const chatAbierto = modalChat && !modalChat.classList.contains('hidden');
+  const ahora = Date.now();
+  const intervaloMin = chatAbierto ? 3000 : 15000;
+
+  if (ahora - ultimoSyncChatClienteNube < intervaloMin) return;
+  ultimoSyncChatClienteNube = ahora;
+  sincronizandoChatClienteNube = true;
+
+  const miClienteId = obtenerOcrearClienteId();
+  try {
+    const mensajesRemotos = await API.obtenerHistorialChat(miClienteId);
+    if (mensajesRemotos && Array.isArray(mensajesRemotos) && mensajesRemotos.length > 0) {
+      const historialLocal = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+      const mapaIds = new Set(historialLocal.map(m => m.id));
+      let huboNuevos = false;
+
+      mensajesRemotos.forEach(remoto => {
+        if (!mapaIds.has(remoto.id)) {
+          historialLocal.push({
+            id: remoto.id,
+            clienteId: remoto.clienteId || miClienteId,
+            clienteNombre: remoto.clienteNombre || 'Comensal',
+            fecha: remoto.fecha || new Date(remoto.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: remoto.timestamp || Date.now(),
+            mensaje: remoto.mensaje,
+            emisor: remoto.emisor,
+            leido: remoto.leido,
+            respondido: true
+          });
+          mapaIds.add(remoto.id);
+          huboNuevos = true;
+        }
+      });
+
+      if (huboNuevos) {
+        localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialLocal));
+        localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
+        cargarHistorialClienteEnChat();
+      }
+    }
+  } catch (err) {
+    // Silencioso
+  } finally {
+    sincronizandoChatClienteNube = false;
   }
 }
 

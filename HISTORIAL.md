@@ -537,10 +537,11 @@
 ---
 
 ### Evidencias Visuales y Verificación Automatizada (Chrome CDP):
-- Se ejecutó suite de pruebas conectada al navegador Chrome vía CDP (`verificar_nuevas_mejoras_v32.js`):
+- Se ejecutó suite de pruebas conectada al navegador Chrome vía CDP (`verificar_nuevas_mejoras_v32.js` y `test_modal_titulo_en_imagen.js`):
   * [`capturas/mejora_23_movil_precio_inferior_verde.png`](capturas/mejora_23_movil_precio_inferior_verde.png): Vista móvil (390px) con fotos reales, precios verdes en borde inferior y títulos sin corte.
   * [`capturas/mejora_24_modal_empanadas_rellenos_verde.png`](capturas/mejora_24_modal_empanadas_rellenos_verde.png): Modal de plato con rellenos de empanadas, botón de compartir y total en verde.
   * [`capturas/mejora_25_categoria_bebidas_variedad.png`](capturas/mejora_25_categoria_bebidas_variedad.png): Categoría de bebidas filtrada con refrescos en botella y lata.
   * [`capturas/mejora_26_desktop_catalogo_verde_completo.png`](capturas/mejora_26_desktop_catalogo_verde_completo.png): Catálogo completo en escritorio (1280px) con la nueva paleta verde.
-- **Commits en GitHub Pages:** `72bb590` y `21f2845` en `origin/main`. Sitio activo en: `https://domicilio-chi.github.io/Domicilio/`.
+  * [`capturas/mejora_27_modal_titulo_y_precio_en_imagen.png`](capturas/mejora_27_modal_titulo_y_precio_en_imagen.png): Título y precio integrados directamente sobre la foto dentro de la ventana modal, optimizando el espacio vertical para móviles.
+- **Commits en GitHub Pages:** `72bb590`, `21f2845`, `de4bcb5` y `9d124d5` en `origin/main`. Sitio activo en: `https://domicilio-chi.github.io/Domicilio/`.
 

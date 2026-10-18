@@ -1566,21 +1566,23 @@ document.addEventListener('click', (e) => {
 // SESIÓN DE COMENSAL Y COMUNICACIÓN CHAT
 // ==========================================
 function obtenerOcrearClienteId() {
-  let id = localStorage.getItem('adomicilio_cliente_id');
+  // 1. Usar sessionStorage para que pestañas abiertas en la misma PC sean comensales 100% independientes
+  let id = sessionStorage.getItem('adomicilio_cliente_id');
   if (!id) {
-    id = 'cli_' + Math.random().toString(36).substring(2, 8);
-    localStorage.setItem('adomicilio_cliente_id', id);
+    const numRandom = Math.floor(1000 + Math.random() * 9000);
+    id = 'CLI-' + numRandom;
+    sessionStorage.setItem('adomicilio_cliente_id', id);
   }
   return id;
 }
 
 function obtenerNombreClienteChat() {
   const comandaCliente = JSON.parse(localStorage.getItem('adomicilio_cliente_datos') || '{}');
-  if (comandaCliente.nombre && comandaCliente.nombre.trim()) {
-    return comandaCliente.nombre.trim();
-  }
   const id = obtenerOcrearClienteId();
-  return `Comensal #${id.substring(4, 9).toUpperCase()}`;
+  if (comandaCliente.nombre && comandaCliente.nombre.trim()) {
+    return `${comandaCliente.nombre.trim()} (${id})`;
+  }
+  return `Comensal #${id.replace('CLI-', '')}`;
 }
 
 const canalChatCliente = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('adomicilio_chat_channel') : null;
@@ -1713,6 +1715,7 @@ function enviarMensajeChat() {
 
   historialChat.push(nuevoMensaje);
   localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialChat));
+  localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
 
   // Notificar al panel Admin en tiempo real
   if (canalChatCliente) {

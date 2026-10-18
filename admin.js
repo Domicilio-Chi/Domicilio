@@ -336,8 +336,12 @@ function actualizarMetricas() {
 
   const badgeChat = document.getElementById('badgeAdminChat');
   if (badgeChat) {
-    if (pendientes > 0) badgeChat.classList.remove('hidden');
-    else badgeChat.classList.add('hidden');
+    if (pendientes > 0) {
+      badgeChat.textContent = pendientes;
+      badgeChat.classList.remove('hidden');
+    } else {
+      badgeChat.classList.add('hidden');
+    }
   }
 
   const badgeModalTotal = document.getElementById('adminBadgePendientesTotal');
@@ -896,10 +900,11 @@ if (canalChatAdmin) {
   };
 }
 
-// Oyente de almacenamiento local para sincronización entre pestañas
+// Oyente de almacenamiento local para sincronización inmediata entre pestañas y navegadores
 window.addEventListener('storage', (e) => {
-  if (e.key === 'adomicilio_mensajes_chat') {
+  if (e.key === 'adomicilio_mensajes_chat' || e.key === 'adomicilio_ultimo_ping') {
     actualizarMetricas();
+    reproducirSonidoGota();
     renderizarAdminChat();
   }
 });

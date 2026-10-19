@@ -1053,6 +1053,33 @@ function esChatPurgado(clienteId, mensajeTimestamp = 0) {
   return false;
 }
 
+function desduplicarMensajesAdmin(lista) {
+  if (!Array.isArray(lista)) return [];
+  const vistosIds = new Set();
+  const vistosFirmas = new Set();
+  const resultado = [];
+
+  lista.forEach(m => {
+    if (!m) return;
+    const msgId = m.id ? String(m.id).trim() : null;
+    const emisor = String(m.emisor || '').trim().toLowerCase();
+    const clienteId = String(m.clienteId || 'cli_general').trim().toLowerCase();
+    const texto = String(m.mensaje || '').trim();
+    // Agrupación en ventana de 45 segundos para mensajes con contenido y emisor idénticos
+    const tsVentana = Math.round((m.timestamp || 0) / 45000);
+    const firma = `${emisor}|${clienteId}|${texto}|${tsVentana}`;
+
+    if (msgId && vistosIds.has(msgId)) return;
+    if (vistosFirmas.has(firma)) return;
+
+    if (msgId) vistosIds.add(msgId);
+    vistosFirmas.add(firma);
+    resultado.push(m);
+  });
+
+  return resultado;
+}
+
 // Sincronización de la bandeja global de chat en la nube
 let ultimoSyncChatGlobal = 0;
 let sincronizandoChatGlobal = false;
@@ -1086,30 +1113,50 @@ async function sincronizarChatGlobalAdmin() {
         huboCambios = true;
       }
 
-      // 2. Incorporar mensajes remotos respetando el corte temporal
+      // 2. Incorporar mensajes remotos respetando el corte temporal y firma semántica
       const mapaIds = new Set(mensajesLocales.map(m => m.id));
       mensajesRemotos.forEach(remoto => {
         const cId = String(remoto.clienteId || 'cli_general').trim().toLowerCase();
         const msgTs = remoto.timestamp || 0;
+        const msgTexto = String(remoto.mensaje || '').trim();
+        const msgEmisor = String(remoto.emisor || '').trim().toLowerCase();
 
         // Si el mensaje es más antiguo o igual al momento de la purga, ignorarlo
         if (esChatPurgado(cId, msgTs)) return;
 
         if (!mapaIds.has(remoto.id)) {
-          mensajesLocales.push({
-            id: remoto.id,
-            clienteId: cId,
-            clienteNombre: remoto.clienteNombre || 'Comensal',
-            fecha: formatearHoraChat(remoto.fecha, remoto.timestamp),
-            timestamp: msgTs || Date.now(),
-            plato: remoto.plato || '',
-            mensaje: remoto.mensaje,
-            emisor: remoto.emisor,
-            leido: remoto.leido,
-            respondido: remoto.leido
-          });
-          mapaIds.add(remoto.id);
-          huboCambios = true;
+          // Comprobar si ya existe localmente por firma de contenido para evitar duplicación
+          const existenteFirma = mensajesLocales.find(local =>
+            String(local.emisor || '').trim().toLowerCase() === msgEmisor &&
+            String(local.clienteId || 'cli_general').trim().toLowerCase() === cId &&
+            String(local.mensaje || '').trim() === msgTexto &&
+            Math.abs((local.timestamp || 0) - msgTs) < 45000
+          );
+
+          if (existenteFirma) {
+            existenteFirma.id = remoto.id;
+            if (remoto.leido) {
+              existenteFirma.leido = true;
+              existenteFirma.respondido = true;
+            }
+            mapaIds.add(remoto.id);
+            huboCambios = true;
+          } else {
+            mensajesLocales.push({
+              id: remoto.id,
+              clienteId: cId,
+              clienteNombre: remoto.clienteNombre || 'Comensal',
+              fecha: formatearHoraChat(remoto.fecha, remoto.timestamp),
+              timestamp: msgTs || Date.now(),
+              plato: remoto.plato || '',
+              mensaje: remoto.mensaje,
+              emisor: remoto.emisor,
+              leido: remoto.leido,
+              respondido: remoto.leido
+            });
+            mapaIds.add(remoto.id);
+            huboCambios = true;
+          }
         } else {
           const local = mensajesLocales.find(m => m.id === remoto.id);
           if (local && remoto.leido && !local.leido) {
@@ -1121,8 +1168,9 @@ async function sincronizarChatGlobalAdmin() {
       });
 
       if (huboCambios) {
-        mensajesLocales.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajesLocales));
+        const mensajesSaneados = desduplicarMensajesAdmin(mensajesLocales);
+        mensajesSaneados.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajesSaneados));
         localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
         actualizarMetricas();
         if (chatAbierto) {
@@ -1483,8 +1531,9 @@ function responderAdminChat() {
   const nombreDestino = clienteActivo ? clienteActivo.nombre : 'Comensal';
 
   // 2. Agregar la respuesta del Chef dirigida específicamente a este cliente
+  const adminMsgId = 'MSG-ADM-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900);
   const nuevoMensajeAdmin = {
-    id: 'MSG-' + Date.now(),
+    id: adminMsgId,
     clienteId: clienteChatActivoId,
     clienteNombre: nombreDestino,
     mensaje: texto,
@@ -1494,7 +1543,8 @@ function responderAdminChat() {
   };
 
   mensajes.push(nuevoMensajeAdmin);
-  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+  const mensajesLimpios = desduplicarMensajesAdmin(mensajes);
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajesLimpios));
   localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
 
   // 3. Notificar en tiempo real a las pestañas y al cliente específico
@@ -1506,14 +1556,15 @@ function responderAdminChat() {
     });
   }
 
-  // Notificar a Google Sheets ERP y registrar respuesta oficial en la nube
+  // Notificar a Google Sheets ERP y registrar respuesta oficial en la nube con ID consistente
   if (window.API && typeof API.responderMensajeAdmin === 'function') {
-    API.responderMensajeAdmin(clienteChatActivoId, texto).catch(e => console.warn(e));
+    API.responderMensajeAdmin(clienteChatActivoId, texto, adminMsgId).catch(e => console.warn(e));
     if (typeof API.marcarMensajesLeidos === 'function') {
       API.marcarMensajesLeidos(clienteChatActivoId).catch(() => {});
     }
   } else if (window.API && typeof API.enviarMensajeChat === 'function') {
     API.enviarMensajeChat({
+      id: adminMsgId,
       clienteId: clienteChatActivoId,
       nombre: 'Cocina A Domicilio',
       mensaje: `[Respuesta Cocina]: ${texto}`,

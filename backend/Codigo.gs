@@ -435,7 +435,7 @@ function doPost(e) {
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
         "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
-      const idMsg = 'MSG-' + new Date().getTime();
+      const idMsg = String(datos.id || datos.idMensaje || ('MSG-' + new Date().getTime()));
       const fechaNow = Utilities.formatDate(new Date(), "America/Caracas", "yyyy-MM-dd HH:mm:ss");
 
       hoja.appendRow([
@@ -457,7 +457,7 @@ function doPost(e) {
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
         "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
-      const idMsg = 'MSG-ADM-' + new Date().getTime();
+      const idMsg = String(datos.id || datos.idMensaje || ('MSG-ADM-' + new Date().getTime()));
       const fechaNow = Utilities.formatDate(new Date(), "America/Caracas", "yyyy-MM-dd HH:mm:ss");
 
       hoja.appendRow([

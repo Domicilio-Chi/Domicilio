@@ -299,7 +299,7 @@ const API = {
   },
 
   // 14. Enviar respuesta oficial del Chef hacia el comensal
-  responderMensajeAdmin: async function(clienteId, mensaje) {
+  responderMensajeAdmin: async function(clienteId, mensaje, idMensaje = null) {
     const url = this.getURL();
     if (!url) return { exito: false, mensaje: 'Sin URL de Apps Script' };
 
@@ -307,7 +307,7 @@ const API = {
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ accion: 'responderMensajeAdmin', clienteId, mensaje })
+        body: JSON.stringify({ accion: 'responderMensajeAdmin', clienteId, mensaje, id: idMensaje, idMensaje: idMensaje })
       });
       return await resp.json();
     } catch (err) {

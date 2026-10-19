@@ -1353,8 +1353,9 @@ function consultarPlatoDesdeModal() {
   );
 
   if (!yaConsultadoReciente) {
+    const msgConsultaId = 'MSG-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900);
     const nuevoMensaje = {
-      id: 'MSG-' + Date.now(),
+      id: msgConsultaId,
       clienteId: miClienteId,
       clienteNombre: miNombre,
       fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -1368,7 +1369,8 @@ function consultarPlatoDesdeModal() {
     };
 
     historialChat.push(nuevoMensaje);
-    localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialChat));
+    const historialLimpio = desduplicarMensajesApp(historialChat);
+    localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialLimpio));
     localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
 
     if (canalChatCliente) {
@@ -1381,6 +1383,7 @@ function consultarPlatoDesdeModal() {
 
     if (window.API && typeof API.enviarMensajeChat === 'function') {
       API.enviarMensajeChat({
+        id: msgConsultaId,
         clienteId: miClienteId,
         nombre: miNombre,
         mensaje: `[Consulta]: ${chatContextoPlato.nombre} (${totalTxt})`,
@@ -1753,6 +1756,33 @@ function emitirLatidoPresencia() {
   }
 }
 
+function desduplicarMensajesApp(lista) {
+  if (!Array.isArray(lista)) return [];
+  const vistosIds = new Set();
+  const vistosFirmas = new Set();
+  const resultado = [];
+
+  lista.forEach(m => {
+    if (!m) return;
+    const msgId = m.id ? String(m.id).trim() : null;
+    const emisor = String(m.emisor || '').trim().toLowerCase();
+    const clienteId = String(m.clienteId || 'cli_general').trim().toLowerCase();
+    const texto = String(m.mensaje || '').trim();
+    // Agrupación en ventana de 45 segundos para mensajes con contenido y emisor idénticos
+    const tsVentana = Math.round((m.timestamp || 0) / 45000);
+    const firma = `${emisor}|${clienteId}|${texto}|${tsVentana}`;
+
+    if (msgId && vistosIds.has(msgId)) return;
+    if (vistosFirmas.has(firma)) return;
+
+    if (msgId) vistosIds.add(msgId);
+    vistosFirmas.add(firma);
+    resultado.push(m);
+  });
+
+  return resultado;
+}
+
 // Sincronización periódica de respuestas del Chef desde la nube hacia el teléfono móvil
 let ultimoSyncChatClienteNube = 0;
 let sincronizandoChatClienteNube = false;
@@ -1780,7 +1810,7 @@ async function sincronizarChatClienteDesdeNube() {
   try {
     const mensajesRemotos = await API.obtenerHistorialChat(miClienteId);
     if (mensajesRemotos && Array.isArray(mensajesRemotos) && mensajesRemotos.length > 0) {
-      const historialLocal = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+      let historialLocal = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
       const mapaIds = new Set(historialLocal.map(m => m.id));
       let huboNuevos = false;
 
@@ -1788,25 +1818,51 @@ async function sincronizarChatClienteDesdeNube() {
         // Ignorar mensajes previos al momento de la purga
         if (tsPurgado > 0 && (remoto.timestamp || 0) <= tsPurgado) return;
 
-        if (!mapaIds.has(remoto.id)) {
+        const remotoId = String(remoto.id || '').trim();
+        const remotoMsg = String(remoto.mensaje || '').trim();
+        const remotoEmisor = String(remoto.emisor || '').trim().toLowerCase();
+        const remotoTs = remoto.timestamp || 0;
+
+        if (mapaIds.has(remotoId)) return;
+
+        // Comprobar si ya existe un mensaje local equivalente por firma (mismo emisor, texto y timestamp cercano)
+        const existenteFirma = historialLocal.find(local => 
+          String(local.emisor || '').trim().toLowerCase() === remotoEmisor &&
+          String(local.mensaje || '').trim() === remotoMsg &&
+          Math.abs((local.timestamp || 0) - remotoTs) < 45000
+        );
+
+        if (existenteFirma) {
+          // Unificar ID para evitar duplicidad y actualizar atributo DOM si ya está pintado
+          const idViejo = existenteFirma.id;
+          existenteFirma.id = remotoId;
+          mapaIds.add(remotoId);
+          if (idViejo) {
+            const elDom = document.getElementById('chatMensajesArea')?.querySelector(`[data-msg-id="${idViejo}"]`);
+            if (elDom) elDom.setAttribute('data-msg-id', remotoId);
+          }
+          huboNuevos = true;
+        } else {
           historialLocal.push({
-            id: remoto.id,
+            id: remotoId,
             clienteId: remoto.clienteId || miClienteId,
             clienteNombre: remoto.clienteNombre || 'Comensal',
-            fecha: remoto.fecha || new Date(remoto.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            timestamp: remoto.timestamp || Date.now(),
+            fecha: remoto.fecha || new Date(remotoTs || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: remotoTs || Date.now(),
             mensaje: remoto.mensaje,
             emisor: remoto.emisor,
             leido: remoto.leido,
             respondido: true
           });
-          mapaIds.add(remoto.id);
+          mapaIds.add(remotoId);
           huboNuevos = true;
         }
       });
 
       if (huboNuevos) {
-        localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialLocal));
+        const historialSaneado = desduplicarMensajesApp(historialLocal);
+        historialSaneado.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialSaneado));
         localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
         cargarHistorialClienteEnChat();
       }
@@ -1860,11 +1916,25 @@ function recibirRespuestaAdminEnCliente(msgAdmin) {
   const area = document.getElementById('chatMensajesArea');
   if (!area) return;
 
-  // Evitar duplicados
-  if (msgAdmin.id && area.querySelector(`[data-msg-id="${msgAdmin.id}"]`)) return;
+  const msgId = msgAdmin.id ? String(msgAdmin.id).trim() : '';
+  const textoRespuesta = String(msgAdmin.mensaje || '').trim();
+
+  // 1. Evitar duplicados por ID exacto
+  if (msgId && area.querySelector(`[data-msg-id="${msgId}"]`)) return;
+
+  // 2. Evitar duplicados por contenido idéntico en el DOM
+  const itemsAdmin = area.querySelectorAll('[data-emisor="admin"]');
+  for (const item of itemsAdmin) {
+    const p = item.querySelector('p');
+    if (p && p.textContent.trim() === textoRespuesta) {
+      if (msgId) item.setAttribute('data-msg-id', msgId);
+      return;
+    }
+  }
 
   const msgRespuesta = document.createElement('div');
-  if (msgAdmin.id) msgRespuesta.setAttribute('data-msg-id', msgAdmin.id);
+  if (msgId) msgRespuesta.setAttribute('data-msg-id', msgId);
+  msgRespuesta.setAttribute('data-emisor', 'admin');
   msgRespuesta.className = 'flex items-start space-x-2 animate-in fade-in duration-300';
   msgRespuesta.innerHTML = `
     <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs flex-shrink-0 shadow-xs">
@@ -1900,7 +1970,29 @@ function cargarHistorialClienteEnChat() {
   if (!area) return;
 
   const miClienteId = obtenerOcrearClienteId().toLowerCase();
-  const historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  let historialChat = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+
+  // Saneamiento de duplicados en localStorage
+  const historialSaneado = desduplicarMensajesApp(historialChat);
+  if (historialSaneado.length !== historialChat.length) {
+    localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialSaneado));
+    historialChat = historialSaneado;
+  }
+
+  // Limpieza en caliente de nodos duplicados en el DOM
+  const mensajesDom = area.querySelectorAll('[data-emisor]');
+  const firmasDom = new Set();
+  mensajesDom.forEach(el => {
+    const emisor = el.getAttribute('data-emisor') || '';
+    const texto = el.textContent.trim().replace(/\s+/g, ' ');
+    const clave = `${emisor}_${texto}`;
+    if (firmasDom.has(clave)) {
+      el.remove();
+    } else {
+      firmasDom.add(clave);
+    }
+  });
+
   const misMensajes = historialChat.filter(m => {
     const cId = (m.clienteId || 'cli_general').toLowerCase();
     return cId === miClienteId || cId === 'cli_general';
@@ -1908,14 +2000,42 @@ function cargarHistorialClienteEnChat() {
 
   let huboNuevos = false;
   misMensajes.forEach(m => {
-    if (m.id && area.querySelector(`[data-msg-id="${m.id}"]`)) return;
+    const mId = m.id ? String(m.id).trim() : '';
+    if (mId && area.querySelector(`[data-msg-id="${mId}"]`)) return;
 
-    huboNuevos = true;
+    // Verificar si el mensaje ya está en el DOM por texto para evitar clones
+    const textoMsg = String(m.mensaje || '').trim();
     if (m.emisor === 'admin') {
+      const itemsAdmin = area.querySelectorAll('[data-emisor="admin"]');
+      let yaEnDom = false;
+      for (const item of itemsAdmin) {
+        const p = item.querySelector('p');
+        if (p && p.textContent.trim() === textoMsg) {
+          if (mId) item.setAttribute('data-msg-id', mId);
+          yaEnDom = true;
+          break;
+        }
+      }
+      if (yaEnDom) return;
+
+      huboNuevos = true;
       recibirRespuestaAdminEnCliente(m);
     } else {
+      const itemsCliente = area.querySelectorAll('[data-emisor="cliente"]');
+      let yaEnDom = false;
+      for (const item of itemsCliente) {
+        if (item.textContent.includes(textoMsg)) {
+          if (mId) item.setAttribute('data-msg-id', mId);
+          yaEnDom = true;
+          break;
+        }
+      }
+      if (yaEnDom) return;
+
+      huboNuevos = true;
       const msgUser = document.createElement('div');
-      if (m.id) msgUser.setAttribute('data-msg-id', m.id);
+      if (mId) msgUser.setAttribute('data-msg-id', mId);
+      msgUser.setAttribute('data-emisor', 'cliente');
       msgUser.className = 'flex items-start justify-end space-x-2 animate-in fade-in duration-200';
       msgUser.innerHTML = `
         <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
@@ -1944,11 +2064,12 @@ function enviarMensajeChat() {
   // Contexto de plato
   const platoEtiqueta = chatContextoPlato ? chatContextoPlato.nombre : null;
   const categoriaEtiqueta = chatContextoPlato ? chatContextoPlato.categoria : categoriaSeleccionada;
-  const msgId = 'MSG-' + Date.now();
+  const msgId = 'MSG-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900);
 
   // Mensaje en pantalla del Comensal
   const msgUser = document.createElement('div');
   msgUser.setAttribute('data-msg-id', msgId);
+  msgUser.setAttribute('data-emisor', 'cliente');
   msgUser.className = 'flex items-start justify-end space-x-2 animate-in fade-in duration-200';
   msgUser.innerHTML = `
     <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] text-xs shadow-xs">
@@ -1987,7 +2108,8 @@ function enviarMensajeChat() {
   } catch (e) {}
 
   historialChat.push(nuevoMensaje);
-  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialChat));
+  const historialLimpio = desduplicarMensajesApp(historialChat);
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historialLimpio));
   localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
 
   // Notificar al panel Admin en tiempo real
@@ -1999,9 +2121,10 @@ function enviarMensajeChat() {
     });
   }
 
-  // Enviar a Google Sheets ERP si la API está configurada
+  // Enviar a Google Sheets ERP si la API está configurada preservando el ID original
   if (window.API && typeof API.enviarMensajeChat === 'function') {
     API.enviarMensajeChat({
+      id: msgId,
       clienteId: miClienteId,
       nombre: miNombre,
       mensaje: platoEtiqueta ? `[Consulta: ${platoEtiqueta}] ${texto}` : texto,

@@ -1218,7 +1218,7 @@ function obtenerConversacionesAgrupadas() {
       const idCorto = cId === 'cli_general' ? 'General' : cId.slice(-4).toUpperCase();
       mapaClientes[cId] = {
         clienteId: cId,
-        nombre: m.clienteNombre || m.cliente || (cId === 'cli_general' ? 'Comensal General' : `Comensal #${idCorto}`),
+        nombre: (m.emisor === 'cliente' && m.clienteNombre && !m.clienteNombre.includes('Chef') && !m.clienteNombre.includes('Cocina')) ? m.clienteNombre : (cId === 'cli_general' ? 'Comensal General' : `Comensal #${idCorto}`),
         plato: m.plato || null,
         categoria: m.categoria || null,
         mensajes: [],
@@ -1228,8 +1228,8 @@ function obtenerConversacionesAgrupadas() {
     }
 
     if (m.plato) mapaClientes[cId].plato = m.plato;
-    // Si viene un nombre real registrado, adoptarlo
-    if (m.clienteNombre && m.clienteNombre.trim() !== '') {
+    // Si viene un nombre real registrado emitido por el comensal, adoptarlo
+    if (m.emisor === 'cliente' && m.clienteNombre && m.clienteNombre.trim() !== '' && !m.clienteNombre.includes('Chef') && !m.clienteNombre.includes('Cocina')) {
       mapaClientes[cId].nombre = m.clienteNombre;
     }
 
@@ -1478,11 +1478,15 @@ function responderAdminChat() {
     }
   });
 
+  const conversaciones = obtenerConversacionesAgrupadas();
+  const clienteActivo = conversaciones.find(c => c.clienteId === clienteChatActivoId);
+  const nombreDestino = clienteActivo ? clienteActivo.nombre : 'Comensal';
+
   // 2. Agregar la respuesta del Chef dirigida específicamente a este cliente
   const nuevoMensajeAdmin = {
     id: 'MSG-' + Date.now(),
     clienteId: clienteChatActivoId,
-    clienteNombre: 'Cocina A Domicilio (Chef)',
+    clienteNombre: nombreDestino,
     mensaje: texto,
     emisor: 'admin',
     fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),

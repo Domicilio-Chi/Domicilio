@@ -256,22 +256,51 @@ function doGet(e) {
  * Endpoint Principal POST: Escritura, Actualizaciones y Fotos
  */
 function doPost(e) {
+  let datos = {};
+  if (e.postData && e.postData.contents) {
+    try {
+      datos = JSON.parse(e.postData.contents);
+    } catch (err) {
+      datos = e.parameter || {};
+    }
+  } else {
+    datos = e.parameter || {};
+  }
+
+  const accion = datos.accion || (e.parameter ? e.parameter.accion : '');
+
+  // 0. Latido de Presencia en CacheService (Ultrarrápido en RAM, no requiere Lock de Sheets)
+  if (accion === 'registrarLatidoPresencia') {
+    const cId = String(datos.clienteId || '').trim();
+    if (!cId) return responderJSON({ exito: false, mensaje: 'Falta clienteId' });
+
+    const cache = CacheService.getScriptCache();
+    let tabla = {};
+    try {
+      const raw = cache.get("adomicilio_tabla_presencia_global");
+      if (raw) tabla = JSON.parse(raw);
+    } catch (err) {
+      tabla = {};
+    }
+
+    tabla[cId] = {
+      nombre: datos.nombre || 'Comensal',
+      dispositivo: datos.dispositivo || 'web',
+      ts: Date.now()
+    };
+
+    const ahora = Date.now();
+    for (const k in tabla) {
+      if (ahora - tabla[k].ts > 45000) delete tabla[k];
+    }
+
+    cache.put("adomicilio_tabla_presencia_global", JSON.stringify(tabla), 60);
+    return responderJSON({ exito: true, registrado: cId, total: Object.keys(tabla).length });
+  }
+
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(15000); // Bloqueo atómico de 15 segundos
-    
-    let datos = {};
-    if (e.postData && e.postData.contents) {
-      try {
-        datos = JSON.parse(e.postData.contents);
-      } catch (err) {
-        datos = e.parameter || {};
-      }
-    } else {
-      datos = e.parameter || {};
-    }
-
-    const accion = datos.accion || (e.parameter ? e.parameter.accion : '');
     const ss = obtenerSpreadsheet();
 
     // 1. Guardar o Editar Plato del Menú
@@ -445,52 +474,35 @@ function doPost(e) {
       return responderJSON({ exito: true, idMensaje: idMsg, fecha: fechaNow });
     }
 
-    // 5.2. Marcar Mensajes de un Comensal como Leídos
+    // 5.2. Marcar Mensajes de un Comensal como Leídos (Optimizado en Bloque Batch)
     if (accion === 'marcarMensajesLeidos') {
-      const cId = String(datos.clienteId || '').trim();
+      const cId = String(datos.clienteId || '').trim().toLowerCase();
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
         "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
       const data = hoja.getDataRange().getValues();
+      if (data.length <= 1) return responderJSON({ exito: true, actualizados: 0 });
+
+      const columnaLeido = [];
       let actualizados = 0;
+      let huboCambios = false;
 
       for (let i = 1; i < data.length; i++) {
-        if ((!cId || String(data[i][2]).toLowerCase() === cId.toLowerCase()) && String(data[i][6]).toLowerCase() !== 'si') {
-          hoja.getRange(i + 1, 7).setValue('Si');
+        const msgCId = String(data[i][2] || '').trim().toLowerCase();
+        const leidoActual = String(data[i][6] || 'No');
+        if ((!cId || msgCId === cId) && leidoActual.toLowerCase() !== 'si') {
+          columnaLeido.push(['Si']);
           actualizados++;
+          huboCambios = true;
+        } else {
+          columnaLeido.push([leidoActual]);
         }
       }
+
+      if (huboCambios && columnaLeido.length > 0) {
+        hoja.getRange(2, 7, columnaLeido.length, 1).setValues(columnaLeido);
+      }
       return responderJSON({ exito: true, actualizados: actualizados });
-    }
-
-    // 5.3. Registrar Latido de Presencia de Comensal en Vivo (Memoria CacheService ultra rápida)
-    if (accion === 'registrarLatidoPresencia') {
-      const cId = String(datos.clienteId || '').trim();
-      if (!cId) return responderJSON({ exito: false, mensaje: 'Falta clienteId' });
-
-      const cache = CacheService.getScriptCache();
-      let tabla = {};
-      try {
-        const raw = cache.get("adomicilio_tabla_presencia_global");
-        if (raw) tabla = JSON.parse(raw);
-      } catch (err) {
-        tabla = {};
-      }
-
-      tabla[cId] = {
-        nombre: datos.nombre || 'Comensal',
-        dispositivo: datos.dispositivo || 'web',
-        ts: Date.now()
-      };
-
-      // Purgar inactivos > 45s
-      const ahora = Date.now();
-      for (const k in tabla) {
-        if (ahora - tabla[k].ts > 45000) delete tabla[k];
-      }
-
-      cache.put("adomicilio_tabla_presencia_global", JSON.stringify(tabla), 60);
-      return responderJSON({ exito: true, registrado: cId, total: Object.keys(tabla).length });
     }
 
     // 5.4. Eliminar Conversación de un Comensal Específico (Soft Delete de Alto Rendimiento)
@@ -641,7 +653,9 @@ function doPost(e) {
   } catch (error) {
     return responderJSON({ exito: false, error: error.message });
   } finally {
-    lock.releaseLock();
+    if (lock && typeof lock.hasLock === 'function' && lock.hasLock()) {
+      lock.releaseLock();
+    }
   }
 }
 

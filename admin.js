@@ -1008,21 +1008,47 @@ function registrarChatPurgado(clienteId) {
   if (!clienteId) return;
   try {
     const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
-    purgados[String(clienteId).toLowerCase()] = Date.now();
+    purgados[String(clienteId).trim().toLowerCase()] = Date.now();
     localStorage.setItem('adomicilio_chats_purgados', JSON.stringify(purgados));
   } catch (e) {}
 }
 
-function esChatPurgado(clienteId) {
-  if (!clienteId) return false;
+function obtenerTimestampPurgado(clienteId) {
+  if (!clienteId) return 0;
   try {
     const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
-    const ts = purgados[String(clienteId).toLowerCase()];
-    if (!ts) return false;
-    // Si fue purgado en los últimos 7 días, se mantiene bloqueado
-    if (Date.now() - ts < 7 * 24 * 60 * 60 * 1000) {
+    return purgados[String(clienteId).trim().toLowerCase()] || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function revocarChatPurgadoSiAplica(clienteId, mensajeTimestamp) {
+  if (!clienteId || !mensajeTimestamp) return;
+  try {
+    const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
+    const key = String(clienteId).trim().toLowerCase();
+    const tsPurgado = purgados[key];
+    if (tsPurgado && mensajeTimestamp > tsPurgado) {
+      delete purgados[key];
+      localStorage.setItem('adomicilio_chats_purgados', JSON.stringify(purgados));
+    }
+  } catch (e) {}
+}
+
+function esChatPurgado(clienteId, mensajeTimestamp = 0) {
+  if (!clienteId) return false;
+  try {
+    const tsPurgado = obtenerTimestampPurgado(clienteId);
+    if (!tsPurgado) return false;
+    if (mensajeTimestamp > 0) {
+      if (mensajeTimestamp > tsPurgado) {
+        revocarChatPurgadoSiAplica(clienteId, mensajeTimestamp);
+        return false;
+      }
       return true;
     }
+    return (Date.now() - tsPurgado < 7 * 24 * 60 * 60 * 1000);
   } catch (e) {}
   return false;
 }
@@ -1045,22 +1071,37 @@ async function sincronizarChatGlobalAdmin() {
   try {
     const mensajesRemotos = await API.sincronizarChatGlobal();
     if (mensajesRemotos && Array.isArray(mensajesRemotos)) {
-      const mensajesLocales = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
-      const mapaIds = new Set(mensajesLocales.map(m => m.id));
-      let huboNuevos = false;
+      let mensajesLocales = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+      const idsRemotosSet = new Set(mensajesRemotos.map(r => r.id));
+      let huboCambios = false;
 
+      // 1. RECONCILIACIÓN INVERSA: si un mensaje fue borrado en la nube por el cliente,
+      // y no es un mensaje recién enviado por el Admin (< 20s), eliminarlo de local
+      const totalOriginal = mensajesLocales.length;
+      mensajesLocales = mensajesLocales.filter(local => {
+        const esRecienteAdmin = local.emisor === 'admin' && (Date.now() - (local.timestamp || 0) < 20000);
+        return idsRemotosSet.has(local.id) || esRecienteAdmin;
+      });
+      if (mensajesLocales.length !== totalOriginal) {
+        huboCambios = true;
+      }
+
+      // 2. Incorporar mensajes remotos respetando el corte temporal
+      const mapaIds = new Set(mensajesLocales.map(m => m.id));
       mensajesRemotos.forEach(remoto => {
-        const cId = (remoto.clienteId || 'cli_general').toLowerCase();
-        // Blindaje Anti-Zombi: Ignorar si el comensal fue purgado/eliminado
-        if (esChatPurgado(cId)) return;
+        const cId = String(remoto.clienteId || 'cli_general').trim().toLowerCase();
+        const msgTs = remoto.timestamp || 0;
+
+        // Si el mensaje es más antiguo o igual al momento de la purga, ignorarlo
+        if (esChatPurgado(cId, msgTs)) return;
 
         if (!mapaIds.has(remoto.id)) {
           mensajesLocales.push({
             id: remoto.id,
-            clienteId: remoto.clienteId || 'cli_general',
+            clienteId: cId,
             clienteNombre: remoto.clienteNombre || 'Comensal',
             fecha: formatearHoraChat(remoto.fecha, remoto.timestamp),
-            timestamp: remoto.timestamp || Date.now(),
+            timestamp: msgTs || Date.now(),
             plato: remoto.plato || '',
             mensaje: remoto.mensaje,
             emisor: remoto.emisor,
@@ -1068,19 +1109,19 @@ async function sincronizarChatGlobalAdmin() {
             respondido: remoto.leido
           });
           mapaIds.add(remoto.id);
-          huboNuevos = true;
+          huboCambios = true;
         } else {
-          // Reconciliar estado leído/respondido
           const local = mensajesLocales.find(m => m.id === remoto.id);
           if (local && remoto.leido && !local.leido) {
             local.leido = true;
             local.respondido = true;
-            huboNuevos = true;
+            huboCambios = true;
           }
         }
       });
 
-      if (huboNuevos) {
+      if (huboCambios) {
+        mensajesLocales.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
         localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajesLocales));
         localStorage.setItem('adomicilio_ultimo_ping', Date.now().toString());
         actualizarMetricas();
@@ -1122,6 +1163,18 @@ if (canalChatAdmin) {
       reproducirSonidoGota();
       renderizarAdminChat();
     }
+    if (data && data.tipo === 'CONVERSACION_ELIMINADA') {
+      const cId = String(data.clienteId || '').trim().toLowerCase();
+      registrarChatPurgado(cId);
+      let mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+      mensajes = mensajes.filter(m => String(m.clienteId || 'cli_general').trim().toLowerCase() !== cId);
+      localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
+      if (clienteChatActivoId && clienteChatActivoId.toLowerCase() === cId) {
+        clienteChatActivoId = null;
+      }
+      actualizarMetricas();
+      renderizarAdminChat();
+    }
     if (data && (data.tipo === 'LATIDO_PRESENCIA' || data.tipo === 'DESCONEXION_CLIENTE')) {
       actualizarPresenciaComensales();
     }
@@ -1154,26 +1207,29 @@ function obtenerConversacionesAgrupadas() {
   const mapaClientes = {};
 
   mensajes.forEach((m, idx) => {
-    // Normalizar ID de cliente (compatible con mensajes anteriores sin clienteId)
-    const cId = m.clienteId || 'cli_general';
-    // Omitir comensales purgados
-    if (esChatPurgado(cId)) return;
+    // Normalizar ID de cliente en minúsculas y sin espacios
+    const cId = String(m.clienteId || 'cli_general').trim().toLowerCase();
+    const msgTs = m.timestamp || 0;
+
+    // Omitir solo mensajes antiguos previos a la purga
+    if (esChatPurgado(cId, msgTs)) return;
 
     if (!mapaClientes[cId]) {
+      const idCorto = cId === 'cli_general' ? 'General' : cId.slice(-4).toUpperCase();
       mapaClientes[cId] = {
         clienteId: cId,
-        nombre: m.clienteNombre || m.cliente || (cId === 'cli_general' ? 'Comensal General' : `Comensal #${cId.substring(4, 9)}`),
+        nombre: m.clienteNombre || m.cliente || (cId === 'cli_general' ? 'Comensal General' : `Comensal #${idCorto}`),
         plato: m.plato || null,
         categoria: m.categoria || null,
         mensajes: [],
         pendientes: 0,
-        ultimoTimestamp: m.timestamp || (Date.now() - (mensajes.length - idx) * 1000)
+        ultimoTimestamp: msgTs || (Date.now() - (mensajes.length - idx) * 1000)
       };
     }
 
     if (m.plato) mapaClientes[cId].plato = m.plato;
-    // Si viene un nombre real, reemplazar el nombre genérico
-    if (m.clienteNombre && (mapaClientes[cId].nombre.includes('Comensal #') || mapaClientes[cId].nombre === 'Comensal General')) {
+    // Si viene un nombre real registrado, adoptarlo
+    if (m.clienteNombre && m.clienteNombre.trim() !== '') {
       mapaClientes[cId].nombre = m.clienteNombre;
     }
 
@@ -1184,8 +1240,8 @@ function obtenerConversacionesAgrupadas() {
       mapaClientes[cId].pendientes++;
     }
 
-    if (m.timestamp && m.timestamp > mapaClientes[cId].ultimoTimestamp) {
-      mapaClientes[cId].ultimoTimestamp = m.timestamp;
+    if (msgTs && msgTs > mapaClientes[cId].ultimoTimestamp) {
+      mapaClientes[cId].ultimoTimestamp = msgTs;
     }
   });
 
@@ -1193,7 +1249,7 @@ function obtenerConversacionesAgrupadas() {
   return Object.values(mapaClientes).sort((a, b) => b.ultimoTimestamp - a.ultimoTimestamp);
 }
 
-function renderizarAdminChat() {
+function renderizarAdminChat(forzarFoco = false) {
   const listaContenedor = document.getElementById('adminListaClientesContenedor');
   const chatArea = document.getElementById('adminChatListaMensajes');
   const totalClientesSpan = document.getElementById('adminTotalClientesActivos');
@@ -1277,7 +1333,7 @@ function renderizarAdminChat() {
     let huboCambios = false;
     const todosMensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
     todosMensajes.forEach(m => {
-      const cId = m.clienteId || 'cli_general';
+      const cId = String(m.clienteId || 'cli_general').trim().toLowerCase();
       if (cId === clienteActivo.clienteId && !m.leido) {
         m.leido = true;
         huboCambios = true;
@@ -1308,7 +1364,9 @@ function renderizarAdminChat() {
     if (inputResp) {
       inputResp.disabled = false;
       inputResp.placeholder = `Escribe tu respuesta a ${clienteActivo.nombre}...`;
-      inputResp.focus();
+      if (forzarFoco) {
+        inputResp.focus();
+      }
     }
     if (btnResp) {
       btnResp.disabled = false;
@@ -1342,7 +1400,12 @@ function renderizarAdminChat() {
       `;
     }).join('');
 
-    chatArea.scrollTop = chatArea.scrollHeight;
+    // Scroll inteligente: solo al final si ya estaba cerca o al seleccionar
+    const margenTolerancia = 80;
+    const estabaAlFinal = (chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight) <= margenTolerancia;
+    if (forzarFoco || estabaAlFinal || chatArea.scrollTop === 0) {
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
 
   } else {
     // Ningún cliente seleccionado
@@ -1382,7 +1445,7 @@ function seleccionarClienteChat(clienteId) {
     if (panelChat) panelChat.classList.remove('hidden');
   }
 
-  renderizarAdminChat();
+  renderizarAdminChat(true);
 }
 
 function volverAListaClientesMobile() {

@@ -330,6 +330,53 @@ const API = {
     } catch (err) {
       return { exito: false, error: err.message };
     }
+  },
+
+  // 16. Eliminar conversación de un comensal en la nube (Soft Delete permanente)
+  eliminarConversacionComensal: async function(clienteId) {
+    const url = this.getURL();
+    if (!url || !clienteId) return { exito: false, mensaje: 'Parámetros inválidos' };
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ accion: 'eliminarConversacionComensal', clienteId: clienteId }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      return await resp.json();
+    } catch (err) {
+      console.warn('Error en API.eliminarConversacionComensal:', err.message);
+      return { exito: false, error: err.message };
+    }
+  },
+
+  // 17. Vaciar todo el historial de chat en la nube
+  vaciarTodoChatGlobal: async function() {
+    const url = this.getURL();
+    if (!url) return { exito: false, mensaje: 'Sin URL de API' };
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ accion: 'vaciarTodoChatGlobal' }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      return await resp.json();
+    } catch (err) {
+      return { exito: false, error: err.message };
+    }
   }
 };
 

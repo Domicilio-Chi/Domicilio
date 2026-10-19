@@ -984,6 +984,49 @@ async function sincronizarPresenciaNubeAdmin() {
   }
 }
 
+// Helpers de Chat: Formateo de hora compacta y Tombstones de eliminación
+function formatearHoraChat(fechaStr, timestamp) {
+  try {
+    let d = null;
+    if (timestamp && typeof timestamp === 'number' && timestamp > 0) {
+      d = new Date(timestamp);
+    } else if (fechaStr) {
+      const trimmed = String(fechaStr).trim();
+      if (/^\d{1,2}:\d{2}(\s?[APap][Mm])?$/.test(trimmed)) {
+        return trimmed;
+      }
+      d = new Date(trimmed);
+    }
+    if (d && !isNaN(d.getTime())) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  } catch (e) {}
+  return (fechaStr && String(fechaStr).length <= 8) ? String(fechaStr) : '';
+}
+
+function registrarChatPurgado(clienteId) {
+  if (!clienteId) return;
+  try {
+    const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
+    purgados[String(clienteId).toLowerCase()] = Date.now();
+    localStorage.setItem('adomicilio_chats_purgados', JSON.stringify(purgados));
+  } catch (e) {}
+}
+
+function esChatPurgado(clienteId) {
+  if (!clienteId) return false;
+  try {
+    const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
+    const ts = purgados[String(clienteId).toLowerCase()];
+    if (!ts) return false;
+    // Si fue purgado en los últimos 7 días, se mantiene bloqueado
+    if (Date.now() - ts < 7 * 24 * 60 * 60 * 1000) {
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
 // Sincronización de la bandeja global de chat en la nube
 let ultimoSyncChatGlobal = 0;
 let sincronizandoChatGlobal = false;
@@ -1007,12 +1050,16 @@ async function sincronizarChatGlobalAdmin() {
       let huboNuevos = false;
 
       mensajesRemotos.forEach(remoto => {
+        const cId = (remoto.clienteId || 'cli_general').toLowerCase();
+        // Blindaje Anti-Zombi: Ignorar si el comensal fue purgado/eliminado
+        if (esChatPurgado(cId)) return;
+
         if (!mapaIds.has(remoto.id)) {
           mensajesLocales.push({
             id: remoto.id,
             clienteId: remoto.clienteId || 'cli_general',
             clienteNombre: remoto.clienteNombre || 'Comensal',
-            fecha: remoto.fecha || new Date(remoto.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            fecha: formatearHoraChat(remoto.fecha, remoto.timestamp),
             timestamp: remoto.timestamp || Date.now(),
             plato: remoto.plato || '',
             mensaje: remoto.mensaje,
@@ -1109,6 +1156,9 @@ function obtenerConversacionesAgrupadas() {
   mensajes.forEach((m, idx) => {
     // Normalizar ID de cliente (compatible con mensajes anteriores sin clienteId)
     const cId = m.clienteId || 'cli_general';
+    // Omitir comensales purgados
+    if (esChatPurgado(cId)) return;
+
     if (!mapaClientes[cId]) {
       mapaClientes[cId] = {
         clienteId: cId,
@@ -1122,7 +1172,8 @@ function obtenerConversacionesAgrupadas() {
     }
 
     if (m.plato) mapaClientes[cId].plato = m.plato;
-    if (m.clienteNombre && !mapaClientes[cId].nombre.includes('Comensal #')) {
+    // Si viene un nombre real, reemplazar el nombre genérico
+    if (m.clienteNombre && (mapaClientes[cId].nombre.includes('Comensal #') || mapaClientes[cId].nombre === 'Comensal General')) {
       mapaClientes[cId].nombre = m.clienteNombre;
     }
 
@@ -1168,26 +1219,33 @@ function renderizarAdminChat() {
       const esActivo = c.clienteId === clienteChatActivoId;
       const ultimoMsg = c.mensajes.length > 0 ? c.mensajes[c.mensajes.length - 1] : null;
       const textoUltimo = ultimoMsg ? (ultimoMsg.mensaje.length > 40 ? ultimoMsg.mensaje.substring(0, 40) + '...' : ultimoMsg.mensaje) : 'Sin mensajes';
-      const horaUltimo = ultimoMsg ? (ultimoMsg.fecha || '') : '';
+      const horaUltimo = ultimoMsg ? formatearHoraChat(ultimoMsg.fecha, ultimoMsg.timestamp) : '';
 
       return `
-        <div onclick="seleccionarClienteChat('${c.clienteId}')" class="p-3 rounded-2xl cursor-pointer transition-all border ${esActivo ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 shadow-xs' : 'bg-white dark:bg-stone-900/80 border-stone-200/80 dark:border-stone-800/80 hover:bg-stone-100/70 dark:hover:bg-stone-800/60'}">
+        <div onclick="seleccionarClienteChat('${c.clienteId}')" class="group p-3 rounded-2xl cursor-pointer transition-all border ${esActivo ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 shadow-xs' : 'bg-white dark:bg-stone-900/80 border-stone-200/80 dark:border-stone-800/80 hover:bg-stone-100/70 dark:hover:bg-stone-800/60'}">
           <div class="flex items-start justify-between gap-1.5 mb-1">
-            <div class="flex items-center space-x-2 min-w-0">
-              <div class="w-7 h-7 rounded-full ${esActivo ? 'bg-emerald-600 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'} flex items-center justify-center text-xs font-black flex-shrink-0">
+            <div class="flex items-center space-x-2 min-w-0 flex-1 pr-1">
+              <div class="w-7 h-7 rounded-full ${esActivo ? 'bg-emerald-600 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'} flex items-center justify-center text-xs font-black shrink-0">
                 <i class="fa-solid fa-user text-[11px]"></i>
               </div>
-              <span class="font-bold text-xs truncate ${esActivo ? 'text-emerald-950 dark:text-emerald-100' : 'text-stone-900 dark:text-white'}">
+              <span class="font-bold text-xs truncate ${esActivo ? 'text-emerald-950 dark:text-emerald-100' : 'text-stone-900 dark:text-white'}" title="${c.nombre}">
                 ${c.nombre}
               </span>
             </div>
-            <div class="flex items-center space-x-1.5 flex-shrink-0">
-              <span class="text-[10px] text-stone-400">${horaUltimo}</span>
+            <div class="flex items-center space-x-1.5 shrink-0">
+              <span class="text-[10px] text-stone-400 font-medium">${horaUltimo}</span>
               ${c.pendientes > 0 ? `
                 <span class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white font-black text-[10px] animate-pulse">
                   ${c.pendientes}
                 </span>
               ` : ''}
+              <button 
+                type="button" 
+                onclick="event.stopPropagation(); eliminarConversacionClienteDirecto('${c.clienteId}', '${(c.nombre || '').replace(/'/g, "\\'")}')" 
+                class="w-6 h-6 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/60 flex items-center justify-center transition-all cursor-pointer shrink-0 ml-0.5" 
+                title="Eliminar conversación de ${c.nombre}">
+                <i class="fa-solid fa-trash-can text-[11px]"></i>
+              </button>
             </div>
           </div>
 
@@ -1421,19 +1479,54 @@ function marcarTodosLeidosAdmin() {
   mostrarToastAdmin('Todos los mensajes marcados como leídos ✓');
 }
 
-function eliminarConversacionClienteActivo() {
-  if (!clienteChatActivoId) return;
+function eliminarConversacionClienteDirecto(clienteId, nombreComensal = 'este comensal') {
+  if (!clienteId) return;
 
-  if (!confirm('¿Deseas eliminar la conversación con este comensal?')) return;
+  if (!confirm(`¿Deseas eliminar permanentemente la conversación con "${nombreComensal}"?`)) return;
 
+  // 1. Registrar Tombstone local para evitar resurrección durante sincronizaciones
+  registrarChatPurgado(clienteId);
+
+  // 2. Limpiar mensajes de localStorage local
   let mensajes = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
-  mensajes = mensajes.filter(m => (m.clienteId || 'cli_general') !== clienteChatActivoId);
+  mensajes = mensajes.filter(m => (m.clienteId || 'cli_general').toLowerCase() !== clienteId.toLowerCase());
   localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(mensajes));
 
-  clienteChatActivoId = null;
+  // 3. Si era el cliente activo, limpiar panel derecho
+  if (clienteChatActivoId && clienteChatActivoId.toLowerCase() === clienteId.toLowerCase()) {
+    clienteChatActivoId = null;
+    const panelChat = document.getElementById('adminPanelChatActivo');
+    const panelLista = document.getElementById('adminPanelListaClientes');
+    if (panelChat && panelLista && window.innerWidth < 768) {
+      panelChat.classList.add('hidden');
+      panelLista.classList.remove('hidden');
+    }
+  }
+
+  // 4. Notificar vía canal local a otras pestañas
+  if (canalChatAdmin) {
+    try {
+      canalChatAdmin.postMessage({ tipo: 'CONVERSACION_ELIMINADA', clienteId });
+    } catch (e) {}
+  }
+
+  // 5. Notificar a Google Sheets para Soft Delete permanente en la nube
+  if (window.API && typeof API.eliminarConversacionComensal === 'function') {
+    API.eliminarConversacionComensal(clienteId);
+  }
+
+  // 6. Actualizar interfaz
   renderizarAdminChat();
   actualizarMetricas();
-  mostrarToastAdmin('Conversación eliminada');
+  mostrarToastAdmin(`Conversación con ${nombreComensal} eliminada ✓`);
+}
+
+function eliminarConversacionClienteActivo() {
+  if (!clienteChatActivoId) return;
+  const conversaciones = obtenerConversacionesAgrupadas();
+  const clienteActivo = conversaciones.find(c => c.clienteId === clienteChatActivoId);
+  const nombre = clienteActivo ? clienteActivo.nombre : 'este comensal';
+  eliminarConversacionClienteDirecto(clienteChatActivoId, nombre);
 }
 
 function abrirWAClienteActivo() {
@@ -1451,11 +1544,17 @@ function confirmarVaciarTodoChatAdmin() {
     mostrarToastAdmin('No hay consultas registradas para vaciar');
     return;
   }
-  if (!confirm('¿Deseas vaciar todas las consultas del chat de clientes? Esta acción eliminará todo el historial.')) {
+  if (!confirm('¿Deseas vaciar todas las consultas del chat de clientes? Esta acción eliminará todo el historial tanto local como en la nube.')) {
     return;
   }
   localStorage.removeItem('adomicilio_mensajes_chat');
+  localStorage.removeItem('adomicilio_chats_purgados');
   clienteChatActivoId = null;
+
+  if (window.API && typeof API.vaciarTodoChatGlobal === 'function') {
+    API.vaciarTodoChatGlobal();
+  }
+
   renderizarAdminChat();
   actualizarMetricas();
   mostrarToastAdmin('Historial de chat vaciado con éxito');

@@ -1534,7 +1534,25 @@ function cerrarModalChat() {
 function confirmarVaciarChatCliente() {
   if (!confirm('¿Deseas limpiar todos los mensajes de esta conversación?')) return;
 
-  localStorage.removeItem('adomicilio_mensajes_chat');
+  const miClienteId = obtenerOcrearClienteId();
+
+  // 1. Filtrar solo los mensajes de este cliente en localStorage (evitar borrar otros comensales si comparten navegador)
+  let historial = JSON.parse(localStorage.getItem('adomicilio_mensajes_chat') || '[]');
+  historial = historial.filter(m => (m.clienteId || '').toLowerCase() !== miClienteId.toLowerCase());
+  localStorage.setItem('adomicilio_mensajes_chat', JSON.stringify(historial));
+
+  // 2. Registrar Tombstone local para evitar resurrección durante sincronizaciones
+  try {
+    const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
+    purgados[miClienteId.toLowerCase()] = Date.now();
+    localStorage.setItem('adomicilio_chats_purgados', JSON.stringify(purgados));
+  } catch (e) {}
+
+  // 3. Notificar a Google Sheets para Soft Delete permanente en la nube
+  if (window.API && typeof API.eliminarConversacionComensal === 'function') {
+    API.eliminarConversacionComensal(miClienteId);
+  }
+
   chatContextoPlato = null;
   const banner = document.getElementById('chatBannerContexto');
   if (banner) banner.classList.add('hidden');
@@ -1738,6 +1756,16 @@ async function sincronizarChatClienteDesdeNube() {
   sincronizandoChatClienteNube = true;
 
   const miClienteId = obtenerOcrearClienteId();
+
+  // Blindaje Anti-Zombi: Si el cliente purgó su chat en los últimos 7 días, no reinyectar
+  try {
+    const purgados = JSON.parse(localStorage.getItem('adomicilio_chats_purgados') || '{}');
+    const ts = purgados[miClienteId.toLowerCase()];
+    if (ts && (ahora - ts < 7 * 24 * 60 * 60 * 1000)) {
+      return;
+    }
+  } catch (e) {}
+
   try {
     const mensajesRemotos = await API.obtenerHistorialChat(miClienteId);
     if (mensajesRemotos && Array.isArray(mensajesRemotos) && mensajesRemotos.length > 0) {

@@ -95,7 +95,7 @@ function doGet(e) {
     if (accion === 'sincronizarChatGlobal') {
       const desdeTimestamp = parseInt(e && e.parameter && e.parameter.desdeTimestamp, 10) || 0;
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
-        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido"
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
       const data = hoja.getDataRange().getValues();
       const mensajes = [];
@@ -103,6 +103,10 @@ function doGet(e) {
       for (let i = 1; i < data.length; i++) {
         const fila = data[i];
         if (!fila[0]) continue;
+
+        // Omitir mensajes marcados como eliminados (Soft Delete)
+        const esEliminado = String(fila[7] || '').toLowerCase() === 'si' || String(fila[7] || '').toLowerCase() === 'eliminado';
+        if (esEliminado) continue;
 
         let ts = 0;
         try {
@@ -135,7 +139,7 @@ function doGet(e) {
       if (!clienteId) return responderJSON({ exito: false, mensaje: 'Falta clienteId' });
 
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
-        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido"
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
       const data = hoja.getDataRange().getValues();
       const mensajes = [];
@@ -144,6 +148,10 @@ function doGet(e) {
         const fila = data[i];
         const msgClienteId = String(fila[2] || '').trim().toLowerCase();
         if (msgClienteId === clienteId || msgClienteId === 'cli_general') {
+          // Omitir si fue eliminado
+          const esEliminado = String(fila[7] || '').toLowerCase() === 'si' || String(fila[7] || '').toLowerCase() === 'eliminado';
+          if (esEliminado) continue;
+
           let ts = 0;
           try {
             ts = new Date(fila[1]).getTime() || 0;
@@ -396,7 +404,7 @@ function doPost(e) {
     // 5. Enviar Mensaje de Chat Web
     if (accion === 'enviarMensajeChat') {
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
-        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido"
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
       const idMsg = 'MSG-' + new Date().getTime();
       const fechaNow = Utilities.formatDate(new Date(), "America/Caracas", "yyyy-MM-dd HH:mm:ss");
@@ -408,6 +416,7 @@ function doPost(e) {
         datos.nombre || 'Comensal',
         datos.emisor || 'cliente',
         datos.mensaje || '',
+        'No',
         'No'
       ]);
 
@@ -417,7 +426,7 @@ function doPost(e) {
     // 5.1. Responder Mensaje desde el Panel Admin
     if (accion === 'responderMensajeAdmin') {
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
-        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido"
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
       const idMsg = 'MSG-ADM-' + new Date().getTime();
       const fechaNow = Utilities.formatDate(new Date(), "America/Caracas", "yyyy-MM-dd HH:mm:ss");
@@ -429,7 +438,8 @@ function doPost(e) {
         'Chef / Cocina A Domicilio',
         'admin',
         datos.mensaje || '',
-        'Si'
+        'Si',
+        'No'
       ]);
 
       return responderJSON({ exito: true, idMensaje: idMsg, fecha: fechaNow });
@@ -439,7 +449,7 @@ function doPost(e) {
     if (accion === 'marcarMensajesLeidos') {
       const cId = String(datos.clienteId || '').trim();
       const hoja = asegurarHoja(ss, HOJA_CHAT, [
-        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido"
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
       ]);
       const data = hoja.getDataRange().getValues();
       let actualizados = 0;
@@ -481,6 +491,70 @@ function doPost(e) {
 
       cache.put("adomicilio_tabla_presencia_global", JSON.stringify(tabla), 60);
       return responderJSON({ exito: true, registrado: cId, total: Object.keys(tabla).length });
+    }
+
+    // 5.4. Eliminar Conversación de un Comensal Específico (Soft Delete de Alto Rendimiento)
+    if (accion === 'eliminarConversacionComensal') {
+      const cId = String(datos.clienteId || '').trim();
+      if (!cId) {
+        return responderJSON({ exito: false, mensaje: 'Falta parámetro clienteId' });
+      }
+
+      const hoja = asegurarHoja(ss, HOJA_CHAT, [
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
+      ]);
+      const data = hoja.getDataRange().getValues();
+      const idsEliminados = [];
+      const numFilas = data.length - 1;
+
+      if (numFilas <= 0) {
+        return responderJSON({ exito: true, clienteId: cId, filasAfectadas: 0, idsEliminados: [] });
+      }
+
+      const columnaEliminado = [];
+      let cambios = false;
+
+      for (let i = 1; i < data.length; i++) {
+        const fila = data[i];
+        const msgClienteId = String(fila[2] || '').trim();
+        const valorActual = String(fila[7] || 'No');
+
+        if (msgClienteId.toLowerCase() === cId.toLowerCase() && valorActual.toLowerCase() !== 'si') {
+          columnaEliminado.push(['Si']);
+          idsEliminados.push(String(fila[0]));
+          cambios = true;
+        } else {
+          columnaEliminado.push([valorActual]);
+        }
+      }
+
+      if (cambios) {
+        hoja.getRange(2, 8, columnaEliminado.length, 1).setValues(columnaEliminado);
+      }
+
+      return responderJSON({
+        exito: true,
+        clienteId: cId,
+        filasAfectadas: idsEliminados.length,
+        idsEliminados: idsEliminados,
+        mensaje: 'Conversación marcada como eliminada correctamente'
+      });
+    }
+
+    // 5.5. Vaciar Todo el Chat Global (Para Admin)
+    if (accion === 'vaciarTodoChatGlobal') {
+      const hoja = asegurarHoja(ss, HOJA_CHAT, [
+        "ID_Mensaje", "Timestamp", "ID_Sesion_Cliente", "Nombre_Cliente", "Emisor", "Mensaje", "Leido", "Eliminado"
+      ]);
+      const lastRow = hoja.getLastRow();
+      if (lastRow > 1) {
+        const columnaEliminado = [];
+        for (let i = 2; i <= lastRow; i++) {
+          columnaEliminado.push(['Si']);
+        }
+        hoja.getRange(2, 8, columnaEliminado.length, 1).setValues(columnaEliminado);
+      }
+      return responderJSON({ exito: true, mensaje: 'Bandeja global de chat vaciada con éxito' });
     }
 
     // 6. Subir Foto a Google Drive
